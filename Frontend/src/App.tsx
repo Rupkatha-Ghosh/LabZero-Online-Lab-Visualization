@@ -3,46 +3,48 @@ import {
   Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import AtomVisualizer from './components/AtomicVisualizer';
-import PeriodicTable from './components/PeriodicTable';
-import AufbauChart from './components/AufbauChart';
-import TrendsVisualizer from './components/TrendsVisualizer';
-import ElementComparison from './components/ElementComparison';
-import BondingLab from './components/BondingLab';
-import GeometryLab from './components/GeometryLab';
-import HistoricalModels from './components/HistoricalModels';
-import QuantumConfigLab from './components/QuantumConfigLab';
-import QuantumNumbersLab from './components/QuantumNumbersLab';
+import AtomVisualizer from './components/labs/chemistry/AtomicVisualizer';
+import PeriodicTable from './components/labs/chemistry/PeriodicTable';
+import AufbauChart from './components/labs/chemistry/AufbauChart';
+import TrendsVisualizer from './components/labs/chemistry/TrendsVisualizer';
+import ElementComparison from './components/labs/chemistry/ElementComparison';
+import BondingLab from './components/labs/chemistry/BondingLab';
+import GeometryLab from './components/labs/chemistry/GeometryLab';
+import HistoricalModels from './components/labs/chemistry/HistoricalModels';
+import QuantumConfigLab from './components/labs/chemistry/QuantumConfigLab';
+import QuantumNumbersLab from './components/labs/chemistry/QuantumNumbersLab';
 
-import MechanicsVisualizer from './components/MechanicsVisualizer';
-import ElectromagnetismVisualizer from './components/ElectromagnetismVisualizer';
+import MechanicsVisualizer from './components/labs/physics/MechanicsVisualizer';
+import ElectromagnetismVisualizer from './components/labs/physics/ElectromagnetismVisualizer';
 
-import MicrobiologyLab from './components/MicrobiologyLab';
-import CellBiologyLab from './components/CellBiologyLab';
+import MicrobiologyLab from './components/labs/biology/MicrobiologyLab';
+import CellBiologyLab from './components/labs/biology/CellBiologyLab';
 
-import VectorCalculusLab from './components/VectorCalculusLab';
-import PiVisualizationLab from './components/PiVisualizationLab';
-import ComplexNumbersLab from './components/ComplexNumbersLab';
-import PythagorasLab from './components/PythagorasLab';
-import RealExperimentLab from './components/RealExperimentLab';
-import WaveOpticsVisualizer from './components/WaveOpticsVisualizer';
-import ThermodynamicsVisualizer from './components/ThermodynamicsVisualizer';
+import VectorCalculusLab from './components/labs/math/VectorCalculusLab';
+import PiVisualizationLab from './components/labs/math/PiVisualizationLab';
+import ComplexNumbersLab from './components/labs/math/ComplexNumbersLab';
+import PythagorasLab from './components/labs/math/PythagorasLab';
+import RealExperimentLab from './components/labs/chemistry/RealExperimentLab';
+import WaveOpticsVisualizer from './components/labs/physics/WaveOpticsVisualizer';
+import ThermodynamicsVisualizer from './components/labs/physics/ThermodynamicsVisualizer';
 
 
-import LandingPage from './components/LandingPage';
-import SubjectPage from './components/SubjectPage';
-import TopicPage from './components/TopicPage';
-import AdminDashboard from './components/AdminDashboard';
-import StudentDashboard from './components/StudentDashboard';
-import TeacherDashboard from './components/TeacherDashboard';
-import InstituteDashboard from './components/InstituteDashboard';
-import GestureController from './components/GestureController';
-import BottomNav from './components/BottomNav';
-import Glossary from './components/Glossary';
-import AuthOverlay from './components/AuthOverlay';
-import AuthPage from './components/AuthPage';
+import LandingPage from './components/pages/LandingPage';
+import SubjectPage from './components/pages/SubjectPage';
+import TopicPage from './components/pages/TopicPage';
+import AdminDashboard from './components/dashboards/AdminDashboard';
+import StudentDashboard from './components/dashboards/StudentDashboard';
+import TeacherDashboard from './components/dashboards/TeacherDashboard';
+import InstituteDashboard from './components/dashboards/InstituteDashboard';
+import GestureController from './components/shared/GestureController';
+import BottomNav from './components/common/BottomNav';
+import Glossary from './components/shared/Glossary';
+import AuthOverlay from './components/auth/AuthOverlay';
+import AuthPage from './components/auth/AuthPage';
+import FloatingBrain from './components/common/FloatingBrain';
+import MemoryMapOverlay from './components/shared/MemoryMapOverlay';
 
-import QuizPage from './components/Quiz';
+import QuizPage from './components/shared/Quiz';
 import { generateQuizAI } from './data/quizData';
 import { Skeleton } from 'boneyard-js/react';
 
@@ -104,6 +106,7 @@ const AppContent: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showGlossary, setShowGlossary] = useState(false);
   const [showAuth, setShowAuth] = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
+  const [showMindMap, setShowMindMap] = useState(false);
 
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [colorBlindMode, setColorBlindMode] = useState(false);
@@ -364,15 +367,6 @@ const AppContent: React.FC = () => {
         return (
           <div className="h-full overflow-y-auto">
             <ThermodynamicsVisualizer />
-          </div>
-        );
-
-      case 'electromagnetism':
-        return (
-          <div className="h-full overflow-y-auto p-4 md:p-8 bg-[#020617]">
-            <div className="max-w-7xl mx-auto">
-              <ElectromagnetismVisualizer />
-            </div>
           </div>
         );
 
@@ -640,7 +634,12 @@ const AppContent: React.FC = () => {
             <AnimatePresence>
               {showGlossary && <Glossary language={language} onClose={() => setShowGlossary(false)} />}
               {showAuth && <AuthOverlay onClose={() => setShowAuth(false)} />}
+              {showMindMap && <MemoryMapOverlay subjects={subjects} onClose={() => setShowMindMap(false)} />}
             </AnimatePresence>
+
+            {viewState === ViewState.LANDING && !showMindMap && (
+              <FloatingBrain onClick={() => setShowMindMap(true)} />
+            )}
 
             <GestureController
               isActive={isGestureActive && user?.role !== 'student'}
