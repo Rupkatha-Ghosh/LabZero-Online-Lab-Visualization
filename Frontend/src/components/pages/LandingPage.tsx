@@ -3,12 +3,11 @@ import { Subject } from '../../types/types';
 import { Beaker, Zap, Calculator, Dna, ArrowRight, Play, Maximize2, Move3d, RotateCcw, Rotate3D } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Language, translations } from '../../services/translations';
-import { Hero3DModel } from '../models/Hero3DModel';
+import { Hero3DModel } from '../models/Hero3DModel.tsx';
 import { Logo } from '../common/Logo';
 import { Footer } from '../common/Footer';
 import { Skeleton } from 'boneyard-js/react';
 import { ElectricFieldSimulation, InverseSquareGraph } from '../models/ElectricField';
-import { HeartModelPreview } from '../models/HeartModel';
 
 interface LandingPageProps {
   onSelectSubject: (subject: Subject) => void;
@@ -172,44 +171,13 @@ const LandingPage: React.FC<LandingPageProps> = ({
         <Skeleton name="landing-cards" loading={subjects.length === 0}>
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {subjects.map((subject, i) => {
-              // Metadata mapping for consistent styling
-              const meta: Record<string, any> = {
-                chemistry: {
-                  name: 'Chemistry Lab',
-                  desc: 'Visualize molecules, reactions, bonding and chemical processes.',
-                  img: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=400',
-                  theme: 'border-[var(--border-glass)]',
-                  iconColor: 'text-[var(--color-secondary)]'
-                },
-                physics: {
-                  name: 'Physics Engine',
-                  desc: 'Simulate motion, waves, optics, thermodynamics and more in real-time.',
-                  img: 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&q=80&w=400',
-                  theme: 'border-[var(--border-glass)]',
-                  iconColor: 'text-[var(--color-primary)]'
-                },
-                math: {
-                  name: 'Math Visualizer',
-                  desc: 'Graph functions, equations, matrices, vectors and surfaces interactively.',
-                  img: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&q=80&w=400',
-                  theme: 'border-[var(--border-glass)]',
-                  iconColor: 'text-[var(--color-accent)]'
-                },
-                biology: {
-                  name: 'Biology Explorer',
-                  desc: 'Explore cells, systems, anatomy and biological processes in 3D.',
-                  img: 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&q=80&w=400',
-                  theme: 'border-[var(--border-glass)]',
-                  iconColor: 'text-[#8b5cf6]'
-                },
-              };
-
-              const subjectMeta = meta[subject.slug] || {
+              // All metadata is now fetched dynamically from the backend Subject records
+              const subjectMeta = {
                 name: subject.name,
-                desc: `Explore interactive 3D visualizations and virtual experiments for ${subject.name}.`,
-                img: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=400',
-                theme: 'border-[var(--border-glass)]',
-                iconColor: 'text-indigo-500'
+                desc: subject.description || `Explore interactive 3D visualizations and virtual experiments for ${subject.name}.`,
+                img: subject.image_url || 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=400',
+                theme: subject.theme || 'border-[var(--border-glass)]',
+                iconColor: subject.iconColor || 'text-indigo-500'
               };
 
               return (
@@ -222,19 +190,13 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   onClick={() => onSelectSubject(subject)}
                   className="bg-[var(--bg-panel)] rounded-[32px] p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1"
                 >
-                  <div className={`w-full h-48 rounded-[24px] bg-[var(--bg-deep)]/40 mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative`}>
-                    {subject.slug === 'biology' ? (
-                      <div className="w-full h-full relative z-10">
-                        <HeartModelPreview />
-                      </div>
-                    ) : (
-                      <img
-                        src={subjectMeta.img}
-                        alt={subjectMeta.name}
-                        className="w-full h-full object-cover opacity-60 mix-blend-multiply group-hover:scale-105 transition-transform duration-500 saturate-50"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-white/5 group-hover:opacity-0 transition-opacity pointer-events-none"></div>
+                  <div className={`w-full h-48 rounded-[24px] bg-[var(--bg-deep)]/40 mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-[var(--bg-deep)]/60 transition-colors`}>
+                    <img
+                      src={subjectMeta.img}
+                      alt={subjectMeta.name}
+                      className="w-full h-full object-cover opacity-60 mix-blend-multiply group-hover:scale-105 transition-transform duration-500 saturate-50"
+                    />
+                    <div className="absolute inset-0 bg-white/5 group-hover:opacity-0 transition-opacity"></div>
                   </div>
                   <h3 className="text-xl font-display font-semibold mb-3 text-[var(--text-primary)]">{subjectMeta.name}</h3>
                   <p className="text-[var(--text-muted)] text-[15px] leading-relaxed mb-8 flex-1">{subjectMeta.desc}</p>

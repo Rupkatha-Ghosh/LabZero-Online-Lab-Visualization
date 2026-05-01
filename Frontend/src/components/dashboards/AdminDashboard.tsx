@@ -15,13 +15,15 @@ type Tab = 'subjects' | 'topics' | 'elements' | 'molecules' | 'glossary';
 
 interface AdminDashboardProps {
   onBack?: () => void;
+  onDataUpdate?: () => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate }) => {
   const [activeTab, setActiveTab] = useState<Tab>('subjects');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [subjectSortBy, setSubjectSortBy] = useState<'alpha' | 'order'>('order');
 
   // Data states
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -57,6 +59,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [isNewItem, setIsNewItem] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
 
+  const sortedSubjects = useMemo(() => {
+    return [...subjects].sort((a, b) => {
+      if (subjectSortBy === 'alpha') {
+        return a.name.localeCompare(b.name);
+      }
+      return (a.order || 0) - (b.order || 0);
+    });
+  }, [subjects, subjectSortBy]);
+
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
 
   // JSON editor state
@@ -71,6 +82,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   const toggleFolder = (folderName: string) => {
     setExpandedFolders(prev => ({ ...prev, [folderName]: !prev[folderName] }));
+  };
+
+  const updateSortPreference = async (method: 'alpha' | 'order') => {
+    setSubjectSortBy(method);
+    try {
+      await axios.post(`${API_URL}/settings/`, { subject_sort_method: method });
+      if (onDataUpdate) onDataUpdate(); // Trigger refresh in App.tsx
+    } catch (e) {
+      console.error("Failed to save sort preference", e);
+    }
   };
 
   useEffect(() => {
@@ -107,10 +128,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     setLoading(true);
     setError(null);
     try {
+      // Fetch global settings
+      try {
+        const settingsRes = await axios.get(`${API_URL}/settings/`);
+        if (settingsRes.data.subject_sort_method) {
+          setSubjectSortBy(settingsRes.data.subject_sort_method);
+        }
+      } catch (e) {
+        console.error("Failed to fetch settings", e);
+      }
+
       // Always fetch subjects if on topics tab or if subjects are empty
       if (activeTab === 'subjects' || activeTab === 'topics' || subjects.length === 0) {
         const sRes = await axios.get(`${API_URL}/subjects/`);
-        setSubjects(sRes.data.sort((a: any, b: any) => a.name.localeCompare(b.name)));
+        // We will sort them in the render or after setting state if needed, 
+        // but for now let's keep the fetch logic clean.
+        setSubjects(sRes.data);
       }
 
       if (activeTab === 'subjects') {
@@ -163,7 +196,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
     try {
       let endpoint = '';
-      let idField = activeTab === 'elements' ? 'number' : activeTab === 'molecules' ? 'formula' : 'slug';
+      let idField = activeTab === 'subjects' ? 'id' : activeTab === 'topics' ? 'id' : activeTab === 'elements' ? 'number' : activeTab === 'molecules' ? 'formula' : 'slug';
       let method: 'post' | 'put' = isNewItem ? 'post' : 'put';
 
       // For Put requests, we need the identifier in the URL
@@ -201,6 +234,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       setIsEditing(false);
       setEditItem(null);
       fetchData();
+      if (onDataUpdate) onDataUpdate();
     } catch (err: any) {
       const serverMsg = err.response?.data ? JSON.stringify(err.response.data) : "Check JSON format and required fields.";
       setError(`Failed to save item. ${serverMsg}`);
@@ -214,6 +248,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     let newItem: any = {};
     if (activeTab === 'subjects') newItem = {
       name: '', slug: '', icon: 'Brain', color: 'purple',
+      description: '', image_url: '',
+      theme: 'border-[var(--border-glass)]', iconColor: 'text-indigo-500',
       targetClass: ['Class 11', 'Class 12']
     };
     else if (activeTab === 'topics') newItem = {
@@ -312,6 +348,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
           </button>
         </div>
 
+        {activeTab === 'subjects' && (
+          <div className="flex items-center gap-4 mb-6 bg-[var(--bg-panel)] p-4 rounded-3xl border border-[var(--border-glass)]">
+            <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest font-black ml-2">Sort View By:</span>
+            <div className="flex bg-[var(--bg-deep)] p-1 rounded-2xl border border-[var(--border-glass)]">
+              <button
+                onClick={() => updateSortPreference('order')}
+                className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${subjectSortBy === 'order' ? 'bg-indigo-600 text-white shadow-md' : 'text-[var(--text-muted)] hover:text-indigo-500'}`}
+              >
+                Custom Order
+              </button>
+              <button
+                onClick={() => updateSortPreference('alpha')}
+                className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${subjectSortBy === 'alpha' ? 'bg-indigo-600 text-white shadow-md' : 'text-[var(--text-muted)] hover:text-indigo-500'}`}
+              >
+                Alphabetical
+              </button>
+            </div>
+            <div className="flex-1"></div>
+            <p className="text-[10px] font-mono text-indigo-500/70 italic mr-4">Select "Custom Order" to see the sequence as it appears on the Landing Page.</p>
+          </div>
+        )}
+
         {/* Notifications */}
         <AnimatePresence>
           {error && (
@@ -359,14 +417,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {activeTab === 'subjects' && subjects.map((item) => (
+               <tbody>
+                {activeTab === 'subjects' && sortedSubjects.map((item) => (
                   <tr key={item.id} className="border-b border-[var(--border-glass)] hover:bg-indigo-500/5 transition-colors">
                     <td className="p-6">
-                      <div className="font-bold text-lg text-[var(--text-primary)]">{item.name}</div>
-                      <div className="text-xs text-[var(--text-primary)] font-mono mt-1 uppercase opacity-60">{item.slug}</div>
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-12 rounded-xl bg-[var(--bg-deep)] border border-[var(--border-glass)] overflow-hidden flex-shrink-0 shadow-sm">
+                          {item.image_url ? (
+                            <img src={item.image_url} className="w-full h-full object-cover" alt="" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)] opacity-30"><Layers size={20} /></div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded font-black font-mono">#{item.order ?? 0}</span>
+                            <div className="font-bold text-lg text-[var(--text-primary)]">{item.name}</div>
+                          </div>
+                          <div className="text-xs text-[var(--text-primary)] font-mono mt-1 uppercase opacity-60 font-black">{item.slug}</div>
+                        </div>
+                      </div>
                     </td>
-                    <td className="p-6 text-sm text-[var(--text-primary)] font-medium">{item.topics?.length || 0} topics linked</td>
+                    <td className="p-6 text-sm text-[var(--text-primary)] font-medium max-w-xs">
+                      <div className="line-clamp-2 text-[var(--text-primary)]/80 leading-relaxed italic">{item.description || 'No description provided.'}</div>
+                      <div className="text-[10px] font-black text-indigo-500 uppercase mt-2">{item.topics?.length || 0} topics linked</div>
+                    </td>
                     <td className="p-6">
                       <div className="flex flex-wrap gap-2">
                         <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-bold">
@@ -375,6 +450,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                         <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase bg-[var(--bg-deep)] border border-[var(--border-glass)] text-[var(--text-primary)] font-medium">
                           Icon: {item.icon}
                         </span>
+                        <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase bg-indigo-600 text-white font-bold">
+                          {item.theme}
+                        </span>
+                        <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase bg-black/10 dark:bg-white/10 text-[var(--text-primary)] border border-[var(--border-glass)] font-bold">
+                          {item.iconColor}
+                        </span>
                         <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase bg-[var(--bg-deep)] border border-[var(--border-glass)] text-[var(--text-primary)] font-medium">
                           Target: {item.targetClass?.join(', ')}
                         </span>
@@ -382,8 +463,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     </td>
                     <td className="p-6">
                       <div className="flex gap-2">
-                        <button onClick={() => { setEditItem(item); setIsNewItem(false); setIsEditing(true); }} className="p-2 rounded-xl bg-[var(--bg-deep)] hover:bg-indigo-500 hover:text-white text-[var(--text-primary)] transition-all border border-[var(--border-glass)] shadow-sm"><Edit2 size={16} /></button>
-                        <button onClick={() => handleDelete(item.slug)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
+                        <button onClick={() => { 
+                          setEditItem(item); 
+                          setIsNewItem(false); 
+                          setIsEditing(true); 
+                          setClassInput(item.targetClass?.join(', ') || "");
+                        }} className="p-2 rounded-xl bg-[var(--bg-deep)] hover:bg-indigo-500 hover:text-white text-[var(--text-primary)] transition-all border border-[var(--border-glass)] shadow-sm"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(item.id)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -421,7 +507,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                           <td className="p-6">
                             <div className="flex gap-2">
                               <button onClick={() => { setEditItem(item); setIsNewItem(false); setIsEditing(true); }} className="p-2 rounded-xl bg-[var(--bg-deep)] hover:bg-indigo-500 hover:text-white text-[var(--text-primary)] transition-all border border-[var(--border-glass)] shadow-sm"><Edit2 size={16} /></button>
-                              <button onClick={() => handleDelete(item.slug)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
+                              <button onClick={() => handleDelete(item.id)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
                             </div>
                           </td>
                         </tr>
@@ -599,6 +685,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                         <div className="space-y-2">
                           <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Color Theme</label>
                           <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.color || ''} onChange={(e) => setEditItem({ ...editItem, color: e.target.value })} />
+                        </div>
+                        <div className="space-y-2 col-span-2">
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Description</label>
+                          <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-32" value={editItem?.description || ''} onChange={(e) => setEditItem({ ...editItem, description: e.target.value })} />
+                        </div>
+                        <div className="space-y-2 col-span-2">
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Image URL</label>
+                          <input type="url" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.image_url || ''} onChange={(e) => setEditItem({ ...editItem, image_url: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Tailwind Theme Class</label>
+                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.theme || ''} onChange={(e) => setEditItem({ ...editItem, theme: e.target.value })} />
+                        </div>
+                         <div className="space-y-2">
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Tailwind Icon Color Class</label>
+                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.iconColor || ''} onChange={(e) => setEditItem({ ...editItem, iconColor: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Sort Order</label>
+                          <input type="number" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.order ?? 0} onChange={(e) => setEditItem({ ...editItem, order: parseInt(e.target.value) || 0 })} />
+                        </div>
+                        <div className="space-y-2 col-span-2">
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">3D Model URL (.glb)</label>
+                          <input type="text" placeholder="e.g. /models/chemistry.glb" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.model_url || ''} onChange={(e) => setEditItem({ ...editItem, model_url: e.target.value })} />
                         </div>
                         <div className="space-y-2 col-span-2">
                           <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Target Classes (comma separated)</label>

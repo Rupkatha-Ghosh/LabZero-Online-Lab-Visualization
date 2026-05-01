@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import {
   Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen
 } from 'lucide-react';
@@ -54,6 +55,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { getElements } from './services/elementsService';
 import { getMolecules } from './services/moleculesService';
 import { getSubjects } from './services/subjectsService';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 
 const BackgroundLayer = ({ theme }: { theme: 'dark' | 'light' }) => (
@@ -126,7 +129,7 @@ const AppContent: React.FC = () => {
 
 
   // ================= FETCH =================
-  useEffect(() => {
+  const fetchAllData = useCallback(() => {
     getElements()
       .then((data) => {
         if (data?.length) {
@@ -144,14 +147,39 @@ const AppContent: React.FC = () => {
       })
       .catch(console.error);
 
-    getSubjects()
-      .then((data) => {
-        if (data?.length) {
-          setSubjects(data);
-        }
+    // Fetch settings then subjects to ensure correct order
+    axios.get(`${API_URL}/settings/`)
+      .then(sRes => {
+        const sortMethod = sRes.data.subject_sort_method || 'order';
+        getSubjects()
+          .then((data) => {
+            if (data?.length) {
+              const sorted = [...data].sort((a, b) => {
+                if (sortMethod === 'alpha') return a.name.localeCompare(b.name);
+                return (a.order || 0) - (b.order || 0);
+              });
+              setSubjects(sorted);
+            }
+          })
+          .catch(console.error);
       })
-      .catch(console.error);
+      .catch(err => {
+        console.error("Settings fetch failed", err);
+        // Fallback to order
+        getSubjects()
+          .then((data) => {
+            if (data?.length) {
+              const sorted = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
+              setSubjects(sorted);
+            }
+          })
+          .catch(console.error);
+      });
   }, []);
+
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
 
   // ================= THEME =================
   useEffect(() => {
@@ -523,7 +551,7 @@ const AppContent: React.FC = () => {
               )}
               {viewState === ViewState.ADMIN && user && (user.is_staff || user.is_superuser) && (
                 <motion.div key="admin" className="h-full w-full overflow-y-auto">
-                  <AdminDashboard onBack={handleBackToLanding} />
+                  <AdminDashboard onBack={handleBackToLanding} onDataUpdate={fetchAllData} />
                 </motion.div>
               )}
             </AnimatePresence>

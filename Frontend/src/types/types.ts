@@ -81,10 +81,16 @@ export interface Subject {
   id: SubjectId;
   slug: string;
   name: string;
+  description?: string;
+  image_url?: string;
   icon: string;
   color: string;
+  theme?: string;
+  iconColor?: string;
   topics: Topic[];
   targetClass?: string[];
+  order?: number;
+  model_url?: string;
 }
 
 export enum ViewState {

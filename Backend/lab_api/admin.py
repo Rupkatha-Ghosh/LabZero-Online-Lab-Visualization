@@ -32,7 +32,8 @@ class TopicInline(admin.StackedInline):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'icon', 'color', 'target_class')
+    list_display = ('name', 'slug', 'icon', 'color', 'target_class')
+    search_fields = ('name', 'slug')
     inlines = [TopicInline]
 
 @admin.register(Topic)

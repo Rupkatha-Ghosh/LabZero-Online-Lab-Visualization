@@ -1,8 +1,22 @@
 from rest_framework.views import APIView
 from rest_framework import generics
-from .models import Element, Molecule, Subject, Topic
-from .serializers import ElementSerializer, MoleculeSerializer, SubjectSerializer, TopicSerializer
+from .models import Element, Molecule, Subject, Topic, GlobalSettings
+from .serializers import ElementSerializer, MoleculeSerializer, SubjectSerializer, TopicSerializer, GlobalSettingsSerializer
 from rest_framework.response import Response
+
+class GlobalSettingsView(APIView):
+    def get(self, request):
+        settings, created = GlobalSettings.objects.get_or_create(id=1)
+        serializer = GlobalSettingsSerializer(settings)
+        return Response(serializer.data)
+
+    def post(self, request):
+        settings, created = GlobalSettings.objects.get_or_create(id=1)
+        serializer = GlobalSettingsSerializer(settings, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
 
 class APIStatus(APIView):
     def get(self, request):
@@ -33,7 +47,6 @@ class SubjectList(generics.ListCreateAPIView):
 class SubjectDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
-    lookup_field = 'slug'
 
 class TopicList(generics.ListCreateAPIView):
     queryset = Topic.objects.all()
@@ -42,4 +55,3 @@ class TopicList(generics.ListCreateAPIView):
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
-    lookup_field = 'slug'

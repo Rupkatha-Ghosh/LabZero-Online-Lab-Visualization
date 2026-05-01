@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import Element, Molecule, AtomPosition, LonePair, Subject, Topic
+from .models import Element, Molecule, AtomPosition, LonePair, Subject, Topic, GlobalSettings
+
+class GlobalSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GlobalSettings
+        fields = ['subject_sort_method']
 
 class TopicSerializer(serializers.ModelSerializer):
     targetClass = serializers.JSONField(source='target_class')
@@ -10,11 +15,12 @@ class TopicSerializer(serializers.ModelSerializer):
 
 class SubjectSerializer(serializers.ModelSerializer):
     topics = TopicSerializer(many=True, read_only=True)
-    targetClass = serializers.JSONField(source='target_class')
+    targetClass = serializers.JSONField(source='target_class', required=False)
+    iconColor = serializers.CharField(source='icon_color', required=False)
 
     class Meta:
         model = Subject
-        fields = ['id', 'slug', 'name', 'icon', 'color', 'targetClass', 'topics']
+        fields = ['id', 'slug', 'name', 'description', 'image_url', 'model_url', 'icon', 'color', 'theme', 'iconColor', 'targetClass', 'topics', 'order']
 
 
 class ElementSerializer(serializers.ModelSerializer):
