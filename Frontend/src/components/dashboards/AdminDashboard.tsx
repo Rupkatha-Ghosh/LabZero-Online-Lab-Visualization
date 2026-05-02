@@ -791,6 +791,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                           <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Slug (ID)</label>
                           <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all font-mono text-indigo-400" value={editItem?.slug || ''} onChange={(e) => setEditItem({ ...editItem, slug: e.target.value })} />
                         </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Simulation ID</label>
+                          <input 
+                            type="text" 
+                            placeholder="e.g. molecular_structure"
+                            className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all font-mono text-indigo-400" 
+                            value={editItem?.simulation_id || ''} 
+                            onChange={(e) => setEditItem({ ...editItem, simulation_id: e.target.value })} 
+                          />
+                        </div>
                         <div className="space-y-2 col-span-2">
                           <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Description</label>
                           <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-32" value={editItem?.description || ''} onChange={(e) => setEditItem({ ...editItem, description: e.target.value })} />

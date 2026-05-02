@@ -11,7 +11,7 @@ class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Topic
-        fields = ['id', 'subject', 'slug', 'name', 'description', 'targetClass', 'theory', 'order']
+        fields = ['id', 'subject', 'slug', 'name', 'description', 'simulation_id', 'targetClass', 'theory', 'order']
 
 class SubjectSerializer(serializers.ModelSerializer):
     topics = TopicSerializer(many=True, read_only=True)

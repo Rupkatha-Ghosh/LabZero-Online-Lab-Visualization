@@ -72,6 +72,7 @@ export interface Topic {
   name: string;
   description: string;
   theory: string;
+  simulation_id?: string;
   targetClass?: string[];
   subject?: number;
   order?: number;
@@ -172,4 +173,18 @@ export interface GlossaryTerm {
   term: string;
   definition: string;
   subject: SubjectId;
+}
+
+// --- SIMULATION ENGINE TYPES ---
+export interface SimulationProps {
+  elements: ElementData[];
+  molecules: Molecule[];
+  selectedElement?: ElementData;
+  onSelectElement?: (element: ElementData) => void;
+  theme: 'dark' | 'light';
+  controls: {
+    rotation: { dx: number, dy: number };
+    zoom: number;
+  };
+  language: string;
 }

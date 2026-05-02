@@ -112,8 +112,10 @@ class Subject(models.Model):
 class Topic(models.Model):
     subject = models.ForeignKey(Subject, related_name='topics', on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200, null=True, blank=True, help_text="ID used by frontend (e.g., 'atomic_structure')")
+    slug = models.SlugField(max_length=200, null=True, blank=True, help_text="Slug for URL (e.g., 'atomic-structure')")
     description = models.TextField()
+    # The simulation_id maps to our new React Registry
+    simulation_id = models.CharField(max_length=100, null=True, blank=True, help_text="ID for the 3D simulation (e.g., 'molecular_structure')")
     target_class = models.JSONField(help_text="List of target classes, e.g., ['Class 11']")
     theory = models.TextField()
     order = models.IntegerField(default=0, help_text="Order in which this topic appears (lower numbers appear first)")
