@@ -1,4 +1,4 @@
-import React, { useRef, Suspense } from 'react';
+import React, { useRef, Suspense, useLayoutEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, OrbitControls, Sphere, MeshTransmissionMaterial, TorusKnot, Environment, useGLTF, Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -10,22 +10,61 @@ const COLORS = {
     biology: "#8B5CF6",
 };
 
+// --- AUTO-SCALING WRAPPER ---
+// This component ensures every model fills the same amount of space regardless of its original size
+const AutoScaledModel = ({ scene }: { scene: THREE.Group }) => {
+    const groupRef = useRef<THREE.Group>(null);
+
+    useLayoutEffect(() => {
+        if (groupRef.current) {
+            // 1. Compute the bounding box of the model
+            const box = new THREE.Box3().setFromObject(scene);
+            const size = new THREE.Vector3();
+            box.getSize(size);
+
+            // 2. Calculate the scale factor to fit it into a standard volume (approx 4 units)
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scaleFactor = 4.5 / maxDim;
+            scene.scale.setScalar(scaleFactor);
+
+            // 3. Center the model
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            scene.position.x += (scene.position.x - center.x) * scaleFactor;
+            scene.position.y += (scene.position.y - center.y) * scaleFactor;
+            scene.position.z += (scene.position.z - center.z) * scaleFactor;
+        }
+    }, [scene]);
+
+    useFrame(({ clock }) => {
+        if (groupRef.current) {
+            groupRef.current.rotation.y = clock.getElapsedTime() * 0.15;
+        }
+    });
+
+    return (
+        <group ref={groupRef}>
+            <primitive object={scene} />
+        </group>
+    );
+};
+
 // --- PROCEDURAL MODELS (Fallback) ---
 
 const PhysicsModel = () => {
     const meshRef = useRef<THREE.Group>(null);
     useFrame(({ clock }) => {
         if (meshRef.current) {
-            meshRef.current.rotation.y = clock.getElapsedTime() * 0.5;
+            meshRef.current.rotation.y = clock.getElapsedTime() * 0.1;
         }
     });
 
     return (
         <group ref={meshRef}>
-            <Sphere args={[1, 32, 32]}>
+            <Sphere args={[1.5, 32, 32]}>
                 <MeshTransmissionMaterial
                     thickness={0.5}
-                    roughness={0.1}
+                    roughness={0.2}
                     transmission={1}
                     ior={1.2}
                     color={COLORS.physics}
@@ -33,10 +72,10 @@ const PhysicsModel = () => {
                 />
             </Sphere>
             {[...Array(3)].map((_, i) => (
-                <group key={i} rotation={[Math.PI * i / 3, 0, 0]}>
+                <group key={i} rotation={[Math.PI * i / 1.5, 0, 0]}>
                     <mesh rotation={[Math.PI / 2, 0, 0]}>
-                        <torusGeometry args={[1.5, 0.02, 16, 100]} />
-                        <meshStandardMaterial color={COLORS.physics} emissive={COLORS.physics} emissiveIntensity={0.5} />
+                        <torusGeometry args={[3, 0.015, 16, 100]} />
+                        <meshStandardMaterial color={COLORS.physics} emissive={COLORS.physics} emissiveIntensity={0.5} transparent opacity={0.2} />
                     </mesh>
                 </group>
             ))}
@@ -48,17 +87,17 @@ const ChemistryModelProcedural = () => {
     const groupRef = useRef<THREE.Group>(null);
     useFrame(({ clock }) => {
         if (groupRef.current) {
-            groupRef.current.rotation.y = clock.getElapsedTime() * 0.3;
+            groupRef.current.rotation.y = clock.getElapsedTime() * 0.1;
         }
     });
 
     return (
         <group ref={groupRef}>
-            <Sphere args={[0.8, 32, 32]}>
+            <Sphere args={[1.2, 32, 32]}>
                 <meshStandardMaterial color={COLORS.chemistry} roughness={0.1} metalness={0.8} />
             </Sphere>
-            <TorusKnot args={[1.2, 0.05, 128, 32]}>
-                <meshStandardMaterial color={COLORS.chemistry} emissive={COLORS.chemistry} emissiveIntensity={0.5} />
+            <TorusKnot args={[2, 0.05, 128, 32]}>
+                <meshStandardMaterial color={COLORS.chemistry} emissive={COLORS.chemistry} emissiveIntensity={0.4} transparent opacity={0.4} />
             </TorusKnot>
         </group>
     );
@@ -66,13 +105,13 @@ const ChemistryModelProcedural = () => {
 
 const MathModel = () => {
     return (
-        <Float speed={2} rotationIntensity={1} floatIntensity={1}>
-            <TorusKnot args={[0.8, 0.3, 128, 32]}>
+        <Float speed={1} rotationIntensity={0.5} floatIntensity={0.5}>
+            <TorusKnot args={[1.2, 0.4, 128, 32]}>
                 <MeshTransmissionMaterial
-                    thickness={1}
-                    roughness={0}
+                    thickness={1.5}
+                    roughness={0.1}
                     transmission={1}
-                    ior={1.5}
+                    ior={1.3}
                     color={COLORS.math}
                     backside
                 />
@@ -85,104 +124,76 @@ const MathModel = () => {
 
 const DynamicGLBModel = ({ url }: { url: string }) => {
     const { scene } = useGLTF(url, 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/');
-    const groupRef = useRef<THREE.Group>(null);
-
-    useFrame(({ clock }) => {
-        if (groupRef.current) {
-            groupRef.current.rotation.y = clock.getElapsedTime() * 0.3;
-        }
-    });
-
-    return (
-        <group ref={groupRef}>
-            <primitive object={scene} scale={1.0} position={[0, -0.5, 0]} />
-        </group>
-    );
+    return <AutoScaledModel scene={scene} />;
 };
 
 // --- MAIN COMPONENT ---
 
 interface Subject3DCardModelProps {
     subject: string;
-    modelUrl?: string;
-    imageUrl?: string; // New prop for fallback
+    modelUrl?: string; 
+    imageUrl?: string; 
     theme?: 'dark' | 'light';
 }
 
 export const Subject3DCardModel: React.FC<Subject3DCardModelProps> = ({ subject, modelUrl, imageUrl, theme = 'light' }) => {
-    const isBiology = subject.toLowerCase().includes('biology');
     const name = subject.toLowerCase();
 
-    // 1. If we have a custom URL from the backend, show the 3D loader
-    if (modelUrl) {
-        return (
-            <div className="w-full h-full">
-                <Canvas camera={{ position: [0, 0, 4], fov: 40 }} gl={{ alpha: true }}>
-                    <ambientLight intensity={theme === 'dark' ? 0.5 : 1} />
-                    <pointLight position={[10, 10, 10]} intensity={theme === 'dark' ? 1.5 : 1} />
-                    <Suspense fallback={<Html center><div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></Html>}>
-                        <DynamicGLBModel url={modelUrl} />
-                    </Suspense>
-                    <Environment preset="city" />
-                    <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={1} />
-                </Canvas>
-            </div>
-        );
-    }
+    const SceneContent = () => {
+        if (modelUrl) {
+            return (
+                <Suspense fallback={<Html center><div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div></Html>}>
+                    <DynamicGLBModel url={modelUrl} />
+                </Suspense>
+            );
+        }
 
-    // 2. Special case for Biology iframe fallback
-    if (isBiology) {
-        return (
-            <div className="w-full h-full relative overflow-hidden rounded-[24px] bg-white">
-                <div className="absolute top-[-45px] bottom-[-45px] left-[-45px] right-[-45px] pointer-events-auto">
-                    <iframe
-                        title="Heart"
-                        className="w-full h-full border-0"
-                        src="https://sketchfab.com/models/a70c0c47fe4b4bbfabfc8f445365d5a4/embed?autostart=1&transparent=1&ui_controls=0"
-                    />
-                </div>
-            </div>
-        );
-    }
+        if (name.includes('physics')) return <PhysicsModel />;
+        if (name.includes('chemistry')) return <ChemistryModelProcedural />;
+        if (name.includes('math')) return <MathModel />;
+        
+        if (imageUrl) {
+            return (
+                <Html center>
+                    <div className="fixed inset-0 pointer-events-none flex items-center justify-center">
+                        <img 
+                            src={imageUrl} 
+                            alt={subject} 
+                            className={`w-full h-full object-cover blur-3xl scale-125 transition-opacity duration-1000 ${
+                                theme === 'dark' ? 'opacity-20' : 'opacity-40'
+                            }`} 
+                        />
+                    </div>
+                </Html>
+            );
+        }
 
-    // 3. Procedural Fallbacks for core subjects
-    const isCoreSubject = name.includes('physics') || name.includes('chemistry') || name.includes('math');
-    if (isCoreSubject) {
-        return (
-            <div className="w-full h-full">
-                <Canvas camera={{ position: [0, 0, 4], fov: 40 }} gl={{ alpha: true }}>
-                    <ambientLight intensity={theme === 'dark' ? 0.5 : 1} />
-                    <pointLight position={[10, 10, 10]} intensity={theme === 'dark' ? 1.5 : 1} />
-                    {name.includes('physics') && <PhysicsModel />}
-                    {name.includes('chemistry') && <ChemistryModelProcedural />}
-                    {name.includes('math') && <MathModel />}
-                    <Environment preset="city" />
-                    <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={1} />
-                </Canvas>
-            </div>
-        );
-    }
+        return <PhysicsModel />;
+    };
 
-    // 4. Final Fallback: If no model URL and not a core subject, show the image URL
-    if (imageUrl) {
-        return (
-            <div className="w-full h-full relative overflow-hidden rounded-[24px]">
-                <img
-                    src={imageUrl}
-                    alt={subject}
-                    className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-            </div>
-        );
-    }
-
-    // 5. Ultimate Fallback (Physics Model)
     return (
-        <div className="w-full h-full">
-            <Canvas camera={{ position: [0, 0, 4], fov: 40 }} gl={{ alpha: true }}>
-                <ambientLight intensity={0.5} />
-                <PhysicsModel />
+        <div className="w-full h-full bg-transparent">
+            <Canvas 
+                camera={{ position: [0, 0, 10], fov: 45 }} 
+                gl={{ 
+                    alpha: true, 
+                    antialias: true,
+                    powerPreference: "high-performance"
+                }}
+            >
+                <ambientLight intensity={theme === 'dark' ? 0.6 : 1} />
+                <pointLight position={[10, 10, 10]} intensity={theme === 'dark' ? 2 : 3} />
+                <spotLight position={[-10, 20, 10]} angle={0.15} penumbra={1} intensity={theme === 'dark' ? 1 : 1.5} />
+                
+                <SceneContent />
+                
+                <Environment preset="city" />
+                <OrbitControls 
+                    enableZoom={false} 
+                    autoRotate 
+                    autoRotateSpeed={0.5}
+                    enablePan={false}
+                />
             </Canvas>
         </div>
     );

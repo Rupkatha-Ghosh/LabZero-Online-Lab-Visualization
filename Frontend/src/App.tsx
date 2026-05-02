@@ -99,7 +99,11 @@ const AppContent: React.FC = () => {
   const [elements, setElements] = useState<ElementData[]>([]);
   const [selectedElement, setSelectedElement] = useState<ElementData | null>(null);
   const [molecules, setMolecules] = useState<Molecule[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>(() => {
+    // Initial load from cache to prevent layout shift and provide instant results
+    const cached = localStorage.getItem('labzero_subjects_cache');
+    return cached ? JSON.parse(cached) : [];
+  });
 
   const [viewState, setViewState] = useState<ViewState>(ViewState.LANDING);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
@@ -159,18 +163,22 @@ const AppContent: React.FC = () => {
                 return (a.order || 0) - (b.order || 0);
               });
               setSubjects(sorted);
+              // Save to cache
+              localStorage.setItem('labzero_subjects_cache', JSON.stringify(sorted));
+              localStorage.setItem('labzero_last_subject_count', sorted.length.toString());
             }
           })
           .catch(console.error);
       })
       .catch(err => {
         console.error("Settings fetch failed", err);
-        // Fallback to order
         getSubjects()
           .then((data) => {
             if (data?.length) {
               const sorted = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
               setSubjects(sorted);
+              localStorage.setItem('labzero_subjects_cache', JSON.stringify(sorted));
+              localStorage.setItem('labzero_last_subject_count', sorted.length.toString());
             }
           })
           .catch(console.error);
@@ -527,6 +535,7 @@ const AppContent: React.FC = () => {
                     onSelectTopic={handleSelectTopic}
                     onBack={handleBackToLanding}
                     language={language}
+                    theme={theme}
                     onStartQuiz={startQuiz}
                     quizLevel={quizLevel}
                     onLevelChange={setQuizLevel}

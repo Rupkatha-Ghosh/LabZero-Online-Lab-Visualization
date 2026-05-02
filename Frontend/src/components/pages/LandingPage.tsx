@@ -168,44 +168,54 @@ const LandingPage: React.FC<LandingPageProps> = ({
         </Skeleton>
 
         {/* Subject Cards Grid */}
+        {/* Subject Cards Grid */}
         <Skeleton name="landing-cards" loading={subjects.length === 0}>
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {subjects.map((subject, i) => {
-              // All metadata is now fetched dynamically from the backend Subject records
-              const subjectMeta = {
-                name: subject.name,
-                desc: subject.description || `Explore interactive 3D visualizations and virtual experiments for ${subject.name}.`,
-                img: subject.image_url || 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=400',
-                theme: subject.theme || 'border-[var(--border-glass)]',
-                iconColor: subject.iconColor || 'text-indigo-500'
-              };
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[440px]">
+            {subjects.length === 0 ? (
+              // Empty placeholders so the section has height for the Boneyard Skeleton to show
+              Array.from({ length: Number(localStorage.getItem('labzero_last_subject_count')) || 4 }).map((_, i) => (
+                <div key={`ghost-${i}`} className="h-[440px] invisible" />
+              ))
+            ) : (
+              subjects.map((subject, i) => {
+                const subjectMeta = {
+                  name: subject.name,
+                  desc: subject.description || `Explore interactive 3D visualizations and virtual experiments for ${subject.name}.`,
+                  img: subject.image_url || 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=400',
+                  theme: subject.theme || 'border-[var(--border-glass)]',
+                  iconColor: subject.iconColor || 'text-indigo-500'
+                };
 
-              return (
-                <motion.div
-                  key={subject.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  onClick={() => onSelectSubject(subject)}
-                  className="bg-[var(--bg-panel)] rounded-[32px] p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1"
-                >
-                  <div className={`w-full h-48 rounded-[24px] bg-[var(--bg-deep)]/40 mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-[var(--bg-deep)]/60 transition-colors`}>
-                    <img
-                      src={subjectMeta.img}
-                      alt={subjectMeta.name}
-                      className="w-full h-full object-cover opacity-60 mix-blend-multiply group-hover:scale-105 transition-transform duration-500 saturate-50"
-                    />
-                    <div className="absolute inset-0 bg-white/5 group-hover:opacity-0 transition-opacity"></div>
-                  </div>
-                  <h3 className="text-xl font-display font-semibold mb-3 text-[var(--text-primary)]">{subjectMeta.name}</h3>
-                  <p className="text-[var(--text-muted)] text-[15px] leading-relaxed mb-8 flex-1">{subjectMeta.desc}</p>
-                  <div className={`flex items-center text-sm font-semibold ${subjectMeta.iconColor} p-0 m-0 uppercase tracking-wide gap-2 group-hover:gap-3 transition-all`}>
-                    Explore <ArrowRight size={16} strokeWidth={2.5} />
-                  </div>
-                </motion.div>
-              );
-            })}
+                return (
+                  <motion.div
+                    key={subject.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    onClick={() => onSelectSubject(subject)}
+                    className="bg-[var(--bg-panel)] rounded-[32px] p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1 h-[440px]"
+                  >
+                    <div className={`w-full h-48 rounded-[24px] bg-[var(--bg-deep)]/40 mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-[var(--bg-deep)]/60 transition-colors`}>
+                      <img
+                        src={subjectMeta.img}
+                        alt={subjectMeta.name}
+                        className="w-full h-full object-cover opacity-60 mix-blend-multiply group-hover:scale-105 transition-transform duration-500 saturate-50"
+                      />
+                      <div className="absolute inset-0 bg-white/5 group-hover:opacity-0 transition-opacity"></div>
+                    </div>
+
+                    <div className="flex flex-col flex-1">
+                      <h3 className="text-xl font-display font-semibold mb-3 text-[var(--text-primary)]">{subjectMeta.name}</h3>
+                      <p className="text-[var(--text-muted)] text-[15px] leading-relaxed mb-8 flex-1">{subjectMeta.desc}</p>
+                      <div className={`flex items-center text-sm font-semibold ${subjectMeta.iconColor} p-0 m-0 uppercase tracking-wide gap-2 group-hover:gap-3 transition-all`}>
+                        Explore <ArrowRight size={16} strokeWidth={2.5} />
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
           </section>
         </Skeleton>
 
