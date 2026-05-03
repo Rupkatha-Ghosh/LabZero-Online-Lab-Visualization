@@ -192,7 +192,7 @@ const HoldRing: React.FC<{ progress: number; color: string }> = ({ progress, col
 // ─────────────────────────────────────────────────────────────────────────────
 const ConfBar: React.FC<{ value: number; color: string }> = ({ value, color }) => {
   const sp = useSpring(value, { stiffness: 180, damping: 22 });
-  const w  = useTransform(sp, [0, 1], ['0%', '100%']);
+  const w = useTransform(sp, [0, 1], ['0%', '100%']);
   useEffect(() => { sp.set(value); }, [value, sp]);
   return (
     <div className="w-full rounded-full overflow-hidden" style={{ height: 3, background: 'rgba(255,255,255,0.06)' }}>
@@ -350,39 +350,39 @@ const GestureController: React.FC<GestureControllerProps> = ({
   onToggleTheme, onResetZoom, onZoom,
   onPositionChange, isActive, onToggle,
 }) => {
-  const videoRef     = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const gestureRecRef = useRef<GestureRecognizer | null>(null);
 
   // Non-state refs (no re-render needed)
-  const lastVideoTimeRef  = useRef(-1);
-  const lastProcTimeRef   = useRef(0);
-  const lastHandPosRef    = useRef<{ x: number; y: number } | null>(null);
-  const trailIdRef        = useRef(0);
-  const holdStateRef      = useRef<Record<string, { startMs: number; fired: boolean }>>({});
-  const swipeBufRef       = useRef<SwipeSample[]>([]);
-  const lastSwipeTimeRef  = useRef(0);
-  const lastPinchDistRef  = useRef<number | null>(null);
+  const lastVideoTimeRef = useRef(-1);
+  const lastProcTimeRef = useRef(0);
+  const lastHandPosRef = useRef<{ x: number; y: number } | null>(null);
+  const trailIdRef = useRef(0);
+  const holdStateRef = useRef<Record<string, { startMs: number; fired: boolean }>>({});
+  const swipeBufRef = useRef<SwipeSample[]>([]);
+  const lastSwipeTimeRef = useRef(0);
+  const lastPinchDistRef = useRef<number | null>(null);
   const raiseHandFiredRef = useRef(false);
 
-  const TARGET_FPS           = 60;
-  const FRAME_INTERVAL       = 1000 / TARGET_FPS;
-  const SMOOTH               = 0.45;
-  const SAFE                 = 0.05;
-  const PINCH_THRESHOLD      = 0.07;   // normalised landmark units
-  const SWIPE_VEL_THRESHOLD  = 0.55;   // units / second
-  const SWIPE_DEBOUNCE       = 800;    // ms between swipes
+  const TARGET_FPS = 60;
+  const FRAME_INTERVAL = 1000 / TARGET_FPS;
+  const SMOOTH = 0.45;
+  const SAFE = 0.05;
+  const PINCH_THRESHOLD = 0.07;   // normalised landmark units
+  const SWIPE_VEL_THRESHOLD = 0.55;   // units / second
+  const SWIPE_DEBOUNCE = 800;    // ms between swipes
 
   // UI state
-  const [isLoaded,      setIsLoaded]      = useState(false);
-  const [showGuide,     setShowGuide]     = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const [currentGesture, setCurrentGesture] = useState<GestureId>('None');
-  const [confidence,    setConfidence]    = useState(0);
-  const [handPosition,  setHandPosition]  = useState<{ x: number; y: number } | null>(null);
-  const [trail,         setTrail]         = useState<TrailPoint[]>([]);
-  const [activeMode,    setActiveMode]    = useState('IDLE');
-  const [justFired,     setJustFired]     = useState<GestureId | null>(null);
-  const [holdProgress,  setHoldProgress]  = useState<Record<string, number>>({});
-  const [fps,           setFps]           = useState(0);
+  const [confidence, setConfidence] = useState(0);
+  const [handPosition, setHandPosition] = useState<{ x: number; y: number } | null>(null);
+  const [trail, setTrail] = useState<TrailPoint[]>([]);
+  const [activeMode, setActiveMode] = useState('IDLE');
+  const [justFired, setJustFired] = useState<GestureId | null>(null);
+  const [holdProgress, setHoldProgress] = useState<Record<string, number>>({});
+  const [fps, setFps] = useState(0);
   const fpsRef = useRef({ n: 0, last: Date.now() });
 
   // ── Init recognizer ──────────────────────────────────────────────────────
@@ -443,20 +443,20 @@ const GestureController: React.FC<GestureControllerProps> = ({
       const vid = videoRef.current;
       if (vid.currentTime !== lastVideoTimeRef.current && vid.videoWidth > 0) {
         lastVideoTimeRef.current = vid.currentTime;
-        lastProcTimeRef.current  = now;
+        lastProcTimeRef.current = now;
 
         try {
           const res = gestureRecRef.current.recognizeForVideo(vid, now);
 
           if (res.gestures.length > 0) {
-            const top        = res.gestures[0][0];
+            const top = res.gestures[0][0];
             const rawGesture = top.categoryName as GestureId;
-            const conf       = top.score ?? 0;
-            const lm         = res.landmarks[0];
-            const indexTip   = lm[8];
-            const thumbTip   = lm[4];
+            const conf = top.score ?? 0;
+            const lm = res.landmarks[0];
+            const indexTip = lm[8];
+            const thumbTip = lm[4];
 
-            const pinchDist  = Math.hypot(
+            const pinchDist = Math.hypot(
               (1 - thumbTip.x) - (1 - indexTip.x),
               thumbTip.y - indexTip.y,
             );
@@ -467,14 +467,14 @@ const GestureController: React.FC<GestureControllerProps> = ({
                 ? (lm[9] ?? lm[0])
                 : gesture === 'Pinch'
                   ? {
-                      x: (thumbTip.x + indexTip.x) / 2,
-                      y: (thumbTip.y + indexTip.y) / 2,
-                    }
+                    x: (thumbTip.x + indexTip.x) / 2,
+                    y: (thumbTip.y + indexTip.y) / 2,
+                  }
                   : indexTip;
 
             // Safe-area guard
             if (trackingPoint.x < SAFE || trackingPoint.x > 1 - SAFE ||
-                trackingPoint.y < SAFE || trackingPoint.y > 1 - SAFE) {
+              trackingPoint.y < SAFE || trackingPoint.y > 1 - SAFE) {
               raf = requestAnimationFrame(loop); return;
             }
 
@@ -482,9 +482,9 @@ const GestureController: React.FC<GestureControllerProps> = ({
             const rawX = 1 - trackingPoint.x;
             const rawY = trackingPoint.y;
             const prev = lastHandPosRef.current;
-            const sx   = prev ? prev.x + (rawX - prev.x) * SMOOTH : rawX;
-            const sy   = prev ? prev.y + (rawY - prev.y) * SMOOTH : rawY;
-            const pos  = { x: sx, y: sy };
+            const sx = prev ? prev.x + (rawX - prev.x) * SMOOTH : rawX;
+            const sy = prev ? prev.y + (rawY - prev.y) * SMOOTH : rawY;
+            const pos = { x: sx, y: sy };
 
             setCurrentGesture(gesture);
             setConfidence(conf);
@@ -502,7 +502,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
                 holdStateRef.current = {};                          // reset others
                 holdStateRef.current[gesture] = { startMs: now, fired: false };
               }
-              const held     = now - holdStateRef.current[gesture].startMs;
+              const held = now - holdStateRef.current[gesture].startMs;
               const progress = Math.min(held / holdDef.holdMs, 1);
               setHoldProgress({ [gesture]: progress });
 
@@ -519,9 +519,9 @@ const GestureController: React.FC<GestureControllerProps> = ({
                     onSelect?.();
                     break;
                   }
-                  case 'Thumb_Down':  onBack?.();          break;
-                  case 'Victory':     onToggleTheme?.(); break;
-                  case 'ILoveYou':    onResetZoom?.();      break;
+                  case 'Thumb_Down': onBack?.(); break;
+                  case 'Victory': onToggleTheme?.(); break;
+                  case 'ILoveYou': onResetZoom?.(); break;
                 }
               }
             } else {
@@ -562,9 +562,9 @@ const GestureController: React.FC<GestureControllerProps> = ({
 
               if (swipeBufRef.current.length >= 4 && now - lastSwipeTimeRef.current > SWIPE_DEBOUNCE) {
                 const first = swipeBufRef.current[0];
-                const last  = swipeBufRef.current[swipeBufRef.current.length - 1];
-                const dt    = (last.t - first.t) / 1000;
-                const vel   = dt > 0 ? (last.x - first.x) / dt : 0;
+                const last = swipeBufRef.current[swipeBufRef.current.length - 1];
+                const dt = (last.t - first.t) / 1000;
+                const vel = dt > 0 ? (last.x - first.x) / dt : 0;
 
                 if (Math.abs(vel) > SWIPE_VEL_THRESHOLD) {
                   lastSwipeTimeRef.current = now;
@@ -597,7 +597,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
             }
 
             lastPinchDistRef.current = isPinching ? pinchDist : null;
-            lastHandPosRef.current   = pos;
+            lastHandPosRef.current = pos;
 
           } else {
             // No hand
@@ -607,11 +607,11 @@ const GestureController: React.FC<GestureControllerProps> = ({
             setActiveMode('IDLE');
             setTrail([]);
             setHoldProgress({});
-            holdStateRef.current          = {};
-            swipeBufRef.current           = [];
-            raiseHandFiredRef.current     = false;
-            lastHandPosRef.current        = null;
-            lastPinchDistRef.current      = null;
+            holdStateRef.current = {};
+            swipeBufRef.current = [];
+            raiseHandFiredRef.current = false;
+            lastHandPosRef.current = null;
+            lastPinchDistRef.current = null;
             onPositionChange?.(null);
             onLaserPointer?.(null);
           }
@@ -639,12 +639,12 @@ const GestureController: React.FC<GestureControllerProps> = ({
       stream?.getTracks().forEach(t => t.stop());
     };
   }, [isActive, onSelect, onBack, onRaiseHand, onScroll, onNextSlide, onPrevSlide,
-      onRotate, onLaserPointer, onAnnotate, onToggleTheme, onResetZoom, onZoom]);
+    onRotate, onLaserPointer, onAnnotate, onToggleTheme, onResetZoom, onZoom]);
 
   // ── Derived ──────────────────────────────────────────────────────────────
-  const activeDef  = GESTURE_DEFS.find(g => g.id === currentGesture);
+  const activeDef = GESTURE_DEFS.find(g => g.id === currentGesture);
   const activeColor = activeDef?.color ?? '#6366f1';
-  const activeGlow  = activeDef?.glow  ?? 'rgba(99,102,241,0.5)';
+  const activeGlow = activeDef?.glow ?? 'rgba(99,102,241,0.5)';
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -676,7 +676,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
       <GestureToast gestureId={justFired} />
 
       {/* ── HUD bar ───────────────────────────────────────────────────────── */}
-      <div className={`fixed left-4 md:left-10 z-[100] transition-all duration-500 ${isActive ? 'bottom-28 md:bottom-10' : 'bottom-10'}`}>
+      <div className={`fixed left-4 md:left-4 z-[100] transition-all duration-500 ${isActive ? 'bottom-24 md:bottom-32' : 'bottom-20'}`}>
 
         <AnimatePresence>
           {showGuide && <GestureGuide onClose={() => setShowGuide(false)} />}
@@ -766,7 +766,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
                   {GESTURE_DEFS.map(g => {
                     const isOn = currentGesture === g.id ||
                       (g.id === 'Palm_Swipe' && currentGesture === 'Open_Palm');
-                    const hp   = holdProgress[g.id] ?? 0;
+                    const hp = holdProgress[g.id] ?? 0;
                     const Icon = g.icon;
                     return (
                       <motion.div key={g.id}
@@ -775,10 +775,10 @@ const GestureController: React.FC<GestureControllerProps> = ({
                         transition={isOn && !g.holdMs ? { duration: 0.65, repeat: Infinity } : {}}>
                         <div className="relative w-11 h-11 rounded-xl flex items-center justify-center"
                           style={{
-                            background:  isOn ? `${g.color}22` : 'rgba(255,255,255,0.04)',
-                            border:      `1px solid ${isOn ? g.color + '62' : 'rgba(255,255,255,0.07)'}`,
-                            boxShadow:   isOn ? `0 0 18px ${g.glow}, inset 0 0 8px ${g.color}10` : 'none',
-                            transition:  'all 0.22s ease',
+                            background: isOn ? `${g.color}22` : 'rgba(255,255,255,0.04)',
+                            border: `1px solid ${isOn ? g.color + '62' : 'rgba(255,255,255,0.07)'}`,
+                            boxShadow: isOn ? `0 0 18px ${g.glow}, inset 0 0 8px ${g.color}10` : 'none',
+                            transition: 'all 0.22s ease',
                           }}>
                           <Icon size={15} style={{ color: isOn ? g.color : '#2d3748', transition: 'color 0.2s' }} />
                           {/* Hold ring */}

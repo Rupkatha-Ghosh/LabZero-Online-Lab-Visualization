@@ -1,119 +1,68 @@
-﻿import React from 'react';
-import { motion } from 'framer-motion';
-import { Github, Twitter, Linkedin, Mail, ExternalLink, Globe, Shield, Scale } from 'lucide-react';
-import { Logo } from '../common/Logo';
-import { Skeleton } from 'boneyard-js/react';
+import React from 'react';
+import { Logo } from './Logo';
 
-interface FooterProps {
-  skeletonDebug?: boolean;
-}
-
-export const Footer: React.FC<FooterProps> = ({ skeletonDebug = false }) => {
-  const currentYear = new Date().getFullYear();
-
-  const footerLinks = [
-    {
-      title: 'Simulations',
-      links: [
-        { name: 'Physics Engine', href: '#' },
-        { name: 'Chemistry Lab', href: '#' },
-        { name: 'Biology Explorer', href: '#' },
-        { name: 'Math Visualizer', href: '#' },
-      ],
-    },
-    {
-      title: 'Platform',
-      links: [
-        { name: 'Features', href: '#' },
-        { name: 'Pricing', href: '#' },
-        { name: 'Dashboard', href: '#' },
-        { name: 'Glossary', href: '#' },
-      ],
-    },
-    {
-      title: 'Resources',
-      links: [
-        { name: 'Documentation', href: '#' },
-        { name: 'Tutorials', href: '#' },
-        { name: 'Community', href: '#' },
-        { name: 'Blog', href: '#' },
-      ],
-    },
-  ];
-
+const Footer: React.FC = () => {
   return (
-    <Skeleton name="landing-footer" loading={false}>
-      <footer className="relative bg-[var(--bg-deep)] border-t border-[var(--border-glass)] pt-24 pb-12 overflow-hidden">
-        {/* Background Glow */}
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[var(--color-primary)]/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-[var(--color-secondary)]/5 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 mb-20">
-
-            {/* Brand Column */}
-            <div className="lg:col-span-4 space-y-6">
-              <Logo size="lg" />
-              <p className="text-[var(--text-muted)] text-[15px] leading-relaxed max-w-sm">
-                The world's most advanced 3D virtual laboratory. Empowering the next generation of scientists with immersive, interactive learning experiences.
-              </p>
-              <div className="flex items-center gap-4 pt-2">
-                {[Twitter, Github, Linkedin, Mail].map((Icon, i) => (
-                  <a
-                    key={i}
-                    href="#"
-                    className="w-10 h-10 rounded-full border border-[var(--border-glass)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-primary)]/5 transition-all"
-                  >
-                    <Icon size={18} />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Links Columns */}
-            <div className="lg:col-span-1" /> {/* Spacer */}
-
-            <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
-              {footerLinks.map((section, i) => (
-                <div key={i} className="space-y-6">
-                  <h4 className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-widest">{section.title}</h4>
-                  <ul className="space-y-4">
-                    {section.links.map((link, j) => (
-                      <li key={j}>
-                        <a href={link.href} className="text-[14px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1.5 group">
-                          {link.name}
-                          <ExternalLink size={12} className="opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+    <footer className="relative z-10 mt-20 pt-32 pb-12 px-12 bg-gradient-to-t from-slate-950 to-transparent">
+      <div className="max-w-[2000px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-16 mb-20">
+        <div className="md:col-span-5 space-y-8">
+          <div className="flex items-center gap-4">
+            <Logo size="lg" lightText={true} />
           </div>
-
-          {/* Bottom Bar */}
-          <div className="pt-12 border-t border-[var(--border-glass)] flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2 text-[13px] text-[var(--text-muted)]">
-              <span>© {currentYear} LabZero Analytics Inc.</span>
-              <span className="hidden md:inline text-[var(--border-glass)]">•</span>
-              <span className="hidden md:inline font-mono text-[10px] opacity-50 tracking-wider">SEC_ENV_ENABLED</span>
-            </div>
-
-            <div className="flex items-center gap-8 text-[13px] text-[var(--text-muted)]">
-              <a href="#" className="hover:text-[var(--text-primary)] transition-colors flex items-center gap-1.5">
-                <Shield size={14} /> Privacy
+          <p className="text-lg text-white/40 leading-relaxed font-bold tracking-tight">
+            Architecting the next generation of scientific education through real-time quantum simulations and neural collaboration interfaces.
+          </p>
+          <div className="flex gap-6 relative z-[200] pointer-events-auto">
+            {['twitter', 'github', 'discord', 'linkedin'].map(social => (
+              <a key={social} href="#" className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 hover:bg-indigo-600 hover:text-white hover:text-opacity-100 transition-all border border-white/5 group">
+                <i className={`fab fa-${social} transition-transform group-hover:scale-110`}></i>
               </a>
-              <a href="#" className="hover:text-[var(--text-primary)] transition-colors flex items-center gap-1.5">
-                <Scale size={14} /> Terms
-              </a>
-              <a href="#" className="hover:text-[var(--text-primary)] transition-colors flex items-center gap-1.5">
-                <Globe size={14} /> System Status
-              </a>
-            </div>
+            ))}
           </div>
         </div>
-      </footer>
-    </Skeleton>
+
+        <div className="md:col-span-2 space-y-6">
+          <h5 className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 opacity-80 uppercase tracking-[0.4em] text-primary">Product</h5>
+          <div className="flex flex-col gap-4">
+            {['Simulations', 'Curriculum', 'Certification', 'Pricing'].map(link => (
+              <a key={link} href="#" className="text-sm font-bold text-white/40 hover:text-indigo-500 hover:text-opacity-100 transition-colors tracking-tight">{link}</a>
+            ))}
+          </div>
+        </div>
+
+        <div className="md:col-span-2 space-y-6">
+          <h5 className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 opacity-80 uppercase tracking-[0.4em] text-primary">Company</h5>
+          <div className="flex flex-col gap-4">
+            {['About Us', 'Careers', 'Brand Guide', 'Legal'].map(link => (
+              <a key={link} href="#" className="text-sm font-bold text-white/40 hover:text-indigo-500 hover:text-opacity-100 transition-colors tracking-tight">{link}</a>
+            ))}
+          </div>
+        </div>
+
+        <div className="md:col-span-3 space-y-8">
+          <h5 className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 opacity-80 uppercase tracking-[0.4em] text-primary">Transmission</h5>
+          <p className="text-xs text-white/40 leading-relaxed font-black uppercase tracking-widest">Subscribe to the latest updates in LabZero.</p>
+          <div className="flex gap-2">
+            <input type="text" placeholder="EMAIL ADDRESS" className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-white/40 uppercase tracking-widest" />
+            <button className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-950 hover:scale-105 active:scale-95 transition-all shadow-xl">
+              <i className="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-[2000px] mx-auto pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+        <p className="text-[10px] font-normal text-white/55 uppercase tracking-[0.4em]">© 2024 LABZERO. ALL RIGHTS RESERVED IN SUB-QUANTUM DIMENSIONS.</p>
+        <div className="flex items-center gap-8">
+          <span className="text-[10px] font-black text-primary tracking-[0.4em] uppercase animate-pulse">Uptime: 99.99%</span>
+          <div className="flex gap-8">
+            <a href="#" className="text-[10px] font-normal text-white/45 uppercase tracking-[0.4em] hover:text-indigo-500 hover:text-opacity-100 transition-colors">Privacy</a>
+            <a href="#" className="text-[10px] font-normal text-white/45 uppercase tracking-[0.4em] hover:text-indigo-500 hover:text-opacity-100 transition-colors">Terms</a>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 };
+
+export default Footer;

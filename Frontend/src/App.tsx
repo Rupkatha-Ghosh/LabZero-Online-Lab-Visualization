@@ -408,7 +408,7 @@ const AppContent: React.FC = () => {
 
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className={`fixed bottom-8 right-28 w-16 h-16 rounded-2xl hidden md:flex items-center justify-center transition-all duration-500 z-[110] ${showSettings ? 'bg-indigo-500 rotate-90' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
+              className={`fixed bottom-20 right-24 w-16 h-16 rounded-2xl hidden md:flex items-center justify-center transition-all duration-500 z-[110] ${showSettings ? 'bg-indigo-500 rotate-90' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
             >
               <Settings size={24} className={showSettings ? 'text-white' : 'text-slate-400'} />
             </button>

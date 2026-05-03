@@ -5,9 +5,15 @@ interface LogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   hideText?: boolean;
+  lightText?: boolean;
 }
 
-export const Logo: React.FC<LogoProps> = ({ className = '', size = 'md', hideText = false }) => {
+export const Logo: React.FC<LogoProps> = ({
+  className = '',
+  size = 'md',
+  hideText = false,
+  lightText = false
+}) => {
   const sizes = {
     sm: { box: 'w-6 h-6', text: 'text-lg', dot: 'w-1 h-1', stroke: 2 },
     md: { box: 'w-8 h-8', text: 'text-xl', dot: 'w-1.5 h-1.5', stroke: 2.5 },
@@ -102,7 +108,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 'md', hideTex
           <motion.span
             className={`${current.text} font-display font-black tracking-tighter leading-none flex items-center`}
           >
-            <span className="text-[#0F172A]">LAB</span>
+            <span className={lightText ? 'text-white' : 'text-[#0F172A]'}>LAB</span>
             <span className="relative ml-0.5">
               <span className="text-transparent bg-clip-text bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)]">ZERO</span>
               <motion.div
@@ -116,7 +122,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 'md', hideTex
           </motion.span>
           {size === 'lg' && (
             <motion.span
-              className="text-[10px] font-bold tracking-[0.4em] text-[#94A3B8] uppercase mt-1.5"
+              className={`text-[10px] font-bold tracking-[0.4em] uppercase mt-1.5 ${lightText ? 'text-white/40' : 'text-[#94A3B8]'}`}
             >
               Synthesis of Thought
             </motion.span>

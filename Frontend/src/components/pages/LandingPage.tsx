@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { Language, translations } from '../../services/translations';
 import { Hero3DModel } from '../models/Hero3DModel.tsx';
 import { Logo } from '../common/Logo';
-import { Footer } from '../common/Footer';
+import Footer from '../common/Footer';
 import { Skeleton } from 'boneyard-js/react';
 import { ElectricFieldSimulation, InverseSquareGraph } from '../models/ElectricField';
 
@@ -319,17 +319,17 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { title: 'Wave Interference', tag: 'Physics', bg: 'bg-[var(--color-primary)]/5', border: 'border-[var(--color-primary)]/20', iconUrl: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&q=80&w=400' },
-                { title: 'Reaction Kinetics', tag: 'Chemistry', bg: 'bg-[var(--color-secondary)]/5', border: 'border-[var(--color-secondary)]/20', iconUrl: 'https://images.unsplash.com/photo-1629904853716-f0bc54eea481?auto=format&fit=crop&q=80&w=400' },
-                { title: '3D Surface Plot', tag: 'Math', bg: 'bg-[var(--color-accent)]/5', border: 'border-[var(--color-accent)]/20', iconUrl: 'https://images.unsplash.com/photo-1614850715649-1d0106293cb1?auto=format&fit=crop&q=80&w=400' },
+                { title: 'Wave Interference', tag: 'Physics', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20', hoverBorder: 'hover:border-indigo-500/40', text: 'text-indigo-500', iconUrl: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&q=80&w=400' },
+                { title: 'Reaction Kinetics', tag: 'Chemistry', bg: 'bg-rose-500/10', border: 'border-rose-500/20', hoverBorder: 'hover:border-rose-500/40', text: 'text-rose-500', iconUrl: 'https://images.unsplash.com/photo-1629904853716-f0bc54eea481?auto=format&fit=crop&q=80&w=400' },
+                { title: '3D Surface Plot', tag: 'Math', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', hoverBorder: 'hover:border-emerald-500/40', text: 'text-emerald-500', iconUrl: 'https://images.unsplash.com/photo-1614850715649-1d0106293cb1?auto=format&fit=crop&q=80&w=400' },
               ].map((sim, i) => (
-                <div key={i} className={`rounded-[32px] p-8 border ${sim.border} ${sim.bg} backdrop-blur-md relative overflow-hidden flex flex-col h-64 cursor-pointer group shadow-sm transition-all duration-300 hover:shadow-lg`}>
+                <div key={i} className={`rounded-[32px] p-8 border ${sim.border} ${sim.bg} backdrop-blur-md relative overflow-hidden flex flex-col h-64 cursor-pointer group shadow-sm transition-all duration-300 hover:shadow-lg ${sim.hoverBorder}`}>
                   <div className="relative z-10">
                     <h4 className="font-display font-semibold text-lg text-[var(--text-primary)]">{sim.title}</h4>
                     <span className="text-xs font-medium text-[var(--text-muted)] mt-1 block">{sim.tag}</span>
                   </div>
                   <div className="mt-auto relative z-10">
-                    <div className="w-12 h-12 bg-[var(--bg-deep)]/20 border border-[var(--border-glass)] backdrop-blur-md rounded-full flex items-center justify-center shadow-md text-[var(--text-primary)] group-hover:scale-110 transition-transform">
+                    <div className={`w-12 h-12 bg-white/10 dark:bg-[var(--bg-deep)]/20 border border-white/20 dark:border-[var(--border-glass)] backdrop-blur-md rounded-full flex items-center justify-center shadow-md ${sim.text} group-hover:scale-110 transition-transform`}>
                       <Play size={16} fill="currentColor" className="ml-1" />
                     </div>
                   </div>
