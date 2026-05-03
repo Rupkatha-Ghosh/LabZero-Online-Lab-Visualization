@@ -44,16 +44,25 @@ export class GlossaryService {
       const response = await axios.get<GlossaryTerm[]>(`${API_URL}/glossary/terms/`);
       const remoteTerms = response.data;
 
-      if (remoteTerms && remoteTerms.length > 0) {
+      if (remoteTerms) {
         console.log(`Syncing ${remoteTerms.length} terms from backend...`);
         
         const transaction = this.db!.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
 
-        // Update each term from the backend
+        // 1. Clear the existing store to remove deleted items
+        await new Promise<void>((resolve, reject) => {
+          const clearRequest = store.clear();
+          clearRequest.onsuccess = () => resolve();
+          clearRequest.onerror = () => reject(clearRequest.error);
+        });
+
+        // 2. Populate with fresh data from backend
         for (const term of remoteTerms) {
-          store.put(term);
+          store.add(term);
         }
+        
+        console.log("Glossary synchronization complete.");
       }
     } catch (error) {
       console.log("Offline mode: Using cached glossary data.");

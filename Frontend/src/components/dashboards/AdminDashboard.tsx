@@ -25,6 +25,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
   const [success, setSuccess] = useState<string | null>(null);
   const [subjectSortBy, setSubjectSortBy] = useState<'alpha' | 'order'>('order');
 
+  // Deletion security states
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: any; name: string; endpoint: string } | null>(null);
+  const [securityCode, setSecurityCode] = useState("");
+  const [userInput, setUserInput] = useState("");
+  const [isDeleting, setIsDeletingProcess] = useState(false);
+
+  // Multi-select states
+  const [selectedIds, setSelectedIds] = useState<any[]>([]);
+  const [itemsToBulkDelete, setItemsToBulkDelete] = useState<{ id: any; name: string; endpoint: string }[]>([]);
+
   // Data states
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -169,22 +180,115 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
     }
   };
 
-  const handleDelete = async (id: any) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return;
+  const generateSecurityCode = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const generateBlock = () => {
+      let result = '';
+      for (let i = 0; i < 3; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    };
+    return `${generateBlock()}-${generateBlock()}-${generateBlock()}`;
+  };
 
-    try {
+  const startDelete = (id: any, name: string) => {
+    let endpoint = '';
+    if (activeTab === 'subjects') endpoint = `${API_URL}/subjects/${id}/`;
+    else if (activeTab === 'topics') endpoint = `${API_URL}/topics/${id}/`;
+    else if (activeTab === 'elements') endpoint = `${API_URL}/elements/${id}/`;
+    else if (activeTab === 'molecules') endpoint = `${API_URL}/molecules/${id}/`;
+    else if (activeTab === 'glossary') endpoint = `${API_URL}/glossary/terms/${id}/`;
+
+    setItemToDelete({ id, name, endpoint });
+    setItemsToBulkDelete([]); // Clear bulk if single delete
+    setSecurityCode(generateSecurityCode());
+    setUserInput("");
+    setShowDeleteConfirm(true);
+  };
+
+  const startBulkDelete = () => {
+    if (selectedIds.length === 0) return;
+    
+    const items = selectedIds.map(id => {
+      let name = '';
       let endpoint = '';
-      if (activeTab === 'subjects') endpoint = `${API_URL}/subjects/${id}/`;
-      else if (activeTab === 'topics') endpoint = `${API_URL}/topics/${id}/`;
-      else if (activeTab === 'elements') endpoint = `${API_URL}/elements/${id}/`;
-      else if (activeTab === 'molecules') endpoint = `${API_URL}/molecules/${id}/`;
-      else if (activeTab === 'glossary') endpoint = `${API_URL}/glossary/terms/${id}/`;
+      
+      if (activeTab === 'subjects') {
+        const item = subjects.find(s => s.id === id);
+        name = item?.name || String(id);
+        endpoint = `${API_URL}/subjects/${id}/`;
+      } else if (activeTab === 'topics') {
+        const item = topics.find(t => t.id === id);
+        name = item?.name || String(id);
+        endpoint = `${API_URL}/topics/${id}/`;
+      } else if (activeTab === 'elements') {
+        const item = elements.find(e => e.number === id);
+        name = item?.name || String(id);
+        endpoint = `${API_URL}/elements/${id}/`;
+      } else if (activeTab === 'molecules') {
+        const item = molecules.find(m => m.formula === id);
+        name = item?.name || String(id);
+        endpoint = `${API_URL}/molecules/${id}/`;
+      } else if (activeTab === 'glossary') {
+        const item = terms.find(t => t.id === id);
+        name = item?.term || String(id);
+        endpoint = `${API_URL}/glossary/terms/${id}/`;
+      }
+      
+      return { id, name, endpoint };
+    });
 
-      await axios.delete(endpoint);
-      setSuccess("Item deleted successfully!");
+    setItemsToBulkDelete(items);
+    setItemToDelete(null); // Clear single if bulk
+    setSecurityCode(generateSecurityCode());
+    setUserInput("");
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if ((!itemToDelete && itemsToBulkDelete.length === 0) || userInput !== securityCode) return;
+
+    setIsDeletingProcess(true);
+    try {
+      if (itemToDelete) {
+        await axios.delete(itemToDelete.endpoint);
+        setSuccess(`${itemToDelete.name} has been deleted.`);
+      } else {
+        await Promise.all(itemsToBulkDelete.map(item => axios.delete(item.endpoint)));
+        setSuccess(`${itemsToBulkDelete.length} items have been deleted.`);
+      }
+      
+      setShowDeleteConfirm(false);
+      setItemToDelete(null);
+      setItemsToBulkDelete([]);
+      setSelectedIds([]);
       fetchData();
     } catch (err: any) {
-      setError("Failed to delete item.");
+      setError("Failed to complete deletion protocol.");
+    } finally {
+      setIsDeletingProcess(false);
+    }
+  };
+
+  const toggleSelect = (id: any) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    let currentIds: any[] = [];
+    if (activeTab === 'subjects') currentIds = subjects.map(s => s.id);
+    else if (activeTab === 'topics') currentIds = topics.map(t => t.id);
+    else if (activeTab === 'elements') currentIds = elements.map(e => e.number);
+    else if (activeTab === 'molecules') currentIds = molecules.map(m => m.formula);
+    else if (activeTab === 'glossary') currentIds = terms.map(t => t.id);
+
+    if (selectedIds.length === currentIds.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(currentIds);
     }
   };
 
@@ -298,7 +402,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
+            <AnimatePresence>
+              {selectedIds.length > 0 && (
+                <motion.button
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  onClick={startBulkDelete}
+                  className="px-6 py-3 rounded-2xl bg-red-600 hover:bg-red-500 transition-all flex items-center gap-2 shadow-lg shadow-red-600/20 text-sm font-bold text-white"
+                >
+                  <Trash2 size={18} /> Delete Selected ({selectedIds.length})
+                </motion.button>
+              )}
+            </AnimatePresence>
             <button
               onClick={fetchData}
               className="px-6 py-3 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] hover:bg-white/10 transition-all flex items-center gap-2 text-sm font-bold shadow-sm"
@@ -319,7 +436,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
           {(['subjects', 'topics', 'elements', 'molecules'] as Tab[]).map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => { setActiveTab(tab); setSelectedIds([]); }}
               className={`px-8 py-4 rounded-3xl font-bold uppercase tracking-widest text-[10px] transition-all border shrink-0 ${activeTab === tab
                 ? 'bg-indigo-600 border-indigo-500 shadow-lg shadow-indigo-600/30 text-white'
                 : 'bg-[var(--bg-panel)] border-[var(--border-glass)] text-[var(--text-muted)] hover:bg-indigo-500/10 hover:text-indigo-500'
@@ -335,7 +452,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
             </button>
           ))}
           <button
-            onClick={() => setActiveTab('glossary')}
+            onClick={() => { setActiveTab('glossary'); setSelectedIds([]); }}
             className={`px-8 py-4 rounded-3xl font-bold uppercase tracking-widest text-[10px] transition-all border shrink-0 ${activeTab === 'glossary'
               ? 'bg-indigo-600 border-indigo-500 shadow-lg shadow-indigo-600/30 text-white'
               : 'bg-[var(--bg-panel)] border-[var(--border-glass)] text-[var(--text-muted)] hover:bg-indigo-500/10 hover:text-indigo-500'
@@ -405,6 +522,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
             <table className="w-full text-left border-collapse min-w-[1200px]">
               <thead>
                 <tr className="bg-black/5 dark:bg-white/5 border-b border-[var(--border-glass)]">
+                  <th className="p-6 w-12">
+                    <input
+                      type="checkbox"
+                      className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
+                      checked={selectedIds.length > 0 && (
+                        (activeTab === 'subjects' && selectedIds.length === subjects.length) ||
+                        (activeTab === 'topics' && selectedIds.length === topics.length) ||
+                        (activeTab === 'elements' && selectedIds.length === elements.length) ||
+                        (activeTab === 'molecules' && selectedIds.length === molecules.length) ||
+                        (activeTab === 'glossary' && selectedIds.length === terms.length)
+                      )}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
                     {activeTab === 'elements' || activeTab === 'molecules' ? 'Identity' : activeTab === 'subjects' ? 'Subject Info' : activeTab === 'glossary' ? 'Term' : 'Topic Info'}
                   </th>
@@ -419,7 +550,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
               </thead>
                <tbody>
                 {activeTab === 'subjects' && sortedSubjects.map((item) => (
-                  <tr key={item.id} className="border-b border-[var(--border-glass)] hover:bg-indigo-500/5 transition-colors">
+                  <tr key={item.id} className={`border-b border-[var(--border-glass)] hover:bg-indigo-500/5 transition-colors ${selectedIds.includes(item.id) ? 'bg-indigo-500/10' : ''}`}>
+                    <td className="p-6">
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
+                        checked={selectedIds.includes(item.id)}
+                        onChange={() => toggleSelect(item.id)}
+                      />
+                    </td>
                     <td className="p-6">
                       <div className="flex items-center gap-4">
                         <div className="w-16 h-12 rounded-xl bg-[var(--bg-deep)] border border-[var(--border-glass)] overflow-hidden flex-shrink-0 shadow-sm">
@@ -469,7 +608,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                           setIsEditing(true); 
                           setClassInput(item.targetClass?.join(', ') || "");
                         }} className="p-2 rounded-xl bg-[var(--bg-deep)] hover:bg-indigo-500 hover:text-white text-[var(--text-primary)] transition-all border border-[var(--border-glass)] shadow-sm"><Edit2 size={16} /></button>
-                        <button onClick={() => handleDelete(item.id)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
+                        <button onClick={() => startDelete(item.id, item.name)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -491,7 +630,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                     </tr>
                     <AnimatePresence>
                       {expandedFolders[subjectName] && subjectTopics.map((item) => (
-                        <tr key={item.id} className="border-b border-[var(--border-glass)] hover:bg-indigo-500/10 transition-colors">
+                        <tr key={item.id} className={`border-b border-[var(--border-glass)] hover:bg-indigo-500/10 transition-colors ${selectedIds.includes(item.id) ? 'bg-indigo-500/10' : ''}`}>
+                          <td className="p-6">
+                            <input
+                              type="checkbox"
+                              className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
+                              checked={selectedIds.includes(item.id)}
+                              onChange={() => toggleSelect(item.id)}
+                            />
+                          </td>
                           <td className="p-6 pl-12">
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded font-black font-mono">#{item.order ?? 0}</span>
@@ -507,7 +654,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                           <td className="p-6">
                             <div className="flex gap-2">
                               <button onClick={() => { setEditItem(item); setIsNewItem(false); setIsEditing(true); }} className="p-2 rounded-xl bg-[var(--bg-deep)] hover:bg-indigo-500 hover:text-white text-[var(--text-primary)] transition-all border border-[var(--border-glass)] shadow-sm"><Edit2 size={16} /></button>
-                              <button onClick={() => handleDelete(item.id)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
+                              <button onClick={() => startDelete(item.id, item.name)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
                             </div>
                           </td>
                         </tr>
@@ -532,7 +679,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                     </tr>
                     <AnimatePresence>
                       {expandedFolders[`glossary-${subjectName}`] && subjectTerms.map((item) => (
-                        <tr key={item.id} className="border-b border-[var(--border-glass)] hover:bg-indigo-500/10 transition-colors">
+                        <tr key={item.id} className={`border-b border-[var(--border-glass)] hover:bg-indigo-500/10 transition-colors ${selectedIds.includes(item.id) ? 'bg-indigo-500/10' : ''}`}>
+                          <td className="p-6">
+                            <input
+                              type="checkbox"
+                              className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
+                              checked={selectedIds.includes(item.id)}
+                              onChange={() => toggleSelect(item.id)}
+                            />
+                          </td>
                           <td className="p-6">
                             <div className="font-bold text-lg text-[var(--text-primary)]">{item.term}</div>
                           </td>
@@ -547,7 +702,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                           <td className="p-6">
                             <div className="flex gap-2">
                               <button onClick={() => { setEditItem(item); setIsNewItem(false); setIsEditing(true); }} className="p-2 rounded-xl bg-[var(--bg-deep)] hover:bg-indigo-500 hover:text-white text-[var(--text-primary)] transition-all border border-[var(--border-glass)] shadow-sm"><Edit2 size={16} /></button>
-                              <button onClick={() => handleDelete(item.id)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
+                              <button onClick={() => startDelete(item.id, item.term)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
                             </div>
                           </td>
                         </tr>
@@ -557,7 +712,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                 ))}
 
                 {activeTab === 'elements' && elements.map((item) => (
-                  <tr key={item.number} className="border-b border-[var(--border-glass)] hover:bg-indigo-500/5 transition-colors">
+                  <tr key={item.number} className={`border-b border-[var(--border-glass)] hover:bg-indigo-500/5 transition-colors ${selectedIds.includes(item.number) ? 'bg-indigo-500/10' : ''}`}>
+                    <td className="p-6">
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
+                        checked={selectedIds.includes(item.number)}
+                        onChange={() => toggleSelect(item.number)}
+                      />
+                    </td>
                     <td className="p-6">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center font-black text-indigo-600 dark:text-indigo-400 text-xl shadow-sm">
@@ -590,14 +753,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                     <td className="p-6">
                       <div className="flex gap-2">
                         <button onClick={() => { setEditItem(item); setIsNewItem(false); setIsEditing(true); }} className="p-2 rounded-xl bg-[var(--bg-deep)] hover:bg-indigo-500 hover:text-white text-[var(--text-primary)] transition-all border border-[var(--border-glass)] shadow-sm"><Edit2 size={16} /></button>
-                        <button onClick={() => handleDelete(item.number)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
+                        <button onClick={() => startDelete(item.number, item.name)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
                 ))}
 
                 {activeTab === 'molecules' && molecules.map((item) => (
-                  <tr key={item.formula} className="border-b border-[var(--border-glass)] hover:bg-indigo-500/5 transition-colors">
+                  <tr key={item.formula} className={`border-b border-[var(--border-glass)] hover:bg-indigo-500/5 transition-colors ${selectedIds.includes(item.formula) ? 'bg-indigo-500/10' : ''}`}>
+                    <td className="p-6">
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
+                        checked={selectedIds.includes(item.formula)}
+                        onChange={() => toggleSelect(item.formula)}
+                      />
+                    </td>
                     <td className="p-6">
                       <div className="font-black text-xl text-indigo-600 dark:text-indigo-400">{item.formula}</div>
                       <div className="text-xs text-[var(--text-primary)] font-mono mt-1 uppercase font-bold opacity-70">{item.name}</div>
@@ -613,7 +784,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                     <td className="p-6">
                       <div className="flex gap-2">
                         <button onClick={() => { setEditItem(item); setIsNewItem(false); setIsEditing(true); }} className="p-2 rounded-xl bg-[var(--bg-deep)] hover:bg-indigo-500 hover:text-white text-[var(--text-primary)] transition-all border border-[var(--border-glass)] shadow-sm"><Edit2 size={16} /></button>
-                        <button onClick={() => handleDelete(item.formula)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
+                        <button onClick={() => startDelete(item.formula, item.name)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -1006,6 +1177,101 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+        
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (itemToDelete || itemsToBulkDelete.length > 0) && (
+          <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-6 overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDeleteConfirm(false)}
+              className="absolute inset-0 bg-red-950/40 dark:bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative w-full max-w-md bg-[var(--bg-deep)] border-2 border-red-500/30 rounded-[40px] overflow-hidden shadow-[0_32px_64px_-16px_rgba(239,68,68,0.2)]"
+            >
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center text-red-500 mx-auto mb-6 border border-red-500/20">
+                  <Trash2 size={40} />
+                </div>
+                
+                <h2 className="text-2xl font-black uppercase tracking-tight text-red-500 mb-2">Destructive Action</h2>
+                <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-8">Authorization Protocol Required</p>
+                
+                <div className="p-6 bg-red-500/5 rounded-3xl border border-red-500/10 mb-8">
+                  <p className="text-sm text-[var(--text-primary)] leading-relaxed mb-1">
+                    You are about to permanently delete:
+                  </p>
+                  <p className="text-xl font-black text-red-500 uppercase tracking-tight break-words">
+                    {itemToDelete ? itemToDelete.name : `${itemsToBulkDelete.length} Selected Items`}
+                  </p>
+                  {itemsToBulkDelete.length > 0 && (
+                    <div className="mt-4 max-h-24 overflow-y-auto pr-2 scrollbar-hide">
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {itemsToBulkDelete.map(item => (
+                          <span key={item.id} className="text-[9px] px-2 py-0.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 font-mono font-bold">
+                            {item.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-[10px] font-mono text-red-400/60 uppercase mt-4 font-bold italic">
+                    Caution: This action cannot be reversed.
+                  </p>
+                </div>
+
+                <div className="space-y-4 text-left">
+                  <div className="flex justify-between items-end px-2">
+                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest font-black">Security Confirmation</label>
+                    <span className="text-[10px] font-mono text-red-500 font-black tracking-widest">{userInput.length}/{securityCode.length}</span>
+                  </div>
+                  
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className="w-full bg-black/20 border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-red-500 outline-none transition-all font-mono text-center uppercase tracking-[0.2em] font-black placeholder:text-white/5"
+                      placeholder="Type code here"
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value.toLowerCase())}
+                      autoFocus
+                    />
+                  </div>
+                  
+                  <p className="text-[10px] text-[var(--text-muted)] text-center font-mono py-2">
+                    Please type <span className="text-red-500 font-black bg-red-500/10 px-2 py-0.5 rounded">{securityCode}</span> to proceed.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-10">
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-6 py-4 rounded-2xl bg-[var(--bg-deep)] border border-[var(--border-glass)] hover:bg-white/5 transition-all text-[10px] font-bold uppercase tracking-widest"
+                  >
+                    Abort
+                  </button>
+                  <button
+                    onClick={handleConfirmDelete}
+                    disabled={userInput !== securityCode || isDeleting}
+                    className={`px-6 py-4 rounded-2xl transition-all text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 ${
+                      userInput === securityCode && !isDeleting
+                        ? 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/20'
+                        : 'bg-white/5 text-[var(--text-muted)] cursor-not-allowed border border-[var(--border-glass)]'
+                    }`}
+                  >
+                    {isDeleting ? <RefreshCcw size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    Execute Delete
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}

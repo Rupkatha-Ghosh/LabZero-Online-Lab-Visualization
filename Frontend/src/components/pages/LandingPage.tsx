@@ -88,7 +88,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </header>
 
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto space-y-32">
+      <main className="pt-20 pb-4 px-2 max-w-[1400px] mx-auto space-y-32">
 
         {/* HERO SECTION */}
         <Skeleton name="landing-hero" loading={false}>
@@ -344,7 +344,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Stats Row */}
         <Skeleton name="landing-stats" loading={false}>
-          <section className="bg-[var(--bg-panel)] rounded-[40px] md:rounded-full py-8 px-8 md:px-16 border border-[var(--border-glass)] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-8 text-center max-w-5xl mx-auto mb-5">
+          <section className="bg-[var(--bg-panel)] rounded-[40px] md:rounded-full py-4 px-4 md:px-8 border border-[var(--border-glass)] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-8 text-center max-w-5xl mx-auto mb-5">
             <div className="flex items-center gap-4 w-full md:w-auto">
               <div className="w-12 h-12 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 flex items-center justify-center text-[var(--color-primary)] shrink-0"><Maximize2 size={20} /></div>
               <div className="text-left">
