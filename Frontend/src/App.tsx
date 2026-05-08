@@ -95,9 +95,9 @@ const AppContent: React.FC = () => {
   const [showAuth, setShowAuth] = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [showMindMap, setShowMindMap] = useState(false);
 
-  const [theme, setTheme] = useState<'dark' | 'light'>('light');
-  const [colorBlindMode, setColorBlindMode] = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('labzero_theme') as 'dark' | 'light') || 'light');
+  const [colorBlindMode, setColorBlindMode] = useState(() => localStorage.getItem('labzero_colorblind') === 'true');
+  const [language, setLanguage] = useState<Language>(() => (localStorage.getItem('labzero_language') as Language) || 'en');
 
   const [isGestureActive, setIsGestureActive] = useState(false);
   const [atomRotation, setAtomRotation] = useState({ dx: 0, dy: 0 });
@@ -172,11 +172,17 @@ const AppContent: React.FC = () => {
   // ================= THEME =================
   useEffect(() => {
     document.body.classList.toggle('light-mode', theme === 'light');
+    localStorage.setItem('labzero_theme', theme);
   }, [theme]);
 
   useEffect(() => {
     document.body.classList.toggle('colorblind-mode', colorBlindMode);
+    localStorage.setItem('labzero_colorblind', colorBlindMode.toString());
   }, [colorBlindMode]);
+
+  useEffect(() => {
+    localStorage.setItem('labzero_language', language);
+  }, [language]);
 
   const t = (key: string) => translations[key]?.[language] || key;
 
