@@ -20,7 +20,31 @@ export default defineConfig(({ mode }) => {
           registerType: 'autoUpdate',
           includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
           workbox: {
-            maximumFileSizeToCacheInBytes: 4000000, // 4MB limit
+            maximumFileSizeToCacheInBytes: 4000000,
+            runtimeCaching: [
+              {
+                urlPattern: /^http:\/\/localhost:8000\/api\/.*/,
+                handler: 'NetworkFirst',
+                options: {
+                  cacheName: 'api-cache',
+                  expiration: {
+                    maxEntries: 50,
+                    maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+                  },
+                },
+              },
+              {
+                urlPattern: /^https:\/\/.*\/api\/.*/,
+                handler: 'NetworkFirst',
+                options: {
+                  cacheName: 'prod-api-cache',
+                  expiration: {
+                    maxEntries: 50,
+                    maxAgeSeconds: 60 * 60 * 24 * 7,
+                  },
+                },
+              }
+            ]
           },
           manifest: {
             name: 'LabZero Online Lab',
