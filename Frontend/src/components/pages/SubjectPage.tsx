@@ -148,9 +148,11 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
                   }`}
               >
                 <div className="flex items-start justify-between">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shrink-0 ${isDark ? 'bg-white/5 text-slate-500' : 'bg-slate-100 text-slate-400'
-                    } group-hover:bg-primary group-hover:text-white`}>
-                    <Icon size={28} strokeWidth={1.5} />
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shrink-0 shadow-lg ${isDark 
+                    ? 'bg-white/10 text-[var(--color-primary)] shadow-[var(--color-primary)]/10' 
+                    : 'bg-slate-100 text-slate-400'
+                    } group-hover:bg-primary group-hover:text-white group-hover:shadow-primary/40`}>
+                    <Icon size={32} strokeWidth={2} className="brightness-[1.2]" />
                   </div>
                   <div className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${isDark ? 'border-white/5' : 'border-slate-200'
                     } group-hover:border-primary/50`}>

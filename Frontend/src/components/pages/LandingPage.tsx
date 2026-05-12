@@ -196,7 +196,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     onClick={() => onSelectSubject(subject)}
                     className="bg-[var(--bg-panel)] rounded-[32px] p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1 h-[440px]"
                   >
-                    <div className={`w-full h-48 rounded-[24px] bg-[var(--bg-deep)]/40 mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-[var(--bg-deep)]/60 transition-colors`}>
+                    <div className={`w-full h-48 rounded-[24px] bg-white/[0.03] mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-white/[0.08] transition-all duration-500`}>
                       <img
                         src={subjectMeta.img}
                         alt={subjectMeta.name}
