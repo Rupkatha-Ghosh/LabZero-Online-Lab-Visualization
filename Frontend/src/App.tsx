@@ -23,7 +23,7 @@ import QuizPage from './components/shared/Quiz';
 import { generateQuizAI } from './data/quizData';
 import { Skeleton } from 'boneyard-js/react';
 
-import { Molecule, ElementData, Subject, Topic, ViewState, TopicId } from './types/types';
+import { Molecule, ElementData, Subject, SubjectId, Topic, ViewState, TopicId } from './types/types';
 import { Language, translations } from './services/translations';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { getElements } from './services/elementsService';
@@ -35,6 +35,50 @@ import { usePWAInstall } from './hooks/usePWAInstall';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
+const subjectIdAliases: Record<string, SubjectId> = {
+  chemistry: SubjectId.CHEMISTRY,
+  physics: SubjectId.PHYSICS,
+  math: SubjectId.MATH,
+  mathematics: SubjectId.MATH,
+  biology: SubjectId.BIOLOGY,
+};
+
+const resolveSubjectId = (subject: Subject): SubjectId => {
+  const candidates = [
+    String(subject.id),
+    subject.slug,
+    subject.name,
+  ].map((value) => value?.toLowerCase().trim()).filter(Boolean) as string[];
+
+  for (const candidate of candidates) {
+    if (subjectIdAliases[candidate]) {
+      return subjectIdAliases[candidate];
+    }
+  }
+
+  return subject.id;
+};
+
+const normalizeSubject = (subject: Subject): Subject => ({
+  ...subject,
+  id: resolveSubjectId(subject),
+});
+
+const loadCachedSubjects = (): Subject[] => {
+  try {
+    const cached = localStorage.getItem('labzero_subjects_cache');
+    return cached ? JSON.parse(cached).map(normalizeSubject) : [];
+  } catch {
+    return [];
+  }
+};
+
+const sortSubjects = (subjects: Subject[], sortMethod = 'order') => {
+  return [...subjects].map(normalizeSubject).sort((a, b) => {
+    if (sortMethod === 'alpha') return a.name.localeCompare(b.name);
+    return (a.order || 0) - (b.order || 0);
+  });
+};
 
 const BackgroundLayer = ({ theme }: { theme: 'dark' | 'light' }) => (
   <div className={`fixed inset-0 z-[-1] overflow-hidden pointer-events-none transition-colors duration-700 ${theme === 'dark' ? 'bg-[#020617]' : 'bg-[#fafaf8]'}`}>
@@ -81,11 +125,8 @@ const AppContent: React.FC = () => {
   const [elements, setElements] = useState<ElementData[]>([]);
   const [selectedElement, setSelectedElement] = useState<ElementData | null>(null);
   const [molecules, setMolecules] = useState<Molecule[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>(() => {
-    // Initial load from cache to prevent layout shift and provide instant results
-    const cached = localStorage.getItem('labzero_subjects_cache');
-    return cached ? JSON.parse(cached) : [];
-  });
+  // Initial load from cache to prevent layout shift and provide instant results.
+  const [subjects, setSubjects] = useState<Subject[]>(loadCachedSubjects);
 
   const [viewState, setViewState] = useState<ViewState>(ViewState.LANDING);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
@@ -140,10 +181,7 @@ const AppContent: React.FC = () => {
         getSubjects()
           .then((data) => {
             if (data?.length) {
-              const sorted = [...data].sort((a, b) => {
-                if (sortMethod === 'alpha') return a.name.localeCompare(b.name);
-                return (a.order || 0) - (b.order || 0);
-              });
+              const sorted = sortSubjects(data, sortMethod);
               setSubjects(sorted);
               // Save to cache
               localStorage.setItem('labzero_subjects_cache', JSON.stringify(sorted));
@@ -157,7 +195,7 @@ const AppContent: React.FC = () => {
         getSubjects()
           .then((data) => {
             if (data?.length) {
-              const sorted = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
+              const sorted = sortSubjects(data);
               setSubjects(sorted);
               localStorage.setItem('labzero_subjects_cache', JSON.stringify(sorted));
               localStorage.setItem('labzero_last_subject_count', sorted.length.toString());
@@ -243,7 +281,7 @@ const AppContent: React.FC = () => {
           <DynamicSim
             elements={elements}
             molecules={molecules}
-            selectedElement={selectedElement}
+            selectedElement={selectedElement ?? undefined}
             onSelectElement={setSelectedElement}
             theme={theme}
             language={language}
