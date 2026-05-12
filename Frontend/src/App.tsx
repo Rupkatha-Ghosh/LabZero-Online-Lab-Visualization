@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
-  Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen
+  Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LandingPage from './components/pages/LandingPage';
@@ -31,6 +31,7 @@ import { getMolecules } from './services/moleculesService';
 import { getSubjects } from './services/subjectsService';
 import { SIMULATION_REGISTRY } from './simulations/registry';
 import { Suspense } from 'react';
+import { usePWAInstall } from './hooks/usePWAInstall';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -71,6 +72,7 @@ const BackgroundLayer = ({ theme }: { theme: 'dark' | 'light' }) => (
 
 const AppContent: React.FC = () => {
   const { user, isLoading, logout, handleGoogleCallback } = useAuth();
+  const { isInstallable, handleInstallClick } = usePWAInstall();
 
   useEffect(() => {
     handleGoogleCallback();
@@ -95,9 +97,9 @@ const AppContent: React.FC = () => {
   const [showAuth, setShowAuth] = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [showMindMap, setShowMindMap] = useState(false);
 
-  const [theme, setTheme] = useState<'dark' | 'light'>('light');
-  const [colorBlindMode, setColorBlindMode] = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('labzero_theme') as 'dark' | 'light') || 'light');
+  const [colorBlindMode, setColorBlindMode] = useState(() => localStorage.getItem('labzero_colorblind') === 'true');
+  const [language, setLanguage] = useState<Language>(() => (localStorage.getItem('labzero_language') as Language) || 'en');
 
   const [isGestureActive, setIsGestureActive] = useState(false);
   const [atomRotation, setAtomRotation] = useState({ dx: 0, dy: 0 });
@@ -172,11 +174,17 @@ const AppContent: React.FC = () => {
   // ================= THEME =================
   useEffect(() => {
     document.body.classList.toggle('light-mode', theme === 'light');
+    localStorage.setItem('labzero_theme', theme);
   }, [theme]);
 
   useEffect(() => {
     document.body.classList.toggle('colorblind-mode', colorBlindMode);
+    localStorage.setItem('labzero_colorblind', colorBlindMode.toString());
   }, [colorBlindMode]);
+
+  useEffect(() => {
+    localStorage.setItem('labzero_language', language);
+  }, [language]);
 
   const t = (key: string) => translations[key]?.[language] || key;
 
@@ -491,6 +499,26 @@ const AppContent: React.FC = () => {
                         Open
                       </button>
                     </div>
+
+                    {isInstallable && (
+                      <div className="flex items-center justify-between p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                            <Download size={16} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">LabZero App</span>
+                            <span className="text-[8px] font-mono text-indigo-400/60 leading-none mt-0.5">Offline Ready</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleInstallClick}
+                          className="rounded-xl bg-indigo-600 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-white transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/20"
+                        >
+                          Install
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}

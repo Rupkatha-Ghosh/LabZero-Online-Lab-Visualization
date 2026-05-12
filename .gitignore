@@ -19,7 +19,7 @@ management/
 
 # Extras
 Extras/
-
+.github/
 repomix-output.xml
 .DS_Store
 .codex
