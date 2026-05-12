@@ -102,46 +102,46 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                     {onBack && (
                         <button
                             onClick={onBack}
-                            className="p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 text-white transition-all shadow-md self-start"
+                            className="p-3 bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-xl hover:bg-[var(--bg-panel)]/80 text-[var(--text-primary)] transition-all shadow-md self-start"
                         >
                             Go Back
                         </button>
                     )}
                     <div className="space-y-2">
-                        <div className="flex items-center gap-3 text-cyan-300 font-mono text-[10px] uppercase tracking-[0.3em] drop-shadow-sm">
-                            <div className="p-1.5 rounded-lg bg-cyan-500/20 border border-cyan-400/30">
-                                <Star size={12} className="drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                        <div className="flex items-center gap-3 text-[var(--color-cyan)] font-mono text-[10px] uppercase tracking-[0.3em] drop-shadow-sm">
+                            <div className="p-1.5 rounded-lg bg-[var(--color-cyan)]/20 border border-[var(--color-cyan)]/30">
+                                <Star size={12} className="drop-shadow-[0_0_8px_rgba(var(--color-cyan-rgb),0.8)]" />
                             </div>
                             Student Learning Node
                         </div>
-                        <h1 className="text-4xl font-display font-medium text-white tracking-tight drop-shadow-md">
-                            Astra, <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-violet-500">{user?.first_name || 'Innovator'}</span>
+                        <h1 className="text-4xl font-display font-medium text-[var(--text-primary)] tracking-tight drop-shadow-md">
+                            Astra, <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-violet)]">{user?.first_name || 'Innovator'}</span>
                         </h1>
-                        <p className="text-white/60 font-sans text-sm drop-shadow-sm">You have {upcomingTasks.filter(t => t.status === 'Live').length} live session active right now.</p>
+                        <p className="text-[var(--text-muted)] font-sans text-sm drop-shadow-sm">You have {upcomingTasks.filter(t => t.status === 'Live').length} live session active right now.</p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 p-1.5 px-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg">
+                    <div className="flex items-center gap-2 p-1.5 px-4 bg-[var(--bg-panel)] backdrop-blur-md border border-[var(--border-glass)] rounded-2xl shadow-lg">
                         <div className="flex flex-col items-end">
-                            <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest leading-none mb-1">Rank</span>
-                            <span className="text-sm font-display font-bold text-cyan-300 leading-none uppercase italic">Level 14</span>
+                            <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest leading-none mb-1">Rank</span>
+                            <span className="text-sm font-display font-bold text-[var(--color-cyan)] leading-none uppercase italic">Level 14</span>
                         </div>
-                        <div className="w-px h-8 bg-white/10 mx-2" />
+                        <div className="w-px h-8 bg-[var(--border-glass)] mx-2" />
                         <div className="flex flex-col items-start px-2">
-                            <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest leading-none mb-1">Experience</span>
+                            <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest leading-none mb-1">Experience</span>
                             <div className="flex items-center gap-2">
-                                <div className="w-24 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                                    <div className="h-full bg-gradient-to-r from-cyan-400 to-violet-500 w-[65%]" />
+                                <div className="w-24 h-1.5 bg-[var(--bg-deep)] rounded-full overflow-hidden border border-[var(--border-glass)]">
+                                    <div className="h-full bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-violet)] w-[65%]" />
                                 </div>
-                                <span className="text-[10px] font-mono text-violet-300">65%</span>
+                                <span className="text-[10px] font-mono text-[var(--color-violet)]">65%</span>
                             </div>
                         </div>
                     </div>
 
-                    <button className="p-4 rounded-2xl bg-black/40 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all relative group">
+                    <button className="p-4 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-panel)]/80 transition-all relative group shadow-lg">
                         <Bell size={20} />
-                        <div className="absolute top-3.5 right-4 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0F172A] group-hover:scale-125 transition-transform" />
+                        <div className="absolute top-3.5 right-4 w-2 h-2 bg-rose-500 rounded-full border-2 border-[var(--bg-deep)] group-hover:scale-125 transition-transform" />
                     </button>
                 </div>
             </header>
@@ -155,13 +155,13 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                     {/* Active Classrooms */}
                     <section className="space-y-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-display font-medium text-white uppercase tracking-tight flex items-center gap-3 drop-shadow-sm">
-                                <Users size={20} className="text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+                            <h2 className="text-xl font-display font-medium text-[var(--text-primary)] uppercase tracking-tight flex items-center gap-3 drop-shadow-sm">
+                                <Users size={20} className="text-[var(--color-cyan)] drop-shadow-[0_0_8px_rgba(var(--color-cyan-rgb),0.5)]" />
                                 My Classrooms
                             </h2>
                             <button 
                                 onClick={() => setIsJoinModalOpen(true)}
-                                className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[10px] font-mono uppercase tracking-widest hover:bg-cyan-500/20 transition-all"
+                                className="px-4 py-2 rounded-xl bg-[var(--color-cyan)]/10 border border-[var(--color-cyan)]/20 text-[var(--color-cyan)] text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--color-cyan)]/20 transition-all font-bold"
                             >
                                 Join New Class
                             </button>
@@ -174,7 +174,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: i * 0.1 }}
-                                    className="p-6 rounded-[32px] bg-black/40 backdrop-blur-xl border border-white/10 hover:border-cyan-500/30 transition-all group cursor-pointer relative overflow-hidden"
+                                    className="p-6 rounded-[32px] bg-[var(--bg-panel)] backdrop-blur-xl border border-[var(--border-glass)] hover:border-[var(--color-cyan)]/30 transition-all group cursor-pointer relative overflow-hidden shadow-lg"
                                 >
                                     {cls.isLive && (
                                         <div className="absolute top-4 right-4 flex items-center gap-2 px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[8px] font-mono uppercase tracking-[0.2em] animate-pulse">
@@ -182,11 +182,11 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                                             Live Now
                                         </div>
                                     )}
-                                    <div className="text-[10px] font-mono text-cyan-300/60 uppercase tracking-[0.3em] mb-2">{cls.name}</div>
-                                    <h3 className="text-lg font-display font-medium text-white mb-4 tracking-tight drop-shadow-sm">{cls.teacher_name}'s Lab</h3>
+                                    <div className="text-[10px] font-mono text-[var(--color-cyan)]/60 uppercase tracking-[0.3em] mb-2">{cls.name}</div>
+                                    <h3 className="text-lg font-display font-medium text-[var(--text-primary)] mb-4 tracking-tight drop-shadow-sm">{cls.teacher_name}'s Lab</h3>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-sans text-white/40 italic">{cls.assignments?.length || 0} tasks</span>
-                                        <div className="w-8 h-8 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white/40 group-hover:text-cyan-300 group-hover:border-cyan-400/30 transition-all">
+                                        <span className="text-xs font-sans text-[var(--text-muted)] italic">{cls.assignments?.length || 0} tasks</span>
+                                        <div className="w-8 h-8 rounded-full bg-[var(--bg-panel)] border border-[var(--border-glass)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--color-cyan)] group-hover:border-[var(--color-cyan)]/30 transition-all">
                                             <ArrowRight size={14} />
                                         </div>
                                     </div>
@@ -196,21 +196,21 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                     </section>
 
                     {/* Progress & Analytics */}
-                    <section className="p-8 rounded-[40px] bg-black/40 backdrop-blur-xl border border-white/10 space-y-8 shadow-lg">
+                    <section className="p-8 rounded-[40px] bg-[var(--bg-panel)] backdrop-blur-xl border border-[var(--border-glass)] space-y-8 shadow-lg">
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
-                                <h2 className="text-xl font-display font-medium text-white uppercase tracking-tight drop-shadow-sm">Learning Progress</h2>
-                                <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest leading-none">Subject Mastery & Engagement</p>
+                                <h2 className="text-xl font-display font-medium text-[var(--text-primary)] uppercase tracking-tight drop-shadow-sm">Learning Progress</h2>
+                                <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest leading-none">Subject Mastery & Engagement</p>
                             </div>
                             <div className="flex gap-4">
                                 <div className="flex flex-col items-end">
-                                    <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Total Time</span>
-                                    <span className="text-lg font-display font-medium text-white leading-none">14.5 hrs</span>
+                                    <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Total Time</span>
+                                    <span className="text-lg font-display font-medium text-[var(--text-primary)] leading-none">14.5 hrs</span>
                                 </div>
-                                <div className="w-px h-8 bg-white/10" />
+                                <div className="w-px h-8 bg-[var(--border-glass)]" />
                                 <div className="flex flex-col items-end">
-                                    <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Quizzes</span>
-                                    <span className="text-lg font-display font-medium text-emerald-400 leading-none">88% Avg</span>
+                                    <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Quizzes</span>
+                                    <span className="text-lg font-display font-medium text-emerald-500 leading-none">88% Avg</span>
                                 </div>
                             </div>
                         </div>
@@ -245,12 +245,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                             { label: 'Bookmarks', icon: Bookmark, count: '5 REVISION' },
                             { label: 'Quiz Prep', icon: Target, count: 'READY' }
                         ].map((tool, i) => (
-                            <div key={i} className="p-6 rounded-[28px] bg-black/40 border border-white/10 hover:bg-white/5 transition-all group cursor-pointer">
-                                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 mb-4 group-hover:text-cyan-300 group-hover:border-cyan-400/30 transition-all">
+                            <div key={i} className="p-6 rounded-[28px] bg-[var(--bg-panel)] border border-[var(--border-glass)] hover:bg-[var(--bg-panel)]/80 transition-all group cursor-pointer shadow-lg">
+                                <div className="w-10 h-10 rounded-xl bg-[var(--bg-deep)] border border-[var(--border-glass)] flex items-center justify-center text-[var(--text-muted)] mb-4 group-hover:text-[var(--color-cyan)] group-hover:border-[var(--color-cyan)]/30 transition-all">
                                     <tool.icon size={18} />
                                 </div>
-                                <div className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">{tool.count}</div>
-                                <div className="text-sm font-sans font-medium text-white">{tool.label}</div>
+                                <div className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">{tool.count}</div>
+                                <div className="text-sm font-sans font-medium text-[var(--text-primary)]">{tool.label}</div>
                             </div>
                         ))}
                     </section>
@@ -260,57 +260,57 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                 <div className="lg:col-span-4 space-y-8">
 
                     {/* Simulation Assignments / Tasks */}
-                    <div className="p-8 rounded-[40px] bg-black/40 backdrop-blur-xl border border-white/10 space-y-6 shadow-xl">
-                        <h3 className="text-[10px] font-mono text-cyan-300 uppercase tracking-[0.3em] flex items-center gap-2 drop-shadow-sm">
-                            <Play size={12} className="drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+                    <div className="p-8 rounded-[40px] bg-[var(--bg-panel)] backdrop-blur-xl border border-[var(--border-glass)] space-y-6 shadow-xl">
+                        <h3 className="text-[10px] font-mono text-[var(--color-cyan)] uppercase tracking-[0.3em] flex items-center gap-2 drop-shadow-sm font-bold">
+                            <Play size={12} className="drop-shadow-[0_0_8px_rgba(var(--color-cyan-rgb),0.5)]" />
                             Active Assignments
                         </h3>
                         <div className="space-y-4">
                             {upcomingTasks.map((task, i) => (
-                                <div key={i} className="group p-4 rounded-[20px] bg-black/30 border border-white/5 hover:border-white/20 hover:bg-black/50 transition-all cursor-pointer">
+                                <div key={i} className="group p-4 rounded-[20px] bg-[var(--bg-deep)] border border-[var(--border-glass)] hover:border-[var(--color-cyan)]/20 hover:bg-[var(--bg-panel)] transition-all cursor-pointer">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className={`text-[8px] font-mono uppercase tracking-[0.2em] px-2 py-0.5 rounded-md border ${task.status === 'Live' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30 animate-pulse' : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20'
+                                        <span className={`text-[8px] font-mono uppercase tracking-[0.2em] px-2 py-0.5 rounded-md border ${task.status === 'Live' ? 'bg-rose-500/20 text-rose-500 border-rose-500/30 animate-pulse' : 'bg-[var(--color-cyan)]/10 text-[var(--color-cyan)] border-[var(--color-cyan)]/20'
                                             }`}>
                                             {task.status}
                                         </span>
-                                        <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest">Due {task.dueDate}</span>
+                                        <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Due {task.dueDate}</span>
                                     </div>
-                                    <h4 className="text-sm font-sans font-medium text-white mb-0.5 group-hover:text-cyan-100 transition-colors">{task.title}</h4>
-                                    <p className="text-[10px] text-white/40">{task.teacher_name}</p>
+                                    <h4 className="text-sm font-sans font-medium text-[var(--text-primary)] mb-0.5 group-hover:text-[var(--color-cyan)] transition-colors">{task.title}</h4>
+                                    <p className="text-[10px] text-[var(--text-muted)]">{task.teacher_name}</p>
                                 </div>
                             ))}
                         </div>
-                        <button className="w-full py-4 rounded-3xl bg-gradient-to-r from-cyan-600/20 to-violet-600/20 border border-white/10 text-[9px] font-mono uppercase tracking-[0.3em] text-cyan-100 hover:border-cyan-400/40 transition-all shadow-inner">
+                        <button className="w-full py-4 rounded-3xl bg-gradient-to-r from-[var(--color-cyan)]/20 to-[var(--color-violet)]/20 border border-[var(--border-glass)] text-[9px] font-mono uppercase tracking-[0.3em] text-[var(--text-primary)] hover:border-[var(--color-cyan)]/40 transition-all shadow-inner font-bold">
                             View All Assignments
                         </button>
                     </div>
 
                     {/* Achievements / Gamification */}
-                    <div className="p-8 rounded-[40px] bg-black/40 backdrop-blur-xl border border-white/10 space-y-8 shadow-lg overflow-hidden relative group">
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-violet-500/10 pointer-events-none" />
+                    <div className="p-8 rounded-[40px] bg-[var(--bg-panel)] backdrop-blur-xl border border-[var(--border-glass)] space-y-8 shadow-lg overflow-hidden relative group">
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--color-violet)]/10 pointer-events-none" />
                         <div className="flex items-center justify-between">
-                            <h3 className="text-[10px] font-mono text-violet-300 uppercase tracking-[0.3em] flex items-center gap-2 drop-shadow-sm">
-                                <Trophy size={12} className="drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+                            <h3 className="text-[10px] font-mono text-[var(--color-violet)] uppercase tracking-[0.3em] flex items-center gap-2 drop-shadow-sm font-bold">
+                                <Trophy size={12} className="drop-shadow-[0_0_8px_rgba(var(--color-violet-rgb),0.5)]" />
                                 Achievements
                             </h3>
-                            <span className="text-[9px] font-mono text-white/30 tracking-widest">12 / 40 UNLOCKED</span>
+                            <span className="text-[9px] font-mono text-[var(--text-muted)] tracking-widest">12 / 40 UNLOCKED</span>
                         </div>
 
                         <div className="space-y-6">
                             {achievements.map((badge, i) => (
                                 <div key={i} className="flex gap-4 items-start group/badge">
-                                    <div className={`w-12 h-12 rounded-[18px] bg-black/40 border border-white/5 flex items-center justify-center ${badge.color} group-hover/badge:scale-110 transition-transform shadow-inner`}>
+                                    <div className={`w-12 h-12 rounded-[18px] bg-[var(--bg-panel)] border border-[var(--border-glass)] flex items-center justify-center ${badge.color} group-hover/badge:scale-110 transition-transform shadow-inner`}>
                                         <badge.icon size={22} className="drop-shadow-[0_0_8px_currentColor]" />
                                     </div>
                                     <div className="flex-1 space-y-1.5">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs font-sans font-medium text-white leading-none">{badge.name}</span>
-                                            <span className="text-[10px] font-mono text-white/30">{badge.progress}%</span>
+                                            <span className="text-xs font-sans font-medium text-[var(--text-primary)] leading-none">{badge.name}</span>
+                                            <span className="text-[10px] font-mono text-[var(--text-muted)]">{badge.progress}%</span>
                                         </div>
-                                        <div className="h-1 w-full bg-black/50 rounded-full overflow-hidden">
+                                        <div className="h-1 w-full bg-[var(--bg-deep)] rounded-full overflow-hidden">
                                             <div className={`h-full ${badge.color.replace('text', 'bg')} w-[${badge.progress}%]`} style={{ width: `${badge.progress}%` }} />
                                         </div>
-                                        <p className="text-[9px] font-sans text-white/40 leading-tight">{badge.description}</p>
+                                        <p className="text-[9px] font-sans text-[var(--text-muted)] leading-tight">{badge.description}</p>
                                     </div>
                                 </div>
                             ))}
@@ -318,24 +318,24 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                     </div>
 
                     {/* Notice Board */}
-                    <div className="p-8 rounded-[40px] bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-white/10 space-y-6 relative overflow-hidden group">
+                    <div className="p-8 rounded-[40px] bg-[var(--bg-panel)] border border-[var(--border-glass)] space-y-6 relative overflow-hidden group shadow-lg">
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
                             <Bell size={100} />
                         </div>
-                        <h3 className="text-[10px] font-mono text-cyan-300 uppercase tracking-[0.3em] relative z-10">Notice Board</h3>
+                        <h3 className="text-[10px] font-mono text-[var(--color-cyan)] uppercase tracking-[0.3em] relative z-10 font-bold">Notice Board</h3>
                         <div className="space-y-4 relative z-10">
                             <div className="space-y-1">
-                                <p className="text-xs text-white/70 font-sans leading-relaxed italic">
+                                <p className="text-xs text-[var(--text-primary)]/70 font-sans leading-relaxed italic">
                                     "Don't forget to check the new Quantum Config simulation! It helps with the quiz."
                                 </p>
-                                <span className="text-[9px] font-mono text-cyan-400 uppercase tracking-widest">- Dr. Wilson</span>
+                                <span className="text-[9px] font-mono text-[var(--color-cyan)] uppercase tracking-widest">- Dr. Wilson</span>
                             </div>
-                            <div className="w-full h-px bg-white/5" />
+                            <div className="w-full h-px bg-[var(--border-glass)]" />
                             <div className="space-y-1 opacity-50 hover:opacity-100 transition-opacity">
-                                <p className="text-[11px] text-white/60 font-sans leading-relaxed">
+                                <p className="text-[11px] text-[var(--text-muted)] font-sans leading-relaxed">
                                     "Lab equipment orientation starts at 10 AM Monday."
                                 </p>
-                                <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest">Admin</span>
+                                <span className="text-[8px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Admin</span>
                             </div>
                         </div>
                     </div>
@@ -344,13 +344,13 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
             </div>
 
             {/* Footer / Floating Quick Access */}
-            <div className="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl z-50">
-                <div className="flex items-center gap-1.5 px-4 pr-6 border-r border-white/10">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Active</span>
+            <div className="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 bg-[var(--bg-panel)] backdrop-blur-2xl border border-[var(--border-glass)] rounded-3xl shadow-2xl z-50">
+                <div className="flex items-center gap-1.5 px-4 pr-6 border-r border-[var(--border-glass)]">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Active</span>
                 </div>
                 {['Dashboard', 'Labs', 'Library', 'Notes'].map((item) => (
-                    <button key={item} className={`px-5 py-2.5 rounded-2xl text-[10px] font-mono uppercase tracking-widest transition-all ${item === 'Dashboard' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 shadow-inner' : 'text-white/40 hover:text-white hover:bg-white/5'
+                    <button key={item} className={`px-5 py-2.5 rounded-2xl text-[10px] font-mono uppercase tracking-widest transition-all ${item === 'Dashboard' ? 'bg-[var(--color-cyan)]/20 text-[var(--color-cyan)] border border-[var(--color-cyan)]/20 shadow-inner' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-panel)]/80'
                         }`}>
                         {item}
                     </button>
@@ -370,22 +370,22 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        className="relative w-full max-w-md p-8 rounded-[40px] bg-[#0F172A] border border-white/10 shadow-2xl overflow-hidden"
+                        className="relative w-full max-w-md p-8 rounded-[40px] bg-[var(--bg-deep)] border border-[var(--border-glass)] shadow-2xl overflow-hidden"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-violet-500/10 pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/10 via-transparent to-[var(--color-violet)]/10 pointer-events-none" />
                         
                         <div className="relative z-10 space-y-6">
                             <div className="space-y-2 text-center">
-                                <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-300 mx-auto mb-4">
+                                <div className="w-16 h-16 rounded-2xl bg-[var(--color-cyan)]/10 border border-[var(--color-cyan)]/20 flex items-center justify-center text-[var(--color-cyan)] mx-auto mb-4">
                                     <Sparkles size={32} />
                                 </div>
-                                <h2 className="text-2xl font-display font-medium text-white">Join a Classroom</h2>
-                                <p className="text-sm text-white/60">Enter the 6-digit code provided by your teacher to unlock your lab access.</p>
+                                <h2 className="text-2xl font-display font-medium text-[var(--text-primary)]">Join a Classroom</h2>
+                                <p className="text-sm text-[var(--text-muted)]">Enter the 6-digit code provided by your teacher to unlock your lab access.</p>
                             </div>
 
                             <form onSubmit={handleJoinClass} className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-mono text-white/40 uppercase tracking-[0.2em] ml-2">Classroom Code</label>
+                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-[0.2em] ml-2 font-bold">Classroom Code</label>
                                     <input 
                                         autoFocus
                                         type="text" 
@@ -393,7 +393,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                                         value={inviteCode}
                                         onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                                         maxLength={10}
-                                        className="w-full px-6 py-4 rounded-2xl bg-black/40 border border-white/10 text-white placeholder:text-white/20 focus:border-cyan-500/50 outline-none transition-all text-center text-xl font-mono tracking-[0.5em]"
+                                        className="w-full px-6 py-4 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/30 focus:border-[var(--color-cyan)]/50 outline-none transition-all text-center text-xl font-mono tracking-[0.5em]"
                                     />
                                 </div>
 
@@ -401,14 +401,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                                     <button 
                                         type="button"
                                         onClick={() => setIsJoinModalOpen(false)}
-                                        className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-white/60 text-[10px] font-mono uppercase tracking-widest hover:bg-white/10 transition-all"
+                                        className="flex-1 py-4 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-[var(--text-muted)] text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--bg-panel)]/80 transition-all font-bold"
                                     >
                                         Cancel
                                     </button>
                                     <button 
                                         type="submit"
                                         disabled={isJoining || inviteCode.length < 5}
-                                        className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-600 text-white text-[10px] font-mono uppercase tracking-widest shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:grayscale transition-all"
+                                        className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-violet)] text-white text-[10px] font-mono uppercase tracking-widest shadow-lg shadow-[var(--color-cyan)]/20 disabled:opacity-50 disabled:grayscale transition-all font-bold"
                                     >
                                         {isJoining ? 'Connecting...' : 'Join Class'}
                                     </button>
