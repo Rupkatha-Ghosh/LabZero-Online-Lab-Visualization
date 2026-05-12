@@ -8,12 +8,6 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/wsgi/
 """
 
 import os
-try:
-    from gevent import monkey
-    monkey.patch_all()
-except ImportError:
-    pass
-
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
