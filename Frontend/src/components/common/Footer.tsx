@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
           <div className="flex items-center gap-4">
             <Logo size="lg" />
           </div>
-          <p className="text-lg text-[var(--text-muted)] leading-relaxed font-bold tracking-tight">
+          <p className="text-lg text-[var(--text-muted)] leading-relaxed font-bold tracking-tight brightness-[1.2] contrast-[1.1]">
             Architecting the next generation of scientific education through real-time quantum simulations and neural collaboration interfaces.
           </p>
           <div className="flex gap-6 relative z-[200] pointer-events-auto">

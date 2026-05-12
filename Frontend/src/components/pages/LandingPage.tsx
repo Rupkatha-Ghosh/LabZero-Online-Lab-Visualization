@@ -46,7 +46,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
         <nav className="hidden md:flex items-center gap-8">
           {['Home', 'Explore', 'Simulations', 'About', 'Contact'].map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="text-[15px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+            <a key={item} href={`#${item.toLowerCase()}`} className="text-[15px] font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors brightness-[1.2]">
               {item}
             </a>
           ))}
@@ -112,7 +112,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               <motion.p
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
-                className="text-lg md:text-xl text-[var(--text-muted)] max-w-md leading-relaxed font-normal"
+                className="text-lg md:text-xl text-[var(--text-muted)] max-w-md leading-relaxed font-bold brightness-[1.1] contrast-[1.1]"
               >
                 Interactive 3D labs for Physics, Chemistry, Math & Biology.<br className="hidden md:block" /><br className="hidden md:block" />
                 Turn abstract concepts into real understanding.

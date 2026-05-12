@@ -106,13 +106,13 @@ export const Logo: React.FC<LogoProps> = ({
       {!hideText && (
         <div className="flex flex-col select-none">
           <motion.span
-            className={`${current.text} font-display font-black tracking-tighter leading-none flex items-center`}
+            className={`${current.text} font-display font-black tracking-tighter leading-none flex items-center drop-shadow-[0_0_8px_rgba(var(--color-primary-rgb),0.3)]`}
           >
-            <span className="text-[var(--text-primary)]">LAB</span>
+            <span className="text-[var(--text-primary)] drop-shadow-[0_2px_10px_rgba(255,255,255,0.1)]">LAB</span>
             <span className="relative ml-0.5">
-              <span className="text-transparent bg-clip-text bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)]">ZERO</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-cyan)] to-[var(--color-secondary)] filter saturate-[1.5] brightness-[1.2]">ZERO</span>
               <motion.div
-                className="absolute -bottom-1 left-0 h-[2px] bg-[var(--color-primary)]"
+                className="absolute -bottom-1 left-0 h-[2px] bg-[var(--color-primary)] shadow-[0_0_10px_var(--color-primary)]"
                 initial={{ width: 0 }}
                 variants={{
                   hover: { width: '100%' }
@@ -122,7 +122,7 @@ export const Logo: React.FC<LogoProps> = ({
           </motion.span>
           {size === 'lg' && (
             <motion.span
-              className="text-[10px] font-bold tracking-[0.4em] uppercase mt-1.5 text-[var(--text-muted)]"
+              className="text-[10px] font-bold tracking-[0.4em] uppercase mt-1.5 text-[var(--text-muted)] brightness-[1.1] contrast-[1.1]"
             >
               Synthesis of Thought
             </motion.span>
