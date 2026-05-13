@@ -22,8 +22,9 @@ onOpenGlossary?: () => void;
 onDashboardClick?: () => void;
 onAdminClick?: () => void;
 subjects: Subject[];
-  selectedClass?: string | null;                   // <-- ADD THIS
+  selectedClass?: string | null;
   onSelectClass?: (cls: string | null) => void;
+  onLaunchSimulation?: (topicId: string) => void;
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({
@@ -37,7 +38,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
   theme,
   subjects,
   selectedClass,
-  onSelectClass
+  onSelectClass,
+  onLaunchSimulation
 }) => {
   const t = (key: string) => translations[key]?.[language] || key;
 
@@ -363,11 +365,15 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { title: 'Wave Interference', tag: 'Physics', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20', hoverBorder: 'hover:border-indigo-500/40', text: 'text-indigo-500', iconUrl: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&q=80&w=400' },
-                { title: 'Reaction Kinetics', tag: 'Chemistry', bg: 'bg-rose-500/10', border: 'border-rose-500/20', hoverBorder: 'hover:border-rose-500/40', text: 'text-rose-500', iconUrl: 'https://images.unsplash.com/photo-1629904853716-f0bc54eea481?auto=format&fit=crop&q=80&w=400' },
-                { title: '3D Surface Plot', tag: 'Math', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', hoverBorder: 'hover:border-emerald-500/40', text: 'text-emerald-500', iconUrl: 'https://images.unsplash.com/photo-1614850715649-1d0106293cb1?auto=format&fit=crop&q=80&w=400' },
+                { id: 'electromagnetism', title: 'Electromagnetism', tag: 'Physics', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20', hoverBorder: 'hover:border-indigo-500/40', text: 'text-indigo-500', iconUrl: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&q=80&w=400' },
+                { id: 'genetics', title: 'Genetic Probability', tag: 'Biology', bg: 'bg-rose-500/10', border: 'border-rose-500/20', hoverBorder: 'hover:border-rose-500/40', text: 'text-rose-500', iconUrl: 'https://images.unsplash.com/photo-1629904853716-f0bc54eea481?auto=format&fit=crop&q=80&w=400' },
+                { id: 'linear_algebra', title: 'Linear Transformations', tag: 'Math', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', hoverBorder: 'hover:border-emerald-500/40', text: 'text-emerald-500', iconUrl: 'https://images.unsplash.com/photo-1614850715649-1d0106293cb1?auto=format&fit=crop&q=80&w=400' },
               ].map((sim, i) => (
-                <div key={i} className={`rounded-[32px] p-8 border ${sim.border} ${sim.bg} backdrop-blur-md relative overflow-hidden flex flex-col h-64 cursor-pointer group shadow-sm transition-all duration-300 hover:shadow-lg ${sim.hoverBorder}`}>
+                <div 
+                  key={i} 
+                  onClick={() => onLaunchSimulation?.(sim.id)}
+                  className={`rounded-[32px] p-8 border ${sim.border} ${sim.bg} backdrop-blur-md relative overflow-hidden flex flex-col h-64 cursor-pointer group shadow-sm transition-all duration-300 hover:shadow-lg ${sim.hoverBorder}`}
+                >
                   <div className="relative z-10">
                     <h4 className="font-display font-semibold text-lg text-[var(--text-primary)]">{sim.title}</h4>
                     <span className="text-xs font-medium text-[var(--text-muted)] mt-1 block">{sim.tag}</span>

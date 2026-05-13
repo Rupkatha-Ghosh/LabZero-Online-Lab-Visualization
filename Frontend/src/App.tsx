@@ -538,6 +538,7 @@ const AppContent: React.FC = () => {
                     onOpenGlossary={() => setShowGlossary(true)}
                     onDashboardClick={() => setViewState(ViewState.DASHBOARD)}
                     onAdminClick={() => setViewState(ViewState.ADMIN)}
+                    onLaunchSimulation={handleLaunchSimulation}
                     subjects={subjects}
                   />
                 </motion.div>
