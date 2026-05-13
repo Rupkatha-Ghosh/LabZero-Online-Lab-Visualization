@@ -185,6 +185,7 @@ const AppContent: React.FC = () => {
   const [viewState, setViewState] = useState<ViewState>(ViewState.LANDING);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
   const [showAITutor, setShowAITutor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -298,9 +299,24 @@ const AppContent: React.FC = () => {
     setViewState(ViewState.TOPIC);
   }, []);
 
+  const handleSelectClass = useCallback((className: string) => {
+    setSelectedClass(className);
+    setViewState(ViewState.CLASS_SUBJECTS);
+  }, []);
+
   const handleBackToLanding = () => {
     setViewState(ViewState.LANDING);
     setSelectedSubject(null);
+  };
+
+  const handleBack = () => {
+    switch (viewState) {
+      case ViewState.TOPIC: setViewState(ViewState.SUBJECT); break;
+      case ViewState.SUBJECT: setViewState(ViewState.CLASS_SUBJECTS); break;
+      case ViewState.CLASS_SUBJECTS: setViewState(ViewState.LANDING); break;
+      case ViewState.DASHBOARD: setViewState(ViewState.LANDING); break;
+      default: setViewState(ViewState.LANDING);
+    }
   };
 
   const handleDashboardClick = () => {
@@ -309,6 +325,7 @@ const AppContent: React.FC = () => {
 
   const handleBackToSubject = () => {
     setViewState(ViewState.SUBJECT);
+    setSelectedClass(null);
     setSelectedTopic(null);
   };
 
@@ -459,6 +476,7 @@ const AppContent: React.FC = () => {
         {!showQuiz && (
           <>
             <AnimatePresence mode="wait">
+              {/* 1. MAIN LANDING PAGE (Now includes the Class Dropdown internally) */}
               {viewState === ViewState.LANDING && (
                 <motion.div key="landing" className="h-full w-full overflow-y-auto">
                   <LandingPage
@@ -466,6 +484,8 @@ const AppContent: React.FC = () => {
                     language={language}
                     theme={theme}
                     user={user}
+                    selectedClass={selectedClass}         // Pass current class state
+                    onSelectClass={setSelectedClass}      // Let dropdown update the state
                     onLoginClick={() => setShowAuth(true)}
                     onLogoutClick={logout}
                     onProfileClick={() => setShowAuth(true)}
@@ -476,20 +496,28 @@ const AppContent: React.FC = () => {
                   />
                 </motion.div>
               )}
+
+              {/* 2. SUBJECT PAGE (Preserves selected class to filter units) */}
               {viewState === ViewState.SUBJECT && selectedSubject && (
                 <motion.div key="subject" className="h-full w-full overflow-y-auto">
                   <SubjectPage
                     subject={selectedSubject}
                     onSelectTopic={handleSelectTopic}
-                    onBack={handleBackToLanding}
+                    onBack={() => setViewState(ViewState.LANDING)} // Directly back to landing!
                     language={language}
                     theme={theme}
                     onStartQuiz={startQuiz}
                     quizLevel={quizLevel}
                     onLevelChange={setQuizLevel}
+                    selectedClass={selectedClass} // Keeps unit modules filtered
                   />
                 </motion.div>
               )}
+
+              {/* ... Rest of your views (TOPIC, DASHBOARD, ADMIN) stay the same ... */}
+
+
+              {/* ... Remaining view conditions (TOPIC, DASHBOARD, ADMIN) persist cleanly ... */}
               {viewState === ViewState.TOPIC && selectedTopic && (
                 <motion.div key="topic" className="h-full w-full">
                   <TopicPage
