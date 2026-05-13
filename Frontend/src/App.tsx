@@ -19,6 +19,100 @@ import AuthPage from './components/auth/AuthPage';
 import FloatingBrain from './components/common/FloatingBrain';
 import MemoryMapOverlay from './components/shared/MemoryMapOverlay';
 
+const useAnimatedFavicon = () => {
+  useEffect(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let frame = 0;
+    let animId: number;
+    const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link');
+    faviconLink.type = 'image/x-icon';
+    faviconLink.rel = 'shortcut icon';
+
+    const draw = (isStatic: boolean = false) => {
+      ctx.clearRect(0, 0, 32, 32);
+
+      // 1. Draw Glow (subtle pulse or fixed)
+      const glowOpacity = isStatic ? 0.15 : 0.1 + Math.sin(frame * 0.05) * 0.05;
+      ctx.strokeStyle = `rgba(99, 102, 241, ${glowOpacity})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(3, 4); ctx.lineTo(29, 4); ctx.lineTo(3, 28); ctx.lineTo(29, 28);
+      ctx.stroke();
+
+      // 2. Draw Z
+      ctx.strokeStyle = '#ffffff'; 
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(3, 4); ctx.lineTo(29, 4); ctx.lineTo(3, 28); ctx.lineTo(29, 28);
+      ctx.stroke();
+
+      if (!isStatic) {
+        // 3. Draw Animated "0" Formation
+        const drawProgress = (Math.sin(frame * 0.03) + 1) / 2;
+        ctx.strokeStyle = '#6366f1'; 
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(16, 16, 9, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * drawProgress));
+        ctx.stroke();
+
+        // 4. Draw Precision Nodes (Pulsating)
+        const nodePulse = 1 + Math.sin(frame * 0.1) * 0.3;
+        
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(3, 4, 2.5 * nodePulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#6366f1';
+        ctx.beginPath();
+        ctx.arc(29, 28, 2.5 * nodePulse, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Static dots for hidden state
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath(); ctx.arc(3, 4, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#6366f1';
+        ctx.beginPath(); ctx.arc(29, 28, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      faviconLink.href = canvas.toDataURL('image/png');
+      if (!document.head.contains(faviconLink)) {
+        document.head.appendChild(faviconLink);
+      }
+    };
+
+    const animate = () => {
+      draw(false);
+      frame++;
+      animId = requestAnimationFrame(animate);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animId);
+        draw(true); // Draw static frame
+      } else {
+        animate(); // Resume animation
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    animate(); // Start initial animation
+
+    return () => {
+      cancelAnimationFrame(animId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+};
+
 import QuizPage from './components/shared/Quiz';
 import { generateQuizAI } from './data/quizData';
 import { Skeleton } from 'boneyard-js/react';
@@ -71,6 +165,7 @@ const BackgroundLayer = ({ theme }: { theme: 'dark' | 'light' }) => (
 );
 
 const AppContent: React.FC = () => {
+  useAnimatedFavicon();
   const { user, isLoading, logout, handleGoogleCallback } = useAuth();
   const { isInstallable, handleInstallClick } = usePWAInstall();
 
