@@ -30,6 +30,7 @@ const CalculusSim = React.lazy(() => import('./math/CalculusSim'));
 const PlantSim = React.lazy(() => import('./biology/PlantSim'));
 const CellBiologySim = React.lazy(() => import('./biology/CellBiologySim'));
 const MicrobiologySim = React.lazy(() => import('./biology/MicrobiologySim'));
+const GeneticsSim = React.lazy(() => import('./biology/GeneticsSim'));
 
 export const SIMULATION_REGISTRY: Record<string, React.LazyExoticComponent<React.FC<SimulationProps>>> = {
   "atomic_structure": AtomicStructureSim,
@@ -53,4 +54,5 @@ export const SIMULATION_REGISTRY: Record<string, React.LazyExoticComponent<React
   "microbiology": MicrobiologySim,
   "cell_biology": CellBiologySim,
   "plant_physiology": PlantSim,
+  "genetics": GeneticsSim,
 };
