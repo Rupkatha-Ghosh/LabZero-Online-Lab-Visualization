@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import {
-  Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen, Download, Camera, Smartphone
+  Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen, Download, Camera, Smartphone, Brain, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LandingPage from './components/pages/LandingPage';
@@ -16,7 +16,6 @@ import BottomNav from './components/common/BottomNav';
 import Glossary from './components/shared/Glossary';
 import AuthOverlay from './components/auth/AuthOverlay';
 import AuthPage from './components/auth/AuthPage';
-import FloatingBrain from './components/common/FloatingBrain';
 import MemoryMapOverlay from './components/shared/MemoryMapOverlay';
 
 const useAnimatedFavicon = () => {
@@ -192,6 +191,9 @@ const AppContent: React.FC = () => {
   const [showGlossary, setShowGlossary] = useState(false);
   const [showAuth, setShowAuth] = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [showMindMap, setShowMindMap] = useState(false);
+  const settingsScrollRef = useRef<HTMLDivElement>(null);
+  const [canSettingsScrollDown, setCanSettingsScrollDown] = useState(false);
+  const [canSettingsScrollUp, setCanSettingsScrollUp] = useState(false);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('labzero_theme') as 'dark' | 'light') || 'light');
   const [colorBlindMode, setColorBlindMode] = useState(() => localStorage.getItem('labzero_colorblind') === 'true');
@@ -282,6 +284,35 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('labzero_language', language);
   }, [language]);
+
+  const updateSettingsScrollState = useCallback(() => {
+    const el = settingsScrollRef.current;
+    if (!el) return;
+
+    setCanSettingsScrollUp(el.scrollTop > 4);
+    setCanSettingsScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
+  }, []);
+
+  useEffect(() => {
+    if (!showSettings) return;
+
+    const frame = requestAnimationFrame(updateSettingsScrollState);
+    window.addEventListener('resize', updateSettingsScrollState);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', updateSettingsScrollState);
+    };
+  }, [showSettings, isInstallable, updateSettingsScrollState]);
+
+  const handleSettingsScrollButton = () => {
+    const el = settingsScrollRef.current;
+    if (!el) return;
+
+    el.scrollBy({
+      top: canSettingsScrollDown ? 220 : -220,
+      behavior: 'smooth',
+    });
+  };
 
   const t = (key: string) => translations[key]?.[language] || key;
 
@@ -556,12 +587,27 @@ const AppContent: React.FC = () => {
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                  className="fixed bottom-24 md:bottom-28 left-4 right-4 md:left-auto md:right-28 md:w-72 glass-panel p-6 rounded-3xl z-[110] border border-white/10 origin-bottom-right mx-auto max-w-[calc(100vw-32px)]"
+                  className="fixed top-20 bottom-24 left-4 right-4 md:top-auto md:bottom-28 md:left-auto md:right-28 md:w-80 md:max-h-[min(42rem,calc(100vh-8rem))] glass-panel rounded-3xl z-[110] border border-white/10 origin-bottom-right mx-auto max-w-[calc(100vw-32px)] overflow-hidden flex flex-col"
                 >
-                  <h3 className="text-xs font-mono uppercase tracking-[0.3em] text-indigo-400 mb-6 flex items-center gap-2">
-                    <Eye size={12} /> {t('accessibility')}
-                  </h3>
-                  <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-3 border-b border-white/10 px-6 py-5">
+                    <h3 className="text-xs font-mono uppercase tracking-[0.3em] text-indigo-400 flex items-center gap-2">
+                      <Eye size={12} /> {t('accessibility')}
+                    </h3>
+                    {(canSettingsScrollDown || canSettingsScrollUp) && (
+                      <button
+                        onClick={handleSettingsScrollButton}
+                        className="h-8 rounded-xl border border-indigo-400/20 bg-indigo-500/10 px-3 text-indigo-300 transition-colors hover:bg-indigo-500/20 flex items-center gap-1.5"
+                      >
+                        <span className="text-[8px] font-mono uppercase tracking-[0.18em]">Scroll</span>
+                        {canSettingsScrollDown ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    ref={settingsScrollRef}
+                    onScroll={updateSettingsScrollState}
+                    className="space-y-4 overflow-y-auto scrollbar-hide px-6 py-5"
+                  >
                     <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">{t('colorblindMode')}</span>
@@ -633,6 +679,27 @@ const AppContent: React.FC = () => {
                       </div>
                     </div>
 
+                    <div className="flex items-center justify-between p-3 rounded-2xl bg-purple-500/10 border border-purple-400/20">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300">
+                          <Brain size={16} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">MindMap</span>
+                          <span className="text-[8px] font-mono text-purple-300/70 leading-none mt-0.5">Memory Map</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowMindMap(true);
+                          setShowSettings(false);
+                        }}
+                        className="rounded-xl bg-purple-500 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-white transition-colors hover:bg-purple-400"
+                      >
+                        Open
+                      </button>
+                    </div>
+
                     <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-amber-300">
@@ -699,10 +766,6 @@ const AppContent: React.FC = () => {
               {showAuth && <AuthOverlay onClose={() => setShowAuth(false)} />}
               {showMindMap && <MemoryMapOverlay subjects={subjects} onClose={() => setShowMindMap(false)} />}
             </AnimatePresence>
-
-            {viewState === ViewState.LANDING && !showMindMap && (
-              <FloatingBrain onClick={() => setShowMindMap(true)} />
-            )}
 
             <GestureController
               isActive={isGestureActive && user?.role !== 'student'}
