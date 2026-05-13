@@ -46,31 +46,56 @@ const challengePrompts = [
 ];
 
 const physicsSeeds: ChallengeSeed[] = [
-  { topic: 'Classical Mechanics', skill: 'Newtonian force', difficulty: 'warmup', fact: 'The SI unit of force is', answer: 'Newton', distractors: ['Joule', 'Watt', 'Pascal'], explanation: 'Force is measured in newtons, equivalent to kg m/s².' },
-  { topic: 'Classical Mechanics', skill: 'Dynamics', difficulty: 'warmup', fact: 'Newton\'s second law is represented by', answer: 'F = ma', distractors: ['P = VI', 'V = IR', 'Q = mcΔT'], explanation: 'Net force equals mass multiplied by acceleration.' },
-  { topic: 'Classical Mechanics', skill: 'Energy', difficulty: 'core', fact: 'Kinetic energy of a moving object equals', answer: '1/2 mv²', distractors: ['mgh', 'Fd cos theta', 'mv'], explanation: 'Kinetic energy depends on mass and the square of speed.' },
+  { topic: 'Refraction of Light', skill: 'Basic definition', difficulty: 'warmup', fact: 'Refraction is the bending of light when it passes between media because its speed changes', answer: 'Speed', distractors: ['Color only', 'Mass', 'Charge'], explanation: 'Light bends at a boundary because its speed changes in different optical media.' },
+  { topic: 'Refraction of Light', skill: 'Snell law', difficulty: 'core', fact: 'Snell law relates refractive index to the sine of the angle of', answer: 'Incidence and refraction', distractors: ['Reflection only', 'Dispersion only', 'Diffraction only'], explanation: 'Snell law connects n1 sin i and n2 sin r for two transparent media.' },
+  { topic: 'Refraction of Light', skill: 'Optical density', difficulty: 'warmup', fact: 'When light enters an optically denser medium from a rarer medium, it bends', answer: 'Towards the normal', distractors: ['Away from the normal', 'Along the boundary', 'Back to the source'], explanation: 'Light slows down in a denser medium and bends towards the normal.' },
+  { topic: 'Refraction of Light', skill: 'Rarer medium', difficulty: 'warmup', fact: 'When light goes from a denser medium to a rarer medium, it bends', answer: 'Away from the normal', distractors: ['Towards the normal', 'Exactly along the normal always', 'Into a circle'], explanation: 'Light speeds up in a rarer medium and bends away from the normal.' },
+  { topic: 'Refraction of Light', skill: 'Refractive index', difficulty: 'core', fact: 'Absolute refractive index is calculated as', answer: 'n = c / v', distractors: ['n = v / c', 'n = cv', 'n = c + v'], explanation: 'It compares light speed in vacuum with light speed in the medium.' },
+  { topic: 'Refraction of Light', skill: 'Total internal reflection', difficulty: 'core', fact: 'Total internal reflection requires light to travel from denser to rarer medium and angle of incidence to exceed the', answer: 'Critical angle', distractors: ['Reflected angle', 'Dispersive angle', 'Right angle always'], explanation: 'Both conditions are required for total internal reflection.' },
+  { topic: 'Refraction of Light', skill: 'Critical angle', difficulty: 'stretch', fact: 'At the critical angle, the angle of refraction is', answer: '90 degrees', distractors: ['0 degrees', '45 degrees', '180 degrees'], explanation: 'The refracted ray grazes the boundary at the critical angle.' },
+  { topic: 'Refraction of Light', skill: 'Apparent depth', difficulty: 'core', fact: 'An object under water appears raised because of', answer: 'Refraction', distractors: ['Magnetism', 'Conduction', 'Evaporation'], explanation: 'Refraction changes the apparent position of underwater objects.' },
+  { topic: 'Refraction of Light', skill: 'Optical fibre', difficulty: 'core', fact: 'Optical fibres guide light mainly by repeated', answer: 'Total internal reflection', distractors: ['Diffuse reflection', 'Conduction', 'Scattering only'], explanation: 'Light remains trapped inside the fibre by total internal reflection.' },
+  { topic: 'Refraction of Light', skill: 'Normal incidence', difficulty: 'stretch', fact: 'A ray entering another medium along the normal bends by', answer: '0 degrees', distractors: ['30 degrees', '60 degrees', '90 degrees'], explanation: 'At normal incidence the direction does not change, though speed may change.' },
+  { topic: 'Classical Mechanics', skill: 'Newtonian force', difficulty: 'warmup', fact: 'The SI unit of force is', answer: 'Newton', distractors: ['Joule', 'Watt', 'Pascal'], explanation: 'Force is measured in newtons, equivalent to kg m/s^2.' },
+  { topic: 'Classical Mechanics', skill: 'Dynamics', difficulty: 'warmup', fact: 'Newton\'s second law is represented by', answer: 'F = ma', distractors: ['P = VI', 'V = IR', 'Q = mc delta T'], explanation: 'Net force equals mass multiplied by acceleration.' },
+  { topic: 'Classical Mechanics', skill: 'Inertia', difficulty: 'warmup', fact: 'Newton\'s first law is also called the law of', answer: 'Inertia', distractors: ['Heating', 'Refraction', 'Charge'], explanation: 'Objects resist changes in their state of motion because of inertia.' },
+  { topic: 'Classical Mechanics', skill: 'Energy', difficulty: 'core', fact: 'Kinetic energy of a moving object equals', answer: '1/2 mv^2', distractors: ['mgh', 'Fd cos theta', 'mv'], explanation: 'Kinetic energy depends on mass and the square of speed.' },
   { topic: 'Classical Mechanics', skill: 'Momentum', difficulty: 'core', fact: 'Linear momentum is calculated as', answer: 'mv', distractors: ['ma', 'm/v', 'F/t'], explanation: 'Momentum is the product of mass and velocity.' },
-  { topic: 'Work and Energy', skill: 'Work', difficulty: 'core', fact: 'Work done by a constant force at angle theta is', answer: 'Fd cos theta', distractors: ['Fd sin theta', 'F/d', 'mgh'], explanation: 'Only the force component along displacement contributes to work.' },
-  { topic: 'Gravitation', skill: 'Inverse square law', difficulty: 'core', fact: 'Newtonian gravitational force varies with distance as', answer: '1/r²', distractors: ['r²', 'r', '1/r'], explanation: 'Gravity follows an inverse-square dependence on separation.' },
-  { topic: 'Electromagnetism', skill: 'Ohm law', difficulty: 'warmup', fact: 'Ohm\'s law is', answer: 'V = IR', distractors: ['F = ma', 'E = mc²', 'P = Fv'], explanation: 'Voltage equals current multiplied by resistance.' },
+  { topic: 'Classical Mechanics', skill: 'Work', difficulty: 'core', fact: 'Work done by a constant force at angle theta is', answer: 'Fd cos theta', distractors: ['Fd sin theta', 'F/d', 'mgh'], explanation: 'Only the force component along displacement contributes to work.' },
+  { topic: 'Classical Mechanics', skill: 'Potential energy', difficulty: 'core', fact: 'Gravitational potential energy near Earth is', answer: 'mgh', distractors: ['1/2 mv^2', 'ma', 'VIR'], explanation: 'Potential energy depends on mass, gravitational field strength, and height.' },
+  { topic: 'Classical Mechanics', skill: 'Impulse', difficulty: 'stretch', fact: 'Impulse equals change in', answer: 'Momentum', distractors: ['Temperature', 'Resistance', 'Refractive index'], explanation: 'Impulse is force acting over time and equals change in momentum.' },
+  { topic: 'Classical Mechanics', skill: 'Acceleration', difficulty: 'warmup', fact: 'Acceleration is the rate of change of', answer: 'Velocity', distractors: ['Mass', 'Area', 'Charge'], explanation: 'Acceleration measures how quickly velocity changes with time.' },
+  { topic: 'Classical Mechanics', skill: 'Conservation', difficulty: 'stretch', fact: 'In absence of external force, total linear momentum remains', answer: 'Conserved', distractors: ['Zero always', 'Increasing always', 'Negative always'], explanation: 'Momentum of an isolated system is conserved.' },
+  { topic: 'Thermodynamics', skill: 'Temperature', difficulty: 'warmup', fact: 'Absolute temperature is measured in', answer: 'Kelvin', distractors: ['Celsius', 'Joule', 'Watt'], explanation: 'Kelvin is the SI base unit for thermodynamic temperature.' },
+  { topic: 'Thermodynamics', skill: 'First law', difficulty: 'core', fact: 'The first law of thermodynamics expresses conservation of', answer: 'Energy', distractors: ['Charge', 'Momentum only', 'Mass only'], explanation: 'Heat and work change internal energy while total energy is conserved.' },
+  { topic: 'Thermodynamics', skill: 'Internal energy', difficulty: 'core', fact: 'For a system, heat supplied can change internal energy and do', answer: 'Work', distractors: ['Refraction', 'Current only', 'Magnetic flux only'], explanation: 'The first law links heat, work, and change in internal energy.' },
+  { topic: 'Thermodynamics', skill: 'Zeroth law', difficulty: 'warmup', fact: 'The zeroth law helps define', answer: 'Temperature', distractors: ['Resistance', 'Momentum', 'Wavelength'], explanation: 'Thermal equilibrium gives a consistent basis for measuring temperature.' },
+  { topic: 'Thermodynamics', skill: 'Entropy', difficulty: 'stretch', fact: 'For an isolated spontaneous process, entropy tends to', answer: 'Increase', distractors: ['Decrease always', 'Remain zero', 'Become negative always'], explanation: 'The second law states entropy of an isolated system does not decrease.' },
+  { topic: 'Thermodynamics', skill: 'Heat engine', difficulty: 'core', fact: 'A heat engine converts heat into', answer: 'Work', distractors: ['Charge', 'Mass defect', 'Refraction'], explanation: 'Heat engines produce mechanical work from thermal energy.' },
+  { topic: 'Thermodynamics', skill: 'Efficiency', difficulty: 'core', fact: 'Efficiency of a heat engine is useful work output divided by heat', answer: 'Input', distractors: ['Reflected', 'Absorbed by ice only', 'Lost to vacuum only'], explanation: 'Efficiency compares useful output with supplied heat energy.' },
+  { topic: 'Thermodynamics', skill: 'Specific heat', difficulty: 'core', fact: 'Heat required to raise temperature is given by', answer: 'Q = mc delta T', distractors: ['F = ma', 'V = IR', 'p = mv'], explanation: 'For simple heating, heat depends on mass, specific heat, and temperature change.' },
+  { topic: 'Thermodynamics', skill: 'Conduction', difficulty: 'warmup', fact: 'Heat transfer through direct molecular contact is', answer: 'Conduction', distractors: ['Convection', 'Radiation', 'Refraction'], explanation: 'Conduction transfers energy through collisions within matter.' },
+  { topic: 'Thermodynamics', skill: 'Carnot engine', difficulty: 'stretch', fact: 'A Carnot engine is an ideal engine operating reversibly between two', answer: 'Reservoirs', distractors: ['Charges', 'Lenses', 'Magnets only'], explanation: 'The Carnot cycle sets the ideal efficiency limit between hot and cold reservoirs.' },
+  { topic: 'Electromagnetism', skill: 'Ohm law', difficulty: 'warmup', fact: 'Ohm\'s law is', answer: 'V = IR', distractors: ['F = ma', 'E = mc^2', 'P = Fv'], explanation: 'Voltage equals current multiplied by resistance.' },
   { topic: 'Electromagnetism', skill: 'Electric current', difficulty: 'warmup', fact: 'The SI unit of electric current is', answer: 'Ampere', distractors: ['Volt', 'Ohm', 'Coulomb'], explanation: 'Current measures charge flow per second and is measured in amperes.' },
+  { topic: 'Electromagnetism', skill: 'Charge', difficulty: 'warmup', fact: 'The SI unit of electric charge is', answer: 'Coulomb', distractors: ['Tesla', 'Watt', 'Kelvin'], explanation: 'Electric charge is measured in coulombs.' },
+  { topic: 'Electromagnetism', skill: 'Resistance', difficulty: 'core', fact: 'Electrical resistance is measured in', answer: 'Ohm', distractors: ['Volt', 'Ampere', 'Farad'], explanation: 'Resistance opposes current and is measured in ohms.' },
   { topic: 'Electromagnetism', skill: 'Capacitance', difficulty: 'core', fact: 'Capacitance is measured in', answer: 'Farad', distractors: ['Tesla', 'Henry', 'Weber'], explanation: 'A capacitor storing one coulomb per volt has one farad.' },
   { topic: 'Electromagnetism', skill: 'Magnetic field', difficulty: 'stretch', fact: 'The SI unit of magnetic flux density is', answer: 'Tesla', distractors: ['Weber', 'Coulomb', 'Volt'], explanation: 'Magnetic flux density B is measured in tesla.' },
+  { topic: 'Electromagnetism', skill: 'Electric power', difficulty: 'core', fact: 'Electrical power in a resistor can be calculated by', answer: 'P = VI', distractors: ['P = V/I', 'P = I/R', 'P = qVt'], explanation: 'Power is the rate of electrical energy transfer, equal to voltage times current.' },
+  { topic: 'Electromagnetism', skill: 'Faraday law', difficulty: 'stretch', fact: 'Changing magnetic flux through a circuit induces', answer: 'EMF', distractors: ['Mass', 'Temperature only', 'Refraction'], explanation: 'Faraday law states that changing flux induces an electromotive force.' },
+  { topic: 'Electromagnetism', skill: 'Lenz law', difficulty: 'stretch', fact: 'Induced current flows in a direction that opposes the change in', answer: 'Magnetic flux', distractors: ['Mass', 'Temperature', 'Refractive index'], explanation: 'Lenz law gives the direction of induced current.' },
+  { topic: 'Electromagnetism', skill: 'Lorentz force', difficulty: 'stretch', fact: 'A moving charge in a magnetic field experiences the', answer: 'Lorentz force', distractors: ['Buoyant force', 'Normal reaction only', 'Friction only'], explanation: 'Magnetic fields exert force on moving charges.' },
   { topic: 'Wave Optics', skill: 'Wave speed', difficulty: 'core', fact: 'Wave speed is related to frequency and wavelength by', answer: 'v = f lambda', distractors: ['v = f/lambda', 'v = lambda/f', 'v = f + lambda'], explanation: 'A wave travels one wavelength per cycle, so speed is frequency times wavelength.' },
   { topic: 'Wave Optics', skill: 'Interference', difficulty: 'stretch', fact: 'Constructive interference occurs when path difference is', answer: 'n lambda', distractors: ['(n + 1/2) lambda', 'lambda/4', '2n + lambda'], explanation: 'Integral multiples of wavelength make waves arrive in phase.' },
+  { topic: 'Wave Optics', skill: 'Destructive interference', difficulty: 'stretch', fact: 'Destructive interference occurs when path difference is', answer: '(n + 1/2) lambda', distractors: ['n lambda', '0 always', '2n lambda only'], explanation: 'Half-integral wavelength differences make waves arrive out of phase.' },
   { topic: 'Wave Optics', skill: 'Polarization', difficulty: 'stretch', fact: 'Polarization proves light waves are', answer: 'Transverse', distractors: ['Longitudinal', 'Stationary', 'Mechanical only'], explanation: 'Only transverse waves can be polarized.' },
-  { topic: 'Thermodynamics', skill: 'First law', difficulty: 'core', fact: 'The first law of thermodynamics expresses conservation of', answer: 'Energy', distractors: ['Charge', 'Momentum only', 'Mass only'], explanation: 'Heat and work change internal energy while total energy is conserved.' },
-  { topic: 'Thermodynamics', skill: 'Temperature', difficulty: 'warmup', fact: 'Absolute temperature is measured in', answer: 'Kelvin', distractors: ['Celsius', 'Joule', 'Watt'], explanation: 'Kelvin is the SI base unit for thermodynamic temperature.' },
-  { topic: 'Thermodynamics', skill: 'Entropy', difficulty: 'stretch', fact: 'For an isolated spontaneous process, entropy tends to', answer: 'Increase', distractors: ['Decrease always', 'Remain zero', 'Become negative always'], explanation: 'The second law states entropy of an isolated system does not decrease.' },
-  { topic: 'Modern Physics', skill: 'Relativity', difficulty: 'core', fact: 'Mass-energy equivalence is written as', answer: 'E = mc²', distractors: ['F = ma', 'p = mv', 'V = IR'], explanation: 'Einstein related rest energy to mass through the speed of light squared.' },
-  { topic: 'Modern Physics', skill: 'Photoelectric effect', difficulty: 'stretch', fact: 'Photoelectric emission depends primarily on light', answer: 'Frequency', distractors: ['Amplitude only', 'Speed in vacuum', 'Color name only'], explanation: 'Emission requires photons above the threshold frequency.' },
-  { topic: 'Optics', skill: 'Reflection', difficulty: 'warmup', fact: 'The angle of reflection is equal to the angle of', answer: 'Incidence', distractors: ['Refraction', 'Diffraction', 'Dispersion'], explanation: 'The law of reflection pairs equal incident and reflected angles.' },
-  { topic: 'Optics', skill: 'Refraction', difficulty: 'core', fact: 'Refraction at an interface follows', answer: 'Snell law', distractors: ['Hooke law', 'Ampere law', 'Kirchhoff law'], explanation: 'Snell law relates refractive indices and the sines of angles.' },
-  { topic: 'Circuits', skill: 'Power', difficulty: 'core', fact: 'Electrical power in a resistor can be calculated by', answer: 'P = VI', distractors: ['P = V/I', 'P = I/R', 'P = qVt'], explanation: 'Power is the rate of electrical energy transfer, equal to voltage times current.' },
-  { topic: 'Nuclear Physics', skill: 'Half life', difficulty: 'stretch', fact: 'Half-life is the time for radioactive nuclei to reduce to', answer: 'One half', distractors: ['Zero', 'One quarter always', 'Double'], explanation: 'After one half-life, half the original undecayed nuclei remain.' },
-  { topic: 'Units', skill: 'Pressure', difficulty: 'warmup', fact: 'Pressure is measured in', answer: 'Pascal', distractors: ['Newton', 'Joule', 'Kelvin'], explanation: 'A pascal is one newton per square meter.' },
-  { topic: 'Waves', skill: 'Frequency', difficulty: 'warmup', fact: 'Frequency is measured in', answer: 'Hertz', distractors: ['Meter', 'Second', 'Tesla'], explanation: 'Hertz means cycles per second.' },
-  { topic: 'Heat Transfer', skill: 'Thermal processes', difficulty: 'core', fact: 'Heat transfer through direct molecular contact is', answer: 'Conduction', distractors: ['Convection', 'Radiation', 'Refraction'], explanation: 'Conduction transfers energy through collisions in matter.' },
+  { topic: 'Wave Optics', skill: 'Coherence', difficulty: 'core', fact: 'Sustained interference requires sources with constant phase difference called', answer: 'Coherent sources', distractors: ['Hot sources', 'Dense sources', 'Charged sources'], explanation: 'Coherent sources maintain a fixed phase relationship.' },
+  { topic: 'Wave Optics', skill: 'Diffraction', difficulty: 'core', fact: 'Bending of light around edges or through narrow openings is called', answer: 'Diffraction', distractors: ['Conduction', 'Induction', 'Evaporation'], explanation: 'Diffraction is a wave effect seen when light meets apertures or obstacles.' },
+  { topic: 'Wave Optics', skill: 'Young experiment', difficulty: 'core', fact: 'Young\'s double-slit experiment demonstrates light', answer: 'Interference', distractors: ['Electrolysis', 'Convection', 'Magnetization only'], explanation: 'The bright and dark fringes are produced by interference.' },
+  { topic: 'Wave Optics', skill: 'Fringe width', difficulty: 'stretch', fact: 'In double-slit interference, fringe width increases when wavelength', answer: 'Increases', distractors: ['Decreases only', 'Becomes zero', 'Has no effect'], explanation: 'Fringe width is directly proportional to wavelength.' },
+  { topic: 'Wave Optics', skill: 'Brewster law', difficulty: 'stretch', fact: 'Brewster law is related to', answer: 'Polarization by reflection', distractors: ['Heating by conduction', 'Nuclear decay', 'Ohmic resistance'], explanation: 'At Brewster angle, reflected light is completely plane polarized.' },
+  { topic: 'Wave Optics', skill: 'Wave nature', difficulty: 'warmup', fact: 'Interference and diffraction support the wave nature of', answer: 'Light', distractors: ['Static charge only', 'Mass only', 'Sound in vacuum'], explanation: 'These phenomena are explained by treating light as a wave.' },
 ];
 
 const chemistrySeeds: ChallengeSeed[] = [
@@ -226,19 +251,11 @@ const seedMap: Record<SubjectId, ChallengeSeed[]> = {
 
 const topicClassMap: Record<SubjectId, Record<string, CurriculumClass[]>> = {
   [SubjectId.PHYSICS]: {
+    'Refraction of Light': ['Class 9'],
     'Classical Mechanics': ['Class 11'],
-    'Work and Energy': ['Class 11'],
-    Gravitation: ['Class 11'],
     Thermodynamics: ['Class 11'],
-    'Heat Transfer': ['Class 11'],
-    Units: ['Class 9', 'Class 11'],
-    Waves: ['Class 9', 'Class 11'],
-    Optics: ['Class 9'],
     Electromagnetism: ['Class 12'],
-    Circuits: ['Class 12'],
     'Wave Optics': ['Class 12'],
-    'Modern Physics': ['Class 12'],
-    'Nuclear Physics': ['Class 12'],
   },
   [SubjectId.CHEMISTRY]: {
     'Historical Models': ['Class 9'],
@@ -332,7 +349,7 @@ export const getChallengeBankSize = (subjectId: SubjectId, selectedClass?: strin
   const eligibleBank = subjectId === SubjectId.CHEMISTRY ? bank.filter((challenge) => challenge.targetClass.length > 0) : bank;
   if (!isCurriculumClass(selectedClass)) return eligibleBank.length;
   const classBankSize = eligibleBank.filter((challenge) => challenge.targetClass.includes(selectedClass)).length;
-  return classBankSize || eligibleBank.length;
+  return classBankSize;
 };
 
 export const getDailyChallenges = (
@@ -348,7 +365,7 @@ export const getDailyChallenges = (
   const classBank = isCurriculumClass(selectedClass)
     ? eligibleBank.filter((challenge) => challenge.targetClass.includes(selectedClass))
     : eligibleBank;
-  const bank = classBank.length ? classBank : eligibleBank;
+  const bank = classBank;
   if (!bank.length) return [];
 
   const dayKey = date.toISOString().slice(0, 10);

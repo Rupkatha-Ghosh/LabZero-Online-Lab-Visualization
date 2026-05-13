@@ -184,7 +184,7 @@ Dynamic simulation environment for exploring chemical reactions.
     name: 'Physics',
     icon: 'Zap',
     color: 'blue',
-    targetClass: ['Class 11', 'Class 12'],
+    targetClass: ['Class 9', 'Class 11', 'Class 12'],
     topics: [
       {
         id: TopicId.MECHANICS,
