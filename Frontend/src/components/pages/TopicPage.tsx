@@ -267,7 +267,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-full w-full"
+              className="h-full w-full overflow-y-auto p-4 md:p-8"
             >
               {visualization}
             </motion.div>

@@ -217,6 +217,7 @@ The branch of physics dealing with the motion of bodies under the action of forc
         slug: 'electromagnetism',
         name: 'Electromagnetism',
         description: 'Explore electric fields, magnetic forces, and circuits.',
+        simulation_id: 'electromagnetism',
         targetClass: ['Class 12'],
         theory: `
 # Electromagnetism
