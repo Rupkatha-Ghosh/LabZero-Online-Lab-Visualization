@@ -37,11 +37,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
   theme,
   subjects,
   selectedClass,
-<<<<<<< HEAD
   onSelectClass
-=======
-  onSelectClass,
->>>>>>> e27a1da33938e2a04f5ba86a8d200a7191aa690a
 }) => {
   const t = (key: string) => translations[key]?.[language] || key;
 
