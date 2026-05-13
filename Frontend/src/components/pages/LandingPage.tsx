@@ -33,8 +33,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
   onProfileClick,
   onDashboardClick,
   onAdminClick,
+  language,
   theme,
-  
   subjects,
   selectedClass,
   onSelectClass,

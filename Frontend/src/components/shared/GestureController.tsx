@@ -5,10 +5,11 @@ import { getGestureRecognizer } from '../../services/gestureService';
 import {
   Hand, Camera, CheckCircle2, XCircle,
   ChevronRight, ChevronLeft, RotateCw, MousePointer2,
-  MessageSquare, Bookmark, ZoomIn, BookOpen, X, Copy, Smartphone,
+  MessageSquare, Bookmark, ZoomIn, BookOpen, X, Smartphone,
 } from 'lucide-react';
 import { motion, AnimatePresence, useSpring, useTransform } from 'motion/react';
 import Receiver from "./Receiver";
+import QRCodePairing from "./QRCodePairing";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -1004,30 +1005,22 @@ const GestureController: React.FC<GestureControllerProps> = ({
                   Phone Camera
                 </div>
                 <div className="truncate text-[11px] text-slate-400">
-                  {cameraMode === 'phone' ? 'Waiting for stream' : 'Fallback ready'}
+                  {cameraMode === 'phone' ? 'Waiting for phone stream' : 'Scan to pair your phone'}
                 </div>
               </div>
             </div>
             <div className="space-y-3 px-4 py-3">
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-slate-300">
-                Open this link on your phone:
-                <div className="mt-1 truncate font-mono text-[10px] text-slate-500">{phoneSenderUrl}</div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={copyPhoneLink}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-white transition-colors hover:bg-indigo-500"
-                >
-                  <Copy size={12} />
-                  {copyStatus === "copied" ? "Copied" : "Copy Link"}
-                </button>
-                <button
-                  onClick={() => setCameraSource('local')}
-                  className="rounded-xl border border-white/10 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-400 transition-colors hover:text-slate-100"
-                >
-                  Local
-                </button>
-              </div>
+              <QRCodePairing
+                pairingUrl={phoneSenderUrl}
+                copyStatus={copyStatus}
+                onCopy={copyPhoneLink}
+              />
+              <button
+                onClick={() => setCameraSource('local')}
+                className="w-full rounded-xl border border-white/10 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-400 transition-colors hover:text-slate-100"
+              >
+                Use Local Camera
+              </button>
             </div>
           </motion.div>
         )}

@@ -65,10 +65,17 @@ export default function Receiver({
         const data = JSON.parse(msg.data as string);
         console.log("📩 Received:", data);
 
-        // 🔁 Sender connected
         if (data.type === "sender-ready") {
           console.log("📱 Sender ready");
-          socket.send(JSON.stringify({ type: "receiver-ready" }));
+          setStatus("Phone ready");
+        }
+
+        if (data.type === "sender-disconnected") {
+          setStatus("Phone disconnected");
+        }
+
+        if (data.type === "waiting-for-peer") {
+          setStatus("Waiting for phone");
         }
 
         // 🎥 Offer from phone

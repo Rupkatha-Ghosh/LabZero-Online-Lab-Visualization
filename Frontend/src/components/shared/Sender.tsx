@@ -62,6 +62,14 @@ export default function Sender() {
           startCamera();
         }
 
+        if (data.type === "receiver-disconnected") {
+          setStatus("LabZero disconnected");
+        }
+
+        if (data.type === "waiting-for-peer") {
+          setStatus("Connected. Waiting for LabZero...");
+        }
+
         // 🎥 Answer from receiver
         if (data.answer) {
           console.log("📥 Received answer");
