@@ -24,6 +24,7 @@ const VectorCalculusSim = React.lazy(() => import('./math/VectorCalculusSim'));
 const ComplexNumbersSim = React.lazy(() => import('./math/ComplexNumbersSim'));
 const PythagorasSim = React.lazy(() => import('./math/PythagorasSim'));
 const TrigonometrySim = React.lazy(() => import('./math/TrigonometrySim'));
+const CalculusSim = React.lazy(() => import('./math/CalculusSim'));
 
 // Biology
 const CellBiologySim = React.lazy(() => import('./biology/CellBiologySim'));
@@ -47,6 +48,7 @@ export const SIMULATION_REGISTRY: Record<string, React.LazyExoticComponent<React
   "pythagoras_theorem": PythagorasSim,
   "trigonometry": TrigonometrySim,
   "complex_numbers": ComplexNumbersSim,
+  "calculus": CalculusSim,
   "microbiology": MicrobiologySim,
   "cell_biology": CellBiologySim,
 };
