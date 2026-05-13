@@ -16,7 +16,6 @@ export const SUBJECTS: Subject[] = [
         name: 'Atomic Structure',
         description: 'Explore the building blocks of matter, from subatomic particles to electron orbitals.',
         targetClass: ['Class 11'],
-        simulation_id: 'atomic_structure',
         theory: `
 # Atomic Structure
 The fundamental study of matter's composition and the behavior of subatomic particles.
@@ -43,7 +42,6 @@ The fundamental study of matter's composition and the behavior of subatomic part
         name: 'Molecular Structure',
         description: 'Understand how atoms bond together to form molecules and their 3D shapes.',
         targetClass: ['Class 11'],
-        simulation_id: 'molecular_structure',
         theory: `
 # Molecular Structure
 Analysis of chemical bonding and the spatial arrangement of atoms in molecules.
@@ -77,7 +75,6 @@ Analysis of chemical bonding and the spatial arrangement of atoms in molecules.
         name: 'Quantum Numbers',
         description: 'Learn the four quantum numbers that describe the unique state of an electron.',
         targetClass: ['Class 11'],
-        simulation_id: 'quantum_numbers',
         theory: `
 # Quantum Numbers
 Quantum numbers are like the "address" of an electron in an atom. No two electrons in the same atom can have the same set of four quantum numbers.
@@ -94,7 +91,6 @@ Quantum numbers are like the "address" of an electron in an atom. No two electro
         name: 'Periodic Trends',
         description: 'Discover how properties change across the periodic table.',
         targetClass: ['Class 12'],
-        simulation_id: 'periodic_trends',
         theory: `
 # Periodic Trends
 Systematic variations in physical and chemical properties of elements across periods and groups.
@@ -115,7 +111,6 @@ Systematic variations in physical and chemical properties of elements across per
         name: 'Historical Models',
         description: 'Explore how our understanding of the atom evolved from Dalton to Bohr.',
         targetClass: ['Class 11'],
-        simulation_id: 'historical_models',
         theory: `
 # Historical Atomic Models
 The journey of discovery from solid spheres to quantized energy levels.
@@ -143,7 +138,6 @@ The journey of discovery from solid spheres to quantized energy levels.
         name: 'Quantum Configuration',
         description: 'Master the rules for filling electrons in orbitals.',
         targetClass: ['Class 11'],
-        simulation_id: 'quantum_config',
         theory: `
 # Electron Configuration
 The distribution of electrons in an atom's orbitals.
@@ -167,7 +161,6 @@ Extra stability is observed in d⁵ and d¹⁰ configurations (e.g., Cr and Cu).
         name: 'Advanced Experiment Lab',
         description: 'Interactive laboratory for studying reaction dynamics and kinetics.',
         targetClass: ['Class 11', 'Class 12'],
-        simulation_id: 'advanced_lab',
         theory: `
 # Advanced Chemistry Lab
 Dynamic simulation environment for exploring chemical reactions.
@@ -191,7 +184,7 @@ Dynamic simulation environment for exploring chemical reactions.
     name: 'Physics',
     icon: 'Zap',
     color: 'blue',
-    targetClass: ['Class 9', 'Class 11', 'Class 12'],
+    targetClass: ['Class 11', 'Class 12'],
     topics: [
       {
         id: TopicId.MECHANICS,
@@ -199,7 +192,6 @@ Dynamic simulation environment for exploring chemical reactions.
         name: 'Classical Mechanics',
         description: 'Study motion, forces, and energy in the macroscopic world.',
         targetClass: ['Class 11'],
-        simulation_id: 'mechanics',
         theory: `
 # Classical Mechanics
 The branch of physics dealing with the motion of bodies under the action of forces.
@@ -226,7 +218,6 @@ The branch of physics dealing with the motion of bodies under the action of forc
         name: 'Electromagnetism',
         description: 'Explore electric fields, magnetic forces, and circuits.',
         targetClass: ['Class 12'],
-        simulation_id: 'electromagnetism',
         theory: `
 # Electromagnetism
 The interaction of electric currents or fields and magnetic fields.
@@ -252,7 +243,6 @@ The interaction of electric currents or fields and magnetic fields.
         name: 'Wave Optics',
         description: 'Study of light as a wave and phenomena like interference and diffraction.',
         targetClass: ['Class 12'],
-        simulation_id: 'wave_optics',
         theory: `
 # Wave Optics
 The study of light phenomena that cannot be explained by ray optics.
@@ -277,7 +267,6 @@ The study of light phenomena that cannot be explained by ray optics.
         name: 'Thermodynamics',
         description: 'Heat, work, and the laws governing energy transformation.',
         targetClass: ['Class 11'],
-        simulation_id: 'thermodynamics',
         theory: `
 # Thermodynamics
 Study of heat, work, temperature, and their relation to energy and physical properties.
@@ -294,13 +283,12 @@ Study of heat, work, temperature, and their relation to energy and physical prop
         `
       },
       {
-         id: TopicId.REFRACTION,
-         slug: 'refraction-of-light',
-  name: 'Refraction of Light',
-  description: 'The bending of light as it passes across the boundary separating two media, governing optical density and total internal reflection.',
-  targetClass: ['Class 9', 'Class 11'],
-  simulation_id: 'refraction',
-  theory: `
+        id: TopicId.REFRACTION,
+        slug: 'refraction-of-light',
+        name: 'Refraction of Light',
+        description: 'The bending of light as it passes across the boundary separating two media, governing optical density and total internal reflection.',
+        targetClass: ['Class 9'],
+        theory: `
 # Refraction of Light
 The phenomenon of the change in the path of light as it passes obliquely from one transparent medium to another is called refraction. This bending occurs because light travels at different speeds in different optical media.
 
@@ -331,7 +319,7 @@ An object placed in a denser medium (like water), when viewed from a rarer mediu
   Shift = Real Depth * (1 - 1/n)
 `
 
-       }
+      }
     ]
   },
   {
@@ -348,7 +336,6 @@ An object placed in a denser medium (like water), when viewed from a rarer mediu
         name: 'Vector Algebra',
         description: 'Visualize 3D vectors, cross products, and orthogonal planes.',
         targetClass: ['Class 12'],
-        simulation_id: 'vector_calculus',
         theory: `
 # Vector Cross Product
 In 3D space, the cross product of two vectors **A** and **B** is a new vector **C** that is perfectly perpendicular (90 degrees) to both of them.
@@ -368,7 +355,6 @@ This is the backbone of 3D lighting! It is used to calculate "surface normals" t
         name: 'Approximating Pi',
         description: 'Use the Archimedes method to calculate π by increasing polygon sides.',
         targetClass: ['Class 10'],
-        simulation_id: 'pi_approximation',
         theory: `
 # Archimedes' Method
 Archimedes discovered that you could find the value of **π** by "trapping" a circle between two polygons.
@@ -416,7 +402,6 @@ Complex numbers are the mathematical engine behind signal processing (Fourier Tr
         name: 'Pythagorean Theorem',
         description: 'Adjust the base and height of a triangle to visualize how the hypotenuse is calculated.',
         targetClass: ['Class 9'],
-        simulation_id: 'pythagoras_theorem',
         theory: `
 # The Pythagorean Theorem
 In any right-angled triangle, the square of the longest side (the hypotenuse) is equal to the sum of the squares of the other two sides.
@@ -491,6 +476,7 @@ The branch of mathematics concerning numerical descriptions of how likely an eve
         name: 'Trigonometry',
         description: 'Relationships between side lengths and angles of triangles.',
         targetClass: ['Class 10', 'Class 11'],
+        simulation_id: 'trigonometry',
         theory: `
 # Trigonometry
 Study of the relationships involving lengths and angles of triangles.
@@ -547,7 +533,6 @@ The branch of mathematics concerning linear equations, vectors, and matrices.
         name: 'Microorganisms',
         description: 'Analyze the 3D structure and movement mechanisms of a single-celled bacterium.',
         targetClass: ['Class 11'],
-        simulation_id: 'microbiology',
         theory: `
 # Microbiology
 The study of microscopic organisms, such as bacteria, viruses, archaea, fungi and protozoa.
@@ -567,7 +552,6 @@ The study of microscopic organisms, such as bacteria, viruses, archaea, fungi an
         name: 'Cellular Anatomy',
         description: 'Explore a 3D cross-section of a eukaryotic cell and its organelles.',
         targetClass: ['Class 11'],
-        simulation_id: 'cell_biology',
         theory: `
 # Cell Biology
 The fundamental unit of life; studying structural and functional components.
