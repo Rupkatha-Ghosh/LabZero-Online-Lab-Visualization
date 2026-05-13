@@ -40,6 +40,7 @@ export const SIMULATION_REGISTRY: Record<string, React.LazyExoticComponent<React
   "electromagnetism": ElectromagnetismSim,
   "wave_optics": WaveOpticsSim,
   "thermodynamics": ThermodynamicsSim,
+  "refraction": RefractionSim,
   "vector_calculus": VectorCalculusSim,
   "pi_approximation": PiApproximationSim,
   "pythagoras_theorem": PythagorasSim,
