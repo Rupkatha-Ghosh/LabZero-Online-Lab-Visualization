@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Transparent background -->
+
+  <!-- Background glow/blur path (static for fallback) -->
+  <path d="M6 8 L58 8 L6 56 L58 56" stroke="#6366f1" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.15">
+    <animate attributeName="opacity" values="0.1;0.2;0.1" dur="6s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Main Z-glyph (white) -->
+  <path d="M6 8 H58 L6 56 H58" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Animated "0" circle (blue/indigo) -->
+  <circle cx="32" cy="32" r="18" stroke="#6366f1" stroke-width="7" fill="none" stroke-dasharray="113" stroke-dashoffset="113">
+    <animate attributeName="stroke-dashoffset" values="113;0;113" dur="6s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Precision node – top-left (rose) -->
+  <circle cx="6" cy="8" r="5" fill="#f43f5e">
+    <animate attributeName="r" values="5;7;5" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Precision node – bottom-right (indigo) -->
+  <circle cx="58" cy="56" r="5" fill="#6366f1">
+    <animate attributeName="r" values="5;7;5" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+</svg>
