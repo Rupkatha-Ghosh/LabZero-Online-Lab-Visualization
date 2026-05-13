@@ -1,5 +1,5 @@
 import React from 'react';
-import { Subject, Topic } from '../../types/types';
+import { Subject, Topic, SubjectId } from '../../types/types';
 import { ArrowLeft, ArrowRight, Beaker, Zap, Calculator, Dna } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Language, translations } from '../../services/translations';
@@ -134,7 +134,7 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
           </motion.div>
         </header>
 
-        <DailyChallenges subjectId={subject.id} subjectName={subject.name} theme={theme} />
+        <DailyChallenges subjectId={subject.slug as SubjectId} subjectName={subject.name} theme={theme} />
 
         <Skeleton name="subject-topics" loading={false}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

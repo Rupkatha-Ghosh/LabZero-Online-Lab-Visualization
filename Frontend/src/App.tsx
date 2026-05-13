@@ -316,7 +316,7 @@ const AppContent: React.FC = () => {
   const startQuiz = () => {
     if (!selectedSubject) return;
 
-    const generated = generateQuizAI(selectedSubject.name, quizLevel);
+    const generated = generateQuizAI(selectedSubject.slug, quizLevel);
 
     if (!generated || generated.length === 0) {
       alert("Quiz generation failed");
