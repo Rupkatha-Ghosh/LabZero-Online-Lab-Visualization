@@ -4,7 +4,7 @@ import PiApproximation from '../../components/labs/math/PiVisualizationLab';
 import SimulationLayout from '../SimulationLayout';
 
 const PiApproximationSim: React.FC<SimulationProps> = () => (
-  <SimulationLayout>
+  <SimulationLayout isDashboard>
     <PiApproximation />
   </SimulationLayout>
 );

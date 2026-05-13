@@ -37,7 +37,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
   
   subjects,
   selectedClass,
-  onSelectClass
+  onSelectClass,
+  language
 }) => {
   const t = (key: string) => translations[key]?.[language] || key;
 
@@ -197,23 +198,23 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   <select
                     value={selectedClass || ''}
                     onChange={(e) => onSelectClass(e.target.value || null)}
-                    className="w-full appearance-none rounded-xl border border-white/10 bg-[#020617]/80 px-4 py-3 pr-10 text-sm font-medium tracking-wide text-white outline-none transition-all hover:border-sky-500/50 focus:border-sky-500 backdrop-blur-md cursor-pointer"
+                    className="w-full appearance-none rounded-xl border border-[var(--border-glass)] bg-[var(--bg-panel)] px-4 py-3 pr-10 text-sm font-medium tracking-wide text-[var(--text-primary)] outline-none transition-all hover:border-sky-500/50 focus:border-sky-500 backdrop-blur-md cursor-pointer shadow-sm"
                   >
-                    <option value="">All Standards (Combined)</option>
-                    <option value="Class 9">Class 9</option>
-                    <option value="Class 10">Class 10</option>
-                    <option value="Class 11">Class 11</option>
-                    <option value="Class 12">Class 12</option>
+                    <option value="" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>All Standards (Combined)</option>
+                    <option value="Class 9" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 9</option>
+                    <option value="Class 10" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 10</option>
+                    <option value="Class 11" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 11</option>
+                    <option value="Class 12" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 12</option>
                   </select>
                   {/* Custom absolute dropdown arrow for clean styling */}
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>
                     ▼
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 border border-white/5 rounded-3xl overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {displayedSubjects.length === 0 ? (
               // Empty placeholders so the section has height for the Boneyard Skeleton to show
               Array.from({ length: Number(localStorage.getItem('labzero_last_subject_count')) || 4 }).map((_, i) => (

@@ -347,7 +347,7 @@ const AppContent: React.FC = () => {
   // ================= VISUALIZATION =================
   const renderVisualization = useCallback((topicSlug: string, topic?: Topic) => {
     // 1. Check the dynamic Registry first (Step 2 & 3)
-    const DynamicSim = topic?.simulation_id ? SIMULATION_REGISTRY[topic.simulation_id] : null;
+    const DynamicSim = topic?.simulation_id ? SIMULATION_REGISTRY[topic.simulation_id.toLowerCase()] : null;
 
     if (DynamicSim) {
       return (
