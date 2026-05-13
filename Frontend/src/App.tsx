@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
-  Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen
+  Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LandingPage from './components/pages/LandingPage';
@@ -19,6 +19,100 @@ import AuthPage from './components/auth/AuthPage';
 import FloatingBrain from './components/common/FloatingBrain';
 import MemoryMapOverlay from './components/shared/MemoryMapOverlay';
 
+const useAnimatedFavicon = () => {
+  useEffect(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let frame = 0;
+    let animId: number;
+    const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link');
+    faviconLink.type = 'image/x-icon';
+    faviconLink.rel = 'shortcut icon';
+
+    const draw = (isStatic: boolean = false) => {
+      ctx.clearRect(0, 0, 32, 32);
+
+      // 1. Draw Glow (subtle pulse or fixed)
+      const glowOpacity = isStatic ? 0.15 : 0.1 + Math.sin(frame * 0.05) * 0.05;
+      ctx.strokeStyle = `rgba(99, 102, 241, ${glowOpacity})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(3, 4); ctx.lineTo(29, 4); ctx.lineTo(3, 28); ctx.lineTo(29, 28);
+      ctx.stroke();
+
+      // 2. Draw Z
+      ctx.strokeStyle = '#ffffff'; 
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(3, 4); ctx.lineTo(29, 4); ctx.lineTo(3, 28); ctx.lineTo(29, 28);
+      ctx.stroke();
+
+      if (!isStatic) {
+        // 3. Draw Animated "0" Formation
+        const drawProgress = (Math.sin(frame * 0.03) + 1) / 2;
+        ctx.strokeStyle = '#6366f1'; 
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(16, 16, 9, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * drawProgress));
+        ctx.stroke();
+
+        // 4. Draw Precision Nodes (Pulsating)
+        const nodePulse = 1 + Math.sin(frame * 0.1) * 0.3;
+        
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(3, 4, 2.5 * nodePulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#6366f1';
+        ctx.beginPath();
+        ctx.arc(29, 28, 2.5 * nodePulse, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Static dots for hidden state
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath(); ctx.arc(3, 4, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#6366f1';
+        ctx.beginPath(); ctx.arc(29, 28, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      faviconLink.href = canvas.toDataURL('image/png');
+      if (!document.head.contains(faviconLink)) {
+        document.head.appendChild(faviconLink);
+      }
+    };
+
+    const animate = () => {
+      draw(false);
+      frame++;
+      animId = requestAnimationFrame(animate);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animId);
+        draw(true); // Draw static frame
+      } else {
+        animate(); // Resume animation
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    animate(); // Start initial animation
+
+    return () => {
+      cancelAnimationFrame(animId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+};
+
 import QuizPage from './components/shared/Quiz';
 import { generateQuizAI } from './data/quizData';
 import { Skeleton } from 'boneyard-js/react';
@@ -31,6 +125,7 @@ import { getMolecules } from './services/moleculesService';
 import { getSubjects } from './services/subjectsService';
 import { SIMULATION_REGISTRY } from './simulations/registry';
 import { Suspense } from 'react';
+import { usePWAInstall } from './hooks/usePWAInstall';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -70,7 +165,13 @@ const BackgroundLayer = ({ theme }: { theme: 'dark' | 'light' }) => (
 );
 
 const AppContent: React.FC = () => {
-  const { user, isLoading, logout } = useAuth();
+  useAnimatedFavicon();
+  const { user, isLoading, logout, handleGoogleCallback } = useAuth();
+  const { isInstallable, handleInstallClick } = usePWAInstall();
+
+  useEffect(() => {
+    handleGoogleCallback();
+  }, [handleGoogleCallback]);
 
   const [elements, setElements] = useState<ElementData[]>([]);
   const [selectedElement, setSelectedElement] = useState<ElementData | null>(null);
@@ -92,9 +193,9 @@ const AppContent: React.FC = () => {
   const [showAuth, setShowAuth] = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [showMindMap, setShowMindMap] = useState(false);
 
-  const [theme, setTheme] = useState<'dark' | 'light'>('light');
-  const [colorBlindMode, setColorBlindMode] = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('labzero_theme') as 'dark' | 'light') || 'light');
+  const [colorBlindMode, setColorBlindMode] = useState(() => localStorage.getItem('labzero_colorblind') === 'true');
+  const [language, setLanguage] = useState<Language>(() => (localStorage.getItem('labzero_language') as Language) || 'en');
 
   const [isGestureActive, setIsGestureActive] = useState(false);
   const [atomRotation, setAtomRotation] = useState({ dx: 0, dy: 0 });
@@ -169,11 +270,17 @@ const AppContent: React.FC = () => {
   // ================= THEME =================
   useEffect(() => {
     document.body.classList.toggle('light-mode', theme === 'light');
+    localStorage.setItem('labzero_theme', theme);
   }, [theme]);
 
   useEffect(() => {
     document.body.classList.toggle('colorblind-mode', colorBlindMode);
+    localStorage.setItem('labzero_colorblind', colorBlindMode.toString());
   }, [colorBlindMode]);
+
+  useEffect(() => {
+    localStorage.setItem('labzero_language', language);
+  }, [language]);
 
   const t = (key: string) => translations[key]?.[language] || key;
 
@@ -248,7 +355,7 @@ const AppContent: React.FC = () => {
           <DynamicSim
             elements={elements}
             molecules={molecules}
-            selectedElement={selectedElement}
+            selectedElement={selectedElement ?? undefined}
             onSelectElement={setSelectedElement}
             theme={theme}
             language={language}
@@ -515,6 +622,26 @@ const AppContent: React.FC = () => {
                         Open
                       </button>
                     </div>
+
+                    {isInstallable && (
+                      <div className="flex items-center justify-between p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                            <Download size={16} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">LabZero App</span>
+                            <span className="text-[8px] font-mono text-indigo-400/60 leading-none mt-0.5">Offline Ready</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleInstallClick}
+                          className="rounded-xl bg-indigo-600 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-white transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/20"
+                        >
+                          Install
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}

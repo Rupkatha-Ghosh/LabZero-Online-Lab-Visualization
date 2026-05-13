@@ -9,6 +9,7 @@ class CustomUser(AbstractUser):
         ('institute', 'Institute'),
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
+    google_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

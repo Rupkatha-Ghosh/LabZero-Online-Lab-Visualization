@@ -100,11 +100,11 @@ const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </header>
 
-      <main className="pt-20 pb-4 px-2 max-w-[1400px] mx-auto space-y-32">
+      <main className="pt-32 pb-0 px-6 md:px-12 max-w-[1400px] mx-auto space-y-32">
 
         {/* HERO SECTION */}
         <Skeleton name="landing-hero" loading={false}>
-          <section className="flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[75vh]">
+          <section id="home" className="flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[75vh] scroll-mt-24">
             <div className="lg:w-[40%] space-y-8 z-10 pt-10">
               <motion.div
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
@@ -266,7 +266,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Theory to Visual */}
         <Skeleton name="landing-theory" loading={false}>
-          <section className="bg-[#FAFBFD] rounded-[32px] p-8 md:p-12 border border-[#E2E8F0] shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row items-stretch gap-8 w-full max-w-[1400px] mx-auto overflow-hidden relative">
+          <section id="about" className="bg-[#FAFBFD] rounded-[32px] p-8 md:p-12 border border-[#E2E8F0] shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row items-stretch gap-8 w-full max-w-[1400px] mx-auto overflow-hidden relative scroll-mt-24">
 
             {/* Left Text */}
             <div className="w-full xl:w-[30%] flex flex-col justify-center min-w-[280px]">
@@ -350,7 +350,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Live Simulations Row */}
         <Skeleton name="landing-simulations" loading={false}>
-          <section className="space-y-8">
+          <section id="simulations" className="space-y-8 scroll-mt-24">
             <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
               <div>
                 <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Try it yourself</span>
@@ -430,7 +430,9 @@ const LandingPage: React.FC<LandingPageProps> = ({
         </Skeleton>
 
       </main>
-      <Footer />
+      <div id="contact">
+        <Footer />
+      </div>
     </div>
   );
 };

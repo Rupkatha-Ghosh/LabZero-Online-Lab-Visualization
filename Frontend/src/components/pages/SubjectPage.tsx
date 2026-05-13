@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { Language, translations } from '../../services/translations';
 import { Skeleton } from 'boneyard-js/react';
 import { Subject3DCardModel } from './Subject3DModel.tsx';
+import DailyChallenges from '../shared/DailyChallenges';
 
 interface SubjectPageProps {
   subject: Subject;
@@ -132,6 +133,8 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
             </div>
           </motion.div>
         </header>
+
+        <DailyChallenges subjectId={subject.id} subjectName={subject.name} theme={theme} />
 
         <Skeleton name="subject-topics" loading={false}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
