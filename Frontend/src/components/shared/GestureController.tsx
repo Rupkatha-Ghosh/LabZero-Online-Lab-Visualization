@@ -45,6 +45,7 @@ interface GestureControllerProps {
   onToggle: () => void;
   cameraSource: "local" | "remote";
   onCameraSourceChange: (source: "local" | "remote") => void;
+  theme?: "dark" | "light";
 }
 
 interface TrailPoint { x: number; y: number; id: number }
@@ -228,7 +229,8 @@ const Trail: React.FC<{ points: TrailPoint[]; color: string }> = ({ points, colo
 // ─────────────────────────────────────────────────────────────────────────────
 // Gesture cheat-sheet panel  (matches the reference table layout)
 // ─────────────────────────────────────────────────────────────────────────────
-const GestureGuide: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const GestureGuide: React.FC<{ onClose: () => void; theme?: "dark" | "light" }> = ({ onClose, theme = "dark" }) => {
+  const isLight = theme === "light";
   const catalogueRef = useRef<HTMLDivElement>(null);
   const [canScrollDown, setCanScrollDown] = useState(false);
   const [canScrollUp, setCanScrollUp] = useState(false);
@@ -265,12 +267,12 @@ const GestureGuide: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       className="absolute bottom-full mb-4 left-0 z-50"
       style={{
         width: 520,
-        background: 'rgba(2,6,23,0.98)',
-        border: '1px solid rgba(99,102,241,0.22)',
+        background: isLight ? 'rgba(255,255,255,0.96)' : 'rgba(2,6,23,0.98)',
+        border: isLight ? '1px solid rgba(148,163,184,0.28)' : '1px solid rgba(99,102,241,0.22)',
         borderRadius: 20,
         padding: 20,
         backdropFilter: 'blur(24px)',
-        boxShadow: '0 0 60px rgba(99,102,241,0.12), 0 32px 64px rgba(0,0,0,0.7)',
+        boxShadow: isLight ? '0 24px 60px rgba(15,23,42,0.16)' : '0 0 60px rgba(99,102,241,0.12), 0 32px 64px rgba(0,0,0,0.7)',
       }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -295,7 +297,7 @@ const GestureGuide: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           )}
           <button onClick={onClose}
             className="w-6 h-6 rounded-lg flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.05)', color: '#475569' }}>
+            style={{ background: isLight ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.05)', color: isLight ? '#334155' : '#64748b' }}>
             <X size={11} />
           </button>
         </div>
@@ -304,7 +306,7 @@ const GestureGuide: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       {/* Table header */}
       <div className="grid mb-2 px-3" style={{ gridTemplateColumns: '2fr 1.4fr 2fr' }}>
         {['Gesture', 'Action', 'Use Case'].map(h => (
-          <span key={h} style={{ fontFamily: 'monospace', fontSize: 8, color: '#334155', letterSpacing: '0.22em', textTransform: 'uppercase' }}>{h}</span>
+          <span key={h} style={{ fontFamily: 'monospace', fontSize: 8, color: isLight ? '#64748b' : '#475569', letterSpacing: '0.22em', textTransform: 'uppercase' }}>{h}</span>
         ))}
       </div>
 
@@ -320,13 +322,13 @@ const GestureGuide: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             const Icon = g.icon;
             return (
               <div key={g.id} className="grid items-center gap-3 px-3 py-2.5 rounded-xl"
-                style={{ gridTemplateColumns: '2fr 1.4fr 2fr', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                style={{ gridTemplateColumns: '2fr 1.4fr 2fr', background: isLight ? 'rgba(248,250,252,0.9)' : 'rgba(255,255,255,0.025)', border: isLight ? '1px solid rgba(148,163,184,0.22)' : '1px solid rgba(255,255,255,0.04)' }}>
                 {/* Gesture cell */}
                 <div className="flex items-center gap-2.5">
                   <span style={{ fontSize: 17 }}>{g.emoji}</span>
                   <div>
                     <span style={{ fontFamily: 'monospace', fontSize: 10, color: g.color, fontWeight: 700, display: 'block' }}>{g.label}</span>
-                    <span style={{ fontFamily: 'monospace', fontSize: 8, color: '#334155' }}>{g.sublabel}</span>
+                    <span style={{ fontFamily: 'monospace', fontSize: 8, color: isLight ? '#64748b' : '#475569' }}>{g.sublabel}</span>
                   </div>
                 </div>
                 {/* Action cell */}
@@ -334,18 +336,18 @@ const GestureGuide: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: `${g.color}15` }}>
                     <Icon size={10} style={{ color: g.color }} />
                   </div>
-                  <span style={{ fontSize: 9.5, color: '#94a3b8' }}>{g.action}</span>
+                  <span style={{ fontSize: 9.5, color: isLight ? '#334155' : '#94a3b8' }}>{g.action}</span>
                 </div>
                 {/* Use case cell */}
-                <span style={{ fontSize: 9, color: '#475569', lineHeight: 1.5 }}>{g.useCase}</span>
+                <span style={{ fontSize: 9, color: isLight ? '#64748b' : '#475569', lineHeight: 1.5 }}>{g.useCase}</span>
               </div>
             );
           })}
         </div>
 
         {/* Tip */}
-        <div className="mt-3 px-3 py-2 rounded-xl" style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.14)' }}>
-          <p style={{ fontFamily: 'monospace', fontSize: 8, color: '#475569', letterSpacing: '0.08em', lineHeight: 1.7 }}>
+        <div className="mt-3 px-3 py-2 rounded-xl" style={{ background: isLight ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.14)' }}>
+          <p style={{ fontFamily: 'monospace', fontSize: 8, color: isLight ? '#475569' : '#64748b', letterSpacing: '0.08em', lineHeight: 1.7 }}>
             Hold gestures fill the ring before firing · Swipe = fast horizontal palm &gt; 0.6 u/s · Pinch = bring thumb + index tip close together
           </p>
         </div>
@@ -357,17 +359,18 @@ const GestureGuide: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Toast notification
 // ─────────────────────────────────────────────────────────────────────────────
-const GestureToast: React.FC<{ gestureId: GestureId | null }> = ({ gestureId }) => {
+const GestureToast: React.FC<{ gestureId: GestureId | null; theme?: "dark" | "light" }> = ({ gestureId, theme = "dark" }) => {
   const def = GESTURE_DEFS.find(g => g.id === gestureId);
+  const isLight = theme === "light";
   return (
     <AnimatePresence>
       {def && (
         <motion.div key={gestureId}
           className="fixed top-8 left-1/2 z-[300] flex items-center gap-3 px-5 py-3 rounded-2xl"
           style={{
-            background: 'rgba(2,6,23,0.97)',
+            background: isLight ? 'rgba(255,255,255,0.96)' : 'rgba(2,6,23,0.97)',
             border: `1px solid ${def.color}45`,
-            boxShadow: `0 0 40px ${def.glow}, 0 20px 40px rgba(0,0,0,0.6)`,
+            boxShadow: isLight ? `0 18px 42px rgba(15,23,42,0.18), 0 0 24px ${def.glow}` : `0 0 40px ${def.glow}, 0 20px 40px rgba(0,0,0,0.6)`,
             backdropFilter: 'blur(22px)',
             transform: 'translateX(-50%)',
           }}
@@ -383,10 +386,10 @@ const GestureToast: React.FC<{ gestureId: GestureId | null }> = ({ gestureId }) 
             <div style={{ fontFamily: 'monospace', fontSize: 8, color: def.color, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 2 }}>
               {def.mode}
             </div>
-            <div style={{ fontFamily: 'monospace', fontSize: 14, color: '#f1f5f9', fontWeight: 700 }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 14, color: isLight ? '#0f172a' : '#f1f5f9', fontWeight: 700 }}>
               {def.action}
             </div>
-            <div style={{ fontSize: 10, color: '#475569', marginTop: 1 }}>{def.useCase}</div>
+            <div style={{ fontSize: 10, color: isLight ? '#64748b' : '#475569', marginTop: 1 }}>{def.useCase}</div>
           </div>
         </motion.div>
       )}
@@ -426,7 +429,9 @@ const GestureController: React.FC<GestureControllerProps> = ({
   onToggleTheme, onResetZoom, onZoom,
   onPositionChange, isActive, onToggle,
   cameraSource, onCameraSourceChange,
+  theme = "dark",
 }) => {
+  const isLight = theme === "light";
   const videoRef = useRef<HTMLVideoElement>(null);
   const gestureRecRef = useRef<GestureRecognizer | null>(null);
 
@@ -778,6 +783,17 @@ const GestureController: React.FC<GestureControllerProps> = ({
   const activeDef = GESTURE_DEFS.find(g => g.id === currentGesture);
   const activeColor = activeDef?.color ?? '#6366f1';
   const activeGlow = activeDef?.glow ?? 'rgba(99,102,241,0.5)';
+  const panelBg = isLight
+    ? (isActive ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.86)')
+    : (isActive ? 'rgba(2,6,23,0.97)' : 'rgba(255,255,255,0.03)');
+  const panelBorder = isLight
+    ? (isActive ? activeColor + '55' : 'rgba(148,163,184,0.32)')
+    : (isActive ? activeColor + '42' : 'rgba(255,255,255,0.06)');
+  const subtleText = isLight ? '#64748b' : '#64748b';
+  const quietText = isLight ? '#475569' : '#334155';
+  const tileOffBg = isLight ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.04)';
+  const tileOffBorder = isLight ? 'rgba(148,163,184,0.24)' : 'rgba(255,255,255,0.07)';
+  const tileOffText = isLight ? '#64748b' : '#475569';
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -806,23 +822,25 @@ const GestureController: React.FC<GestureControllerProps> = ({
       </AnimatePresence>
 
       {/* ── Toast ─────────────────────────────────────────────────────────── */}
-      <GestureToast gestureId={justFired} />
+      <GestureToast gestureId={justFired} theme={theme} />
 
       {/* ── HUD bar ───────────────────────────────────────────────────────── */}
       <div className={`fixed left-4 md:left-4 z-[100] transition-all duration-500 ${isActive ? 'bottom-24 md:bottom-32' : 'bottom-20'}`}>
 
         <AnimatePresence>
-          {showGuide && <GestureGuide onClose={() => setShowGuide(false)} />}
+          {showGuide && <GestureGuide onClose={() => setShowGuide(false)} theme={theme} />}
         </AnimatePresence>
 
         <motion.div layout className="relative flex items-center gap-3 rounded-2xl overflow-hidden"
           style={{
             padding: isActive ? '10px 14px' : '8px',
-            background: isActive ? 'rgba(2,6,23,0.97)' : 'rgba(255,255,255,0.03)',
-            border: `1px solid ${isActive ? activeColor + '42' : 'rgba(255,255,255,0.06)'}`,
+            background: panelBg,
+            border: `1px solid ${panelBorder}`,
             boxShadow: isActive
-              ? `0 0 60px ${activeGlow}22, 0 0 0 1px ${activeColor}12, 0 24px 56px rgba(0,0,0,0.78)`
-              : 'none',
+              ? isLight
+                ? `0 20px 48px rgba(15,23,42,0.18), 0 0 32px ${activeGlow}30`
+                : `0 0 60px ${activeGlow}22, 0 0 0 1px ${activeColor}12, 0 24px 56px rgba(0,0,0,0.78)`
+              : isLight ? '0 12px 30px rgba(15,23,42,0.12)' : 'none',
             backdropFilter: 'blur(24px)',
           }}
           transition={{ type: 'spring', stiffness: 280, damping: 28 }}>
@@ -839,13 +857,14 @@ const GestureController: React.FC<GestureControllerProps> = ({
             className="relative hidden md:flex items-center justify-center rounded-xl overflow-hidden flex-shrink-0"
             style={{
               width: 52, height: 52,
-              background: isActive ? activeColor : 'rgba(255,255,255,0.05)',
+              background: isActive ? activeColor : isLight ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.05)',
+              border: isActive ? '1px solid transparent' : isLight ? '1px solid rgba(148,163,184,0.24)' : '1px solid rgba(255,255,255,0.07)',
               boxShadow: isActive ? `0 0 18px ${activeGlow}` : 'none',
             }}
             whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 420, damping: 24 }}>
             <motion.div animate={{ rotate: isActive ? 360 : 0 }} transition={{ duration: 0.5 }}>
-              {isActive ? <Hand size={22} color="#fff" /> : <Camera size={22} style={{ color: '#64748b' }} />}
+              {isActive ? <Hand size={22} color="#fff" /> : <Camera size={22} style={{ color: isLight ? '#475569' : '#64748b' }} />}
             </motion.div>
             {isActive && (
               <motion.div className="absolute inset-0 rounded-xl"
@@ -863,7 +882,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
                 transition={{ type: 'spring', stiffness: 260, damping: 26 }}
                 className="flex items-center gap-4 overflow-hidden">
 
-                <div className="h-10 w-px flex-shrink-0" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                <div className="h-10 w-px flex-shrink-0" style={{ background: isLight ? 'rgba(148,163,184,0.24)' : 'rgba(255,255,255,0.07)' }} />
 
                 {/* Status block */}
                 <div className="flex-shrink-0" style={{ minWidth: 110 }}>
@@ -871,7 +890,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
                     <motion.div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                       style={{ background: activeColor }}
                       animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.1, repeat: Infinity }} />
-                    <span style={{ fontFamily: 'monospace', fontSize: 8, color: '#475569', letterSpacing: '0.22em', textTransform: 'uppercase' }}>
+                    <span style={{ fontFamily: 'monospace', fontSize: 8, color: subtleText, letterSpacing: '0.22em', textTransform: 'uppercase' }}>
                       {fps}fps · {isLoaded ? 'LIVE' : 'INIT…'} · 
                       {cameraMode === 'webcam' ? '🎥 CAM' : cameraMode === 'phone' ? '📱 PHONE' : '❌ NONE'}
                     </span>
@@ -881,19 +900,19 @@ const GestureController: React.FC<GestureControllerProps> = ({
                     transition={{ type: 'spring', stiffness: 400, damping: 28 }}>
                     <span style={{
                       fontFamily: 'monospace', fontSize: 12, fontWeight: 700,
-                      color: currentGesture !== 'None' ? activeColor : '#1e293b',
+                      color: currentGesture !== 'None' ? activeColor : isLight ? '#0f172a' : '#94a3b8',
                       letterSpacing: '0.04em', display: 'block', marginBottom: 4,
                     }}>
                       {currentGesture === 'None' ? 'SCANNING…' : currentGesture.replace(/_/g, ' ')}
                     </span>
                   </motion.div>
                   <ConfBar value={confidence} color={activeColor} />
-                  <div style={{ fontFamily: 'monospace', fontSize: 7.5, color: '#334155', marginTop: 3, letterSpacing: '0.1em' }}>
+                  <div style={{ fontFamily: 'monospace', fontSize: 7.5, color: quietText, marginTop: 3, letterSpacing: '0.1em' }}>
                     {Math.round(confidence * 100)}% CONF · {activeMode}
                   </div>
                 </div>
 
-                <div className="h-10 w-px flex-shrink-0" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                <div className="h-10 w-px flex-shrink-0" style={{ background: isLight ? 'rgba(148,163,184,0.24)' : 'rgba(255,255,255,0.07)' }} />
 
                 {/* Gesture tiles */}
                 <div className="flex gap-2 flex-shrink-0 flex-wrap" style={{ maxWidth: 420 }}>
@@ -909,12 +928,12 @@ const GestureController: React.FC<GestureControllerProps> = ({
                         transition={isOn && !g.holdMs ? { duration: 0.65, repeat: Infinity } : {}}>
                         <div className="relative w-11 h-11 rounded-xl flex items-center justify-center"
                           style={{
-                            background: isOn ? `${g.color}22` : 'rgba(255,255,255,0.04)',
-                            border: `1px solid ${isOn ? g.color + '62' : 'rgba(255,255,255,0.07)'}`,
+                            background: isOn ? `${g.color}22` : tileOffBg,
+                            border: `1px solid ${isOn ? g.color + '62' : tileOffBorder}`,
                             boxShadow: isOn ? `0 0 18px ${g.glow}, inset 0 0 8px ${g.color}10` : 'none',
                             transition: 'all 0.22s ease',
                           }}>
-                          <Icon size={15} style={{ color: isOn ? g.color : '#2d3748', transition: 'color 0.2s' }} />
+                          <Icon size={15} style={{ color: isOn ? g.color : tileOffText, transition: 'color 0.2s' }} />
                           {/* Hold ring */}
                           {g.holdMs !== null && hp > 0 && <HoldRing progress={hp} color={g.color} />}
                           {/* Fired flash */}
@@ -927,7 +946,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
                         </div>
                         <span style={{
                           fontFamily: 'monospace', fontSize: 7,
-                          color: isOn ? g.color : '#2d3748',
+                          color: isOn ? g.color : tileOffText,
                           letterSpacing: '0.13em', textTransform: 'uppercase',
                           transition: 'color 0.2s',
                         }}>
@@ -938,11 +957,11 @@ const GestureController: React.FC<GestureControllerProps> = ({
                   })}
                 </div>
 
-                <div className="h-10 w-px flex-shrink-0" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                <div className="h-10 w-px flex-shrink-0" style={{ background: isLight ? 'rgba(148,163,184,0.24)' : 'rgba(255,255,255,0.07)' }} />
 
                 {/* Mini camera viewport */}
                 <div className="relative flex-shrink-0 rounded-xl overflow-hidden"
-                  style={{ width: 116, height: 66, background: '#000', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  style={{ width: 116, height: 66, background: '#000', border: isLight ? '1px solid rgba(148,163,184,0.28)' : '1px solid rgba(255,255,255,0.07)' }}>
                   <video ref={videoRef} autoPlay playsInline muted
                     className="absolute inset-0 w-full h-full object-cover"
                     style={{ opacity: 0.32, filter: 'grayscale(100%) contrast(1.2)', transform: 'scaleX(-1)' }} />
@@ -991,17 +1010,17 @@ const GestureController: React.FC<GestureControllerProps> = ({
                   <motion.button onClick={() => setShowGuide(s => !s)}
                     className="w-8 h-8 rounded-lg flex items-center justify-center"
                     style={{
-                      background: showGuide ? 'rgba(129,140,248,0.18)' : 'rgba(255,255,255,0.05)',
-                      border: `1px solid ${showGuide ? 'rgba(129,140,248,0.35)' : 'rgba(255,255,255,0.07)'}`,
+                      background: showGuide ? 'rgba(129,140,248,0.18)' : isLight ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${showGuide ? 'rgba(129,140,248,0.35)' : isLight ? 'rgba(148,163,184,0.24)' : 'rgba(255,255,255,0.07)'}`,
                     }}
                     whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.88 }}>
-                    <BookOpen size={12} style={{ color: showGuide ? '#818cf8' : '#374151' }} />
+                    <BookOpen size={12} style={{ color: showGuide ? '#818cf8' : isLight ? '#475569' : '#64748b' }} />
                   </motion.button>
                   <motion.button onClick={onToggle}
                     className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}
+                    style={{ background: isLight ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.05)', border: isLight ? '1px solid rgba(148,163,184,0.24)' : '1px solid rgba(255,255,255,0.07)' }}
                     whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.88 }}>
-                    <X size={11} style={{ color: '#374151' }} />
+                    <X size={11} style={{ color: isLight ? '#475569' : '#64748b' }} />
                   </motion.button>
                 </div>
               </motion.div>
@@ -1013,14 +1032,14 @@ const GestureController: React.FC<GestureControllerProps> = ({
         <motion.button onClick={onToggle}
           className="md:hidden absolute -top-3 -right-3 w-10 h-10 rounded-full flex items-center justify-center"
           style={{
-            background: isActive ? activeColor : 'rgba(15,23,42,0.9)',
-            border: `1px solid ${isActive ? activeColor : 'rgba(255,255,255,0.09)'}`,
-            boxShadow: isActive ? `0 0 18px ${activeGlow}` : 'none',
+            background: isActive ? activeColor : isLight ? 'rgba(255,255,255,0.95)' : 'rgba(15,23,42,0.9)',
+            border: `1px solid ${isActive ? activeColor : isLight ? 'rgba(148,163,184,0.3)' : 'rgba(255,255,255,0.09)'}`,
+            boxShadow: isActive ? `0 0 18px ${activeGlow}` : isLight ? '0 10px 24px rgba(15,23,42,0.14)' : 'none',
           }}
           whileTap={{ scale: 0.88 }}>
           {isActive
             ? <Hand size={17} color="#fff" />
-            : <Camera size={17} style={{ color: '#64748b' }} />}
+            : <Camera size={17} style={{ color: isLight ? '#475569' : '#64748b' }} />}
         </motion.button>
       </div>
       <AnimatePresence>
@@ -1030,17 +1049,21 @@ const GestureController: React.FC<GestureControllerProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.96 }}
             transition={{ type: 'spring', stiffness: 360, damping: 28 }}
-            className="fixed bottom-24 right-4 z-[130] w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-indigo-400/20 bg-slate-950/95 shadow-2xl shadow-indigo-950/40 backdrop-blur-xl md:bottom-6 md:right-60"
+            className={`fixed bottom-24 right-4 z-[130] w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl backdrop-blur-xl md:bottom-6 md:right-60 ${
+              isLight
+                ? 'border border-slate-200 bg-white/95 shadow-2xl shadow-slate-900/15'
+                : 'border border-indigo-400/20 bg-slate-950/95 shadow-2xl shadow-indigo-950/40'
+            }`}
           >
-            <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300">
+            <div className={`flex items-center gap-3 border-b px-4 py-3 ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${isLight ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-indigo-500/15 text-indigo-300'}`}>
                 <Smartphone size={17} />
               </div>
               <div className="min-w-0">
-                <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-indigo-300">
+                <div className={`font-mono text-[9px] uppercase tracking-[0.22em] ${isLight ? 'text-indigo-700' : 'text-indigo-300'}`}>
                   Phone Camera
                 </div>
-                <div className="truncate text-[11px] text-slate-400">
+                <div className={`truncate text-[11px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                   {cameraMode === 'phone' ? 'Waiting for phone stream' : 'Scan to pair your phone'}
                 </div>
               </div>
@@ -1053,7 +1076,11 @@ const GestureController: React.FC<GestureControllerProps> = ({
               />
               <button
                 onClick={() => onCameraSourceChange('local')}
-                className="w-full rounded-xl border border-white/10 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-400 transition-colors hover:text-slate-100"
+                className={`w-full rounded-xl border px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] transition-colors ${
+                  isLight
+                    ? 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950'
+                    : 'border-white/10 text-slate-400 hover:text-slate-100'
+                }`}
               >
                 Use Local Camera
               </button>

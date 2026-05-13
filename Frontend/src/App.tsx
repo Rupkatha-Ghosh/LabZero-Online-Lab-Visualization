@@ -590,9 +590,15 @@ const AppContent: React.FC = () => {
 
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className={`fixed bottom-20 right-24 w-16 h-16 rounded-2xl hidden md:flex items-center justify-center transition-all duration-500 z-[110] ${showSettings ? 'bg-indigo-500 rotate-90' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
+              className={`fixed bottom-20 right-24 w-16 h-16 rounded-2xl hidden md:flex items-center justify-center transition-all duration-500 z-[110] ${
+                showSettings
+                  ? 'bg-indigo-600 text-white rotate-90 shadow-lg shadow-indigo-600/25'
+                  : theme === 'light'
+                    ? 'bg-white/90 border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950 shadow-lg shadow-slate-900/10'
+                    : 'bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 hover:text-white'
+              }`}
             >
-              <Settings size={24} className={showSettings ? 'text-white' : 'text-slate-400'} />
+              <Settings size={24} />
             </button>
 
 
@@ -602,16 +608,24 @@ const AppContent: React.FC = () => {
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                  className="fixed top-20 bottom-24 left-4 right-4 md:top-auto md:bottom-28 md:left-auto md:right-28 md:w-80 md:max-h-[min(42rem,calc(100vh-8rem))] glass-panel rounded-3xl z-[110] border border-white/10 origin-bottom-right mx-auto max-w-[calc(100vw-32px)] overflow-hidden flex flex-col"
+                  className={`fixed top-20 bottom-24 left-4 right-4 md:top-auto md:bottom-28 md:left-auto md:right-28 md:w-80 md:max-h-[min(42rem,calc(100vh-8rem))] rounded-3xl z-[110] origin-bottom-right mx-auto max-w-[calc(100vw-32px)] overflow-hidden flex flex-col backdrop-blur-2xl shadow-2xl ${
+                    theme === 'light'
+                      ? 'bg-white/95 border border-slate-200 text-slate-900 shadow-slate-900/12'
+                      : 'bg-slate-950/92 border border-white/10 text-slate-100 shadow-black/40'
+                  }`}
                 >
-                  <div className="flex items-center justify-between gap-3 border-b border-white/10 px-6 py-5">
-                    <h3 className="text-xs font-mono uppercase tracking-[0.3em] text-indigo-400 flex items-center gap-2">
+                  <div className={`flex items-center justify-between gap-3 border-b px-6 py-5 ${theme === 'light' ? 'border-slate-200' : 'border-white/10'}`}>
+                    <h3 className={`text-xs font-mono uppercase tracking-[0.3em] flex items-center gap-2 ${theme === 'light' ? 'text-indigo-700' : 'text-indigo-400'}`}>
                       <Eye size={12} /> {t('accessibility')}
                     </h3>
                     {(canSettingsScrollDown || canSettingsScrollUp) && (
                       <button
                         onClick={handleSettingsScrollButton}
-                        className="h-8 rounded-xl border border-indigo-400/20 bg-indigo-500/10 px-3 text-indigo-300 transition-colors hover:bg-indigo-500/20 flex items-center gap-1.5"
+                        className={`h-8 rounded-xl border px-3 transition-colors flex items-center gap-1.5 ${
+                          theme === 'light'
+                            ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                            : 'border-indigo-400/20 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20'
+                        }`}
                       >
                         <span className="text-[8px] font-mono uppercase tracking-[0.18em]">Scroll</span>
                         {canSettingsScrollDown ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
@@ -623,27 +637,27 @@ const AppContent: React.FC = () => {
                     onScroll={updateSettingsScrollState}
                     className="space-y-4 overflow-y-auto scrollbar-hide px-6 py-5"
                   >
-                    <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
+                    <div className={`flex items-center justify-between p-3 rounded-2xl border ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">{t('colorblindMode')}</span>
+                        <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>{t('colorblindMode')}</span>
                       </div>
-                      <button onClick={() => setColorBlindMode(!colorBlindMode)} className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${colorBlindMode ? 'bg-indigo-500' : 'bg-slate-800'}`}>
+                      <button onClick={() => setColorBlindMode(!colorBlindMode)} className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${colorBlindMode ? 'bg-indigo-600' : theme === 'light' ? 'bg-slate-300' : 'bg-slate-800'}`}>
                         <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-300 ${colorBlindMode ? 'left-6' : 'left-1'}`} />
                       </button>
                     </div>
-                    <div className="flex flex-col gap-3 p-3 rounded-2xl bg-white/5 border border-white/5">
+                    <div className={`flex flex-col gap-3 p-3 rounded-2xl border ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-indigo-300">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme === 'light' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-slate-800 text-indigo-300'}`}>
                             {cameraSource === 'local' ? <Camera size={16} /> : <Smartphone size={16} />}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">Gesture Camera</span>
-                            <span className="text-[8px] font-mono text-slate-500">{cameraSource === 'local' ? 'Local webcam' : 'Phone camera'} source</span>
+                            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>Gesture Camera</span>
+                            <span className={`text-[8px] font-mono ${theme === 'light' ? 'text-slate-500' : 'text-slate-500'}`}>{cameraSource === 'local' ? 'Local webcam' : 'Phone camera'} source</span>
                           </div>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-1 rounded-2xl bg-slate-950/80 p-1">
+                      <div className={`grid grid-cols-2 gap-1 rounded-2xl p-1 ${theme === 'light' ? 'bg-white border border-slate-200' : 'bg-slate-950/80'}`}>
                         {(['local', 'remote'] as const).map((source) => (
                           <button
                             key={source}
@@ -651,7 +665,9 @@ const AppContent: React.FC = () => {
                             className={`flex h-10 items-center justify-center gap-2 rounded-xl text-[9px] font-mono uppercase tracking-[0.2em] transition-all ${
                               cameraSource === source
                                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                : 'text-slate-500 hover:text-slate-300'
+                                : theme === 'light'
+                                  ? 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                                  : 'text-slate-500 hover:text-slate-300'
                             }`}
                           >
                             {source === 'local' ? <Camera size={13} /> : <Smartphone size={13} />}
@@ -660,23 +676,23 @@ const AppContent: React.FC = () => {
                         ))}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
+                    <div className={`flex items-center justify-between p-3 rounded-2xl border ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">{t('theme')}</span>
+                        <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>{t('theme')}</span>
                         <span className="text-[8px] font-mono text-slate-500">{theme === 'dark' ? t('dark') : t('light')} Visuals</span>
                       </div>
                       <button
                         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${theme === 'light' ? 'bg-amber-50 text-amber-700 border border-amber-100 hover:bg-amber-100' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
                       >
                         {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
                       </button>
                     </div>
 
-                    <div className="flex flex-col gap-3 p-3 rounded-2xl bg-white/5 border border-white/5">
+                    <div className={`flex flex-col gap-3 p-3 rounded-2xl border ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
                       <div className="flex items-center gap-2">
                         <Languages size={12} className="text-indigo-400" />
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">{t('language')}</span>
+                        <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>{t('language')}</span>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
                         {(['en', 'bn', 'hi'] as Language[]).map((lang) => (
@@ -685,7 +701,9 @@ const AppContent: React.FC = () => {
                             onClick={() => setLanguage(lang)}
                             className={`py-2 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all ${language === lang
                               ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                              : 'bg-slate-800 text-slate-500 hover:text-slate-300'
+                              : theme === 'light'
+                                ? 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                                : 'bg-slate-800 text-slate-500 hover:text-slate-300'
                               }`}
                           >
                             {lang}
@@ -694,14 +712,14 @@ const AppContent: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-2xl bg-purple-500/10 border border-purple-400/20">
+                    <div className={`flex items-center justify-between p-3 rounded-2xl border ${theme === 'light' ? 'bg-purple-50 border-purple-100' : 'bg-purple-500/10 border-purple-400/20'}`}>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme === 'light' ? 'bg-purple-100 text-purple-700' : 'bg-purple-500/20 text-purple-300'}`}>
                           <Brain size={16} />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">MindMap</span>
-                          <span className="text-[8px] font-mono text-purple-300/70 leading-none mt-0.5">Memory Map</span>
+                          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>MindMap</span>
+                          <span className={`text-[8px] font-mono leading-none mt-0.5 ${theme === 'light' ? 'text-purple-700/70' : 'text-purple-300/70'}`}>Memory Map</span>
                         </div>
                       </div>
                       <button
@@ -715,13 +733,13 @@ const AppContent: React.FC = () => {
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
+                    <div className={`flex items-center justify-between p-3 rounded-2xl border ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-amber-300">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme === 'light' ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'bg-slate-800 text-amber-300'}`}>
                           <BookOpen size={16} />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">Glossary</span>
+                          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>Glossary</span>
                         </div>
                       </div>
                       <button
@@ -736,14 +754,14 @@ const AppContent: React.FC = () => {
                     </div>
 
                     {isInstallable && (
-                      <div className="flex items-center justify-between p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
+                      <div className={`flex items-center justify-between p-3 rounded-2xl border ${theme === 'light' ? 'bg-indigo-50 border-indigo-100' : 'bg-indigo-500/10 border-indigo-500/20'}`}>
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme === 'light' ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-500/20 text-indigo-400'}`}>
                             <Download size={16} />
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">LabZero App</span>
-                            <span className="text-[8px] font-mono text-indigo-400/60 leading-none mt-0.5">Offline Ready</span>
+                            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>LabZero App</span>
+                            <span className={`text-[8px] font-mono leading-none mt-0.5 ${theme === 'light' ? 'text-indigo-700/60' : 'text-indigo-400/60'}`}>Offline Ready</span>
                           </div>
                         </div>
                         <button
@@ -773,6 +791,7 @@ const AppContent: React.FC = () => {
                 showAuth={showAuth}
                 language={language}
                 user={user}
+                theme={theme}
               />
             )}
 
@@ -795,6 +814,7 @@ const AppContent: React.FC = () => {
               onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
               cameraSource={cameraSource}
               onCameraSourceChange={setCameraSource}
+              theme={theme}
             />
 
             {isGestureActive && gesturePos && user?.role !== 'student' && (
