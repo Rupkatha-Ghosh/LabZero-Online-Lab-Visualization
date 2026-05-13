@@ -426,7 +426,7 @@ In any right-angled triangle, the square of the longest side (the hypotenuse) is
         slug: 'calculus',
         name: 'Calculus',
         description: 'Master derivatives, integrals, and the study of continuous change.',
-        targetClass: ['Class 11', 'Class 12'],
+        targetClass: ['Class 12'],
         theory: `
 # Calculus
 The mathematical study of continuous change, encompassing limits, derivatives, and integrals.
@@ -451,7 +451,7 @@ The mathematical study of continuous change, encompassing limits, derivatives, a
         slug: 'probability',
         name: 'Probability',
         description: 'The science of uncertainty and data analysis.',
-        targetClass: ['Class 10', 'Class 12'],
+        targetClass: ['Class 9'],
         theory: `
 # Probability
 The branch of mathematics concerning numerical descriptions of how likely an event is to occur.
@@ -475,7 +475,7 @@ The branch of mathematics concerning numerical descriptions of how likely an eve
         slug: 'trigonometry',
         name: 'Trigonometry',
         description: 'Relationships between side lengths and angles of triangles.',
-        targetClass: ['Class 10', 'Class 11'],
+        targetClass: ['Class 10'],
         simulation_id: 'trigonometry',
         theory: `
 # Trigonometry
@@ -501,7 +501,7 @@ Study of the relationships involving lengths and angles of triangles.
         slug: 'linear_algebra',
         name: 'Linear Algebra',
         description: 'Study of vectors, matrices, and linear transformations.',
-        targetClass: ['Class 11', 'Class 12'],
+        targetClass: ['Class 11'],
         theory: `
 # Linear Algebra
 The branch of mathematics concerning linear equations, vectors, and matrices.
