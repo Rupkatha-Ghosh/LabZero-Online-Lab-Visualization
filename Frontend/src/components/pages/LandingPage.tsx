@@ -136,10 +136,16 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}
                 className="flex flex-col sm:flex-row gap-4 pt-2"
               >
-                <button className="px-8 py-4 bg-[#14b8a6] hover:bg-[#0f766e] text-white rounded-full text-base font-semibold transition-all shadow-lg shadow-[#14b8a6]/25 flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-8 py-4 bg-[#14b8a6] hover:bg-[#0f766e] text-white rounded-full text-base font-semibold transition-all shadow-lg shadow-[#14b8a6]/25 flex items-center justify-center gap-2"
+                >
                   Start Exploring <ArrowRight size={18} />
                 </button>
-                <button className="px-8 py-4 bg-white border-2 border-[#E2E8F0] hover:border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#0F172A] rounded-full text-base font-semibold transition-all flex items-center justify-center gap-2 shadow-sm">
+                <button 
+                  onClick={() => document.getElementById('simulations')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-8 py-4 bg-white border-2 border-[#E2E8F0] hover:border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#0F172A] rounded-full text-base font-semibold transition-all flex items-center justify-center gap-2 shadow-sm"
+                >
                   Watch Demo <Play size={18} fill="currentColor" className="text-[#0F172A]" />
                 </button>
               </motion.div>
@@ -184,7 +190,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
         {/* Subject Cards Grid */}
         {/* Subject Cards Grid */}
         <Skeleton name="landing-cards" loading={subjects.length === 0}>
-          <section className="min-h-[440px]">
+          <section id="explore" className="min-h-[440px] scroll-mt-24">
             {/* CLASS SELECTION DROPDOWN BAR */}
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
