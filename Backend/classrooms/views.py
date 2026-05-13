@@ -11,32 +11,32 @@ class ClassroomViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'teacher':
+        if user.role in ['teacher', 'institute']:            
             return Classroom.objects.filter(teacher=user)
         elif user.role == 'student':
             return user.enrolled_classrooms.all()
         return Classroom.objects.none()
 
     def perform_create(self, serializer):
-        if self.request.user.role != 'teacher':
+        if self.request.user.role not in ['teacher', 'institute']:
             from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Only accounts with the 'teacher' role can create classrooms.")
+            raise PermissionDenied("Only accounts with 'teacher' or 'institute' roles can create classrooms.")
         serializer.save(teacher=self.request.user)
 
 class JoinClassroomView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, self_request):
-        code = self_request.data.get('code')
+    def post(self, request):
+        code = request.data.get('code')
         try:
             classroom = Classroom.objects.get(invite_code=code)
-            if self_request.user.role != 'student':
+            if request.user.role != 'student':
                 return Response(
                     {"error": "Only students can join classrooms."}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            classroom.students.add(self_request.user)
+            classroom.students.add(request.user)
             return Response(
                 {"message": f"Successfully joined {classroom.name}", "classroom": ClassroomSerializer(classroom).data},
                 status=status.HTTP_200_OK
@@ -53,7 +53,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'teacher':
+        if user.role in ['teacher', 'institute']:
             return Assignment.objects.filter(classroom__teacher=user)
         elif user.role == 'student':
             return Assignment.objects.filter(classroom__students=user)

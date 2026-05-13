@@ -184,7 +184,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
         <Skeleton name="landing-cards" loading={subjects.length === 0}>
           <section className="min-h-[440px]">
             {/* CLASS SELECTION DROPDOWN BAR */}
-            <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-6">
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
                 <span className="text-xs font-mono uppercase tracking-widest opacity-60">

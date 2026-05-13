@@ -331,6 +331,20 @@ const AppContent: React.FC = () => {
     setViewState(ViewState.TOPIC);
   }, []);
 
+  const handleLaunchSimulation = useCallback((topicId: string | number) => {
+    // Find the topic in any of the subjects
+    for (const subject of subjects) {
+      const topic = subject.topics.find(t => t.id === topicId || t.slug === topicId);
+      if (topic) {
+        setSelectedSubject(subject);
+        setSelectedTopic(topic);
+        setViewState(ViewState.TOPIC);
+        return;
+      }
+    }
+    console.error("Topic not found for simulation:", topicId);
+  }, [subjects]);
+
   const handleSelectClass = useCallback((className: string) => {
     setSelectedClass(className);
     setViewState(ViewState.CLASS_SUBJECTS);
@@ -563,7 +577,7 @@ const AppContent: React.FC = () => {
               )}
               {viewState === ViewState.DASHBOARD && user && (
                 <motion.div key="dashboard" className="h-full w-full">
-                  {user.role === 'teacher' ? <TeacherDashboard onBack={handleBackToLanding} /> : user.role === 'institute' ? <InstituteDashboard onBack={handleBackToLanding} /> : <StudentDashboard onBack={handleBackToLanding} />}
+                  {user.role === 'teacher' ? <TeacherDashboard onBack={handleBackToLanding} /> : user.role === 'institute' ? <InstituteDashboard onBack={handleBackToLanding} /> : <StudentDashboard onBack={handleBackToLanding} onLaunchLab={handleLaunchSimulation} />}
                 </motion.div>
               )}
               {viewState === ViewState.ADMIN && user && (user.is_staff || user.is_superuser) && (

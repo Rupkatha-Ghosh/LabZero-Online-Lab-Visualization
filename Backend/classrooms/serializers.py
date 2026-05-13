@@ -9,22 +9,26 @@ class AssignmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Assignment
-        fields = ['id', 'classroom', 'title', 'description', 'topic', 'topic_name', 'teacher_name', 'file', 'points', 'due_date', 'status', 'created_at']
+        fields = ['id', 'classroom', 'title', 'description', 'topic', 'topic_name', 'teacher_name', 'file_url', 'points', 'due_date', 'status', 'created_at']
 
     def get_teacher_name(self, obj):
-        teacher = obj.classroom.teacher
-        if teacher.first_name and teacher.last_name:
-            return f"{teacher.first_name} {teacher.last_name}"
-        return teacher.first_name or teacher.username
+        try:
+            teacher = obj.classroom.teacher
+            if teacher.first_name and teacher.last_name:
+                return f"{teacher.first_name} {teacher.last_name}"
+            return teacher.first_name or teacher.username
+        except AttributeError:
+            return "Unknown Teacher"
 
 class ClassroomSerializer(serializers.ModelSerializer):
     teacher_name = serializers.SerializerMethodField()
     students_count = serializers.SerializerMethodField()
     assignments = AssignmentSerializer(many=True, read_only=True)
+    students = UserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Classroom
-        fields = ['id', 'name', 'teacher', 'teacher_name', 'invite_code', 'students_count', 'is_live', 'assignments', 'created_at']
+        fields = ['id', 'name', 'teacher', 'teacher_name', 'invite_code', 'students_count', 'students', 'is_live', 'assignments', 'created_at']
         read_only_fields = ['invite_code', 'teacher']
 
     def get_teacher_name(self, obj):

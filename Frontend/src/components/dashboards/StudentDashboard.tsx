@@ -15,17 +15,20 @@ import {
     ArrowRight,
     Sparkles,
     Search,
-    Users
+    Users,
+    X,
+    ExternalLink
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 import { classroomsService } from '../../services/classroomsService';
 
 interface StudentDashboardProps {
     onBack?: () => void;
+    onLaunchLab?: (topicId: string | number) => void;
 }
 
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab }) => {
     const { user } = useAuth();
     const [classes, setClasses] = React.useState<any[]>([]);
     const [upcomingTasks, setUpcomingTasks] = React.useState<any[]>([]);
@@ -33,6 +36,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
     const [isJoinModalOpen, setIsJoinModalOpen] = React.useState(false);
     const [inviteCode, setInviteCode] = React.useState('');
     const [isJoining, setIsJoining] = React.useState(false);
+    const [selectedClass, setSelectedClass] = React.useState<any | null>(null);
 
     React.useEffect(() => {
         fetchData();
@@ -115,7 +119,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                             Student Learning Node
                         </div>
                         <h1 className="text-4xl font-display font-medium text-[var(--text-primary)] tracking-tight drop-shadow-md">
-                            Astra, <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-violet)]">{user?.first_name || 'Innovator'}</span>
+                            Astra, <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-violet)]">{user?.first_name || 'Innovator'}</span>
                         </h1>
                         <p className="text-[var(--text-muted)] font-sans text-sm drop-shadow-sm">You have {upcomingTasks.filter(t => t.status === 'Live').length} live session active right now.</p>
                     </div>
@@ -161,7 +165,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                             </h2>
                             <button 
                                 onClick={() => setIsJoinModalOpen(true)}
-                                className="px-4 py-2 rounded-xl bg-[var(--color-cyan)]/10 border border-[var(--color-cyan)]/20 text-[var(--color-cyan)] text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--color-cyan)]/20 transition-all font-bold"
+                                className="px-4 py-2 rounded-xl bg-[var(--color-cyan)]/10 border border-cyan-500/30 dark:border-[var(--color-cyan)]/20 text-cyan-600 dark:text-[var(--color-cyan)] text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--color-cyan)]/20 transition-all font-bold shadow-sm"
                             >
                                 Join New Class
                             </button>
@@ -174,6 +178,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: i * 0.1 }}
+                                    onClick={() => setSelectedClass(cls)}
                                     className="p-6 rounded-[32px] bg-[var(--bg-panel)] backdrop-blur-xl border border-[var(--border-glass)] hover:border-[var(--color-cyan)]/30 transition-all group cursor-pointer relative overflow-hidden shadow-lg"
                                 >
                                     {cls.isLive && (
@@ -267,7 +272,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                         </h3>
                         <div className="space-y-4">
                             {upcomingTasks.map((task, i) => (
-                                <div key={i} className="group p-4 rounded-[20px] bg-[var(--bg-deep)] border border-[var(--border-glass)] hover:border-[var(--color-cyan)]/20 hover:bg-[var(--bg-panel)] transition-all cursor-pointer">
+                                <div 
+                                    key={i} 
+                                    onClick={() => {
+                                        const targetClass = classes.find(c => c.id === task.classroom);
+                                        if (targetClass) setSelectedClass(targetClass);
+                                    }}
+                                    className="group p-4 rounded-[20px] bg-[var(--bg-deep)] border border-[var(--border-glass)] hover:border-[var(--color-cyan)]/20 hover:bg-[var(--bg-panel)] transition-all cursor-pointer"
+                                >
                                     <div className="flex items-center justify-between mb-2">
                                         <span className={`text-[8px] font-mono uppercase tracking-[0.2em] px-2 py-0.5 rounded-md border ${task.status === 'Live' ? 'bg-rose-500/20 text-rose-500 border-rose-500/30 animate-pulse' : 'bg-[var(--color-cyan)]/10 text-[var(--color-cyan)] border-[var(--color-cyan)]/20'
                                             }`}>
@@ -418,6 +430,126 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack }) => {
                     </motion.div>
                 </div>
             )}
+            {/* Classroom Detail Overlay */}
+            <AnimatePresence>
+                {selectedClass && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-8">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedClass(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative w-full h-full max-w-5xl bg-[var(--bg-deep)] border border-[var(--border-glass)] shadow-2xl overflow-hidden flex flex-col md:rounded-[40px]"
+                        >
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-cyan-500/5 via-transparent to-transparent pointer-events-none" />
+                            
+                            {/* Overlay Header */}
+                            <div className="p-8 border-b border-[var(--border-glass)] flex items-center justify-between relative z-10 bg-[var(--bg-panel)]/50">
+                                <div className="flex items-center gap-6">
+                                    <div className={`w-16 h-16 rounded-3xl flex items-center justify-center border shadow-lg ${
+                                        selectedClass.is_live ? 'bg-[var(--color-cyan)]/20 text-[var(--color-cyan)] border-[var(--color-cyan)]/30' : 'bg-[var(--bg-deep)] text-[var(--text-muted)] border-[var(--border-glass)]'
+                                    }`}>
+                                        <Play size={28} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-display font-bold text-[var(--text-primary)] tracking-tight">{selectedClass.name}</h2>
+                                        <div className="flex items-center gap-4 mt-1">
+                                            <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Instructor: {selectedClass.teacher_name}</span>
+                                            {selectedClass.is_live && (
+                                                <span className="flex items-center gap-1.5 text-[9px] font-mono text-[var(--color-cyan)] uppercase tracking-widest animate-pulse font-bold">
+                                                    ● Session Live
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedClass(null)}
+                                    className="p-3 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all shadow-sm"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            {/* Overlay Body */}
+                            <div className="flex-1 overflow-y-auto p-8 relative z-10">
+                                <div className="max-w-4xl mx-auto space-y-12">
+                                    {/* Assignments Section */}
+                                    <section className="space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-sm font-mono text-[var(--text-muted)] uppercase tracking-[0.3em] flex items-center gap-2">
+                                                <FileText size={16} className="text-[var(--color-cyan)]" />
+                                                Assignments & Tasks
+                                            </h3>
+                                        </div>
+
+                                        <div className="grid gap-4">
+                                            {selectedClass.assignments && selectedClass.assignments.length > 0 ? (
+                                                selectedClass.assignments.map((task: any, i: number) => (
+                                                    <motion.div
+                                                        key={task.id}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: i * 0.1 }}
+                                                        className="p-6 rounded-3xl bg-[var(--bg-panel)]/40 border border-[var(--border-glass)] hover:border-[var(--color-cyan)]/30 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
+                                                    >
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center gap-3">
+                                                                <h4 className="text-base font-display font-medium text-[var(--text-primary)]">{task.title}</h4>
+                                                                {task.due_date && (
+                                                                    <span className="text-[9px] font-mono text-rose-400 bg-rose-400/10 px-2 py-0.5 rounded-full border border-rose-400/20">
+                                                                        Due: {new Date(task.due_date).toLocaleDateString()}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-xs text-[var(--text-muted)] leading-relaxed max-w-xl">
+                                                                {task.description || "No description provided."}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            {task.file_url && (
+                                                                <a 
+                                                                    href={task.file_url} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-[10px] font-mono uppercase tracking-widest hover:bg-white/10 transition-all"
+                                                                >
+                                                                    <Download size={14} /> Material
+                                                                </a>
+                                                            )}
+                                                            {task.topic && (
+                                                                <button 
+                                                                    onClick={() => onLaunchLab?.(task.topic)}
+                                                                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-cyan)] text-black text-[10px] font-mono uppercase tracking-widest font-bold hover:brightness-110 transition-all shadow-lg shadow-[var(--color-cyan)]/20"
+                                                                >
+                                                                    <Play size={14} /> Launch Lab
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </motion.div>
+                                                ))
+                                            ) : (
+                                                <div className="py-12 flex flex-col items-center justify-center text-center space-y-4 opacity-50">
+                                                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
+                                                        <FileText size={32} strokeWidth={1} />
+                                                    </div>
+                                                    <p className="text-xs font-mono uppercase tracking-widest">No assignments found for this class.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
