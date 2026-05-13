@@ -5,7 +5,7 @@ import { getGestureRecognizer } from '../../services/gestureService';
 import {
   Hand, Camera, CheckCircle2, XCircle,
   ChevronRight, ChevronLeft, RotateCw, MousePointer2,
-  MessageSquare, Bookmark, ZoomIn, BookOpen, X, Smartphone,
+  MessageSquare, Bookmark, ZoomIn, BookOpen, X, Smartphone, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { motion, AnimatePresence, useSpring, useTransform } from 'motion/react';
 import Receiver from "./Receiver";
@@ -43,6 +43,8 @@ interface GestureControllerProps {
   onPositionChange?: (pos: { x: number; y: number } | null) => void;
   isActive: boolean;
   onToggle: () => void;
+  cameraSource: "local" | "remote";
+  onCameraSourceChange: (source: "local" | "remote") => void;
 }
 
 interface TrailPoint { x: number; y: number; id: number }
@@ -226,81 +228,131 @@ const Trail: React.FC<{ points: TrailPoint[]; color: string }> = ({ points, colo
 // ─────────────────────────────────────────────────────────────────────────────
 // Gesture cheat-sheet panel  (matches the reference table layout)
 // ─────────────────────────────────────────────────────────────────────────────
-const GestureGuide: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 16, scale: 0.96 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    exit={{ opacity: 0, y: 16, scale: 0.96 }}
-    transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-    className="absolute bottom-full mb-4 left-0 z-50"
-    style={{
-      width: 520,
-      background: 'rgba(2,6,23,0.98)',
-      border: '1px solid rgba(99,102,241,0.22)',
-      borderRadius: 20,
-      padding: 20,
-      backdropFilter: 'blur(24px)',
-      boxShadow: '0 0 60px rgba(99,102,241,0.12), 0 32px 64px rgba(0,0,0,0.7)',
-    }}>
-    {/* Header */}
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2">
-        <BookOpen size={13} style={{ color: '#818cf8' }} />
-        <span style={{ fontFamily: 'monospace', fontSize: 9, color: '#818cf8', letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-          Gesture Reference
-        </span>
+const GestureGuide: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const catalogueRef = useRef<HTMLDivElement>(null);
+  const [canScrollDown, setCanScrollDown] = useState(false);
+  const [canScrollUp, setCanScrollUp] = useState(false);
+
+  const updateScrollState = useCallback(() => {
+    const el = catalogueRef.current;
+    if (!el) return;
+
+    setCanScrollUp(el.scrollTop > 4);
+    setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
+  }, []);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(updateScrollState);
+    return () => cancelAnimationFrame(frame);
+  }, [updateScrollState]);
+
+  const handleCatalogueScroll = () => {
+    const el = catalogueRef.current;
+    if (!el) return;
+
+    el.scrollBy({
+      top: canScrollDown ? 180 : -180,
+      behavior: 'smooth',
+    });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 16, scale: 0.96 }}
+      transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+      className="absolute bottom-full mb-4 left-0 z-50"
+      style={{
+        width: 520,
+        background: 'rgba(2,6,23,0.98)',
+        border: '1px solid rgba(99,102,241,0.22)',
+        borderRadius: 20,
+        padding: 20,
+        backdropFilter: 'blur(24px)',
+        boxShadow: '0 0 60px rgba(99,102,241,0.12), 0 32px 64px rgba(0,0,0,0.7)',
+      }}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <BookOpen size={13} style={{ color: '#818cf8' }} />
+          <span style={{ fontFamily: 'monospace', fontSize: 9, color: '#818cf8', letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+            Gesture Reference
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {(canScrollDown || canScrollUp) && (
+            <button
+              onClick={handleCatalogueScroll}
+              className="h-6 rounded-lg px-2 flex items-center gap-1"
+              style={{ background: 'rgba(99,102,241,0.14)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.18)' }}
+            >
+              <span style={{ fontFamily: 'monospace', fontSize: 7, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+                Scroll
+              </span>
+              {canScrollDown ? <ChevronDown size={11} /> : <ChevronUp size={11} />}
+            </button>
+          )}
+          <button onClick={onClose}
+            className="w-6 h-6 rounded-lg flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.05)', color: '#475569' }}>
+            <X size={11} />
+          </button>
+        </div>
       </div>
-      <button onClick={onClose}
-        className="w-6 h-6 rounded-lg flex items-center justify-center"
-        style={{ background: 'rgba(255,255,255,0.05)', color: '#475569' }}>
-        <X size={11} />
-      </button>
-    </div>
 
-    {/* Table header */}
-    <div className="grid mb-2 px-3" style={{ gridTemplateColumns: '2fr 1.4fr 2fr' }}>
-      {['Gesture', 'Action', 'Use Case'].map(h => (
-        <span key={h} style={{ fontFamily: 'monospace', fontSize: 8, color: '#334155', letterSpacing: '0.22em', textTransform: 'uppercase' }}>{h}</span>
-      ))}
-    </div>
+      {/* Table header */}
+      <div className="grid mb-2 px-3" style={{ gridTemplateColumns: '2fr 1.4fr 2fr' }}>
+        {['Gesture', 'Action', 'Use Case'].map(h => (
+          <span key={h} style={{ fontFamily: 'monospace', fontSize: 8, color: '#334155', letterSpacing: '0.22em', textTransform: 'uppercase' }}>{h}</span>
+        ))}
+      </div>
 
-    {/* Rows */}
-    <div className="grid gap-1.5">
-      {GESTURE_DEFS.map((g) => {
-        const Icon = g.icon;
-        return (
-          <div key={g.id} className="grid items-center gap-3 px-3 py-2.5 rounded-xl"
-            style={{ gridTemplateColumns: '2fr 1.4fr 2fr', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.04)' }}>
-            {/* Gesture cell */}
-            <div className="flex items-center gap-2.5">
-              <span style={{ fontSize: 17 }}>{g.emoji}</span>
-              <div>
-                <span style={{ fontFamily: 'monospace', fontSize: 10, color: g.color, fontWeight: 700, display: 'block' }}>{g.label}</span>
-                <span style={{ fontFamily: 'monospace', fontSize: 8, color: '#334155' }}>{g.sublabel}</span>
+      <div
+        ref={catalogueRef}
+        onScroll={updateScrollState}
+        className="scrollbar-hide relative overflow-y-auto pr-1"
+        style={{ maxHeight: 'min(52vh, 430px)', scrollBehavior: 'smooth' }}
+      >
+        {/* Rows */}
+        <div className="grid gap-1.5">
+          {GESTURE_DEFS.map((g) => {
+            const Icon = g.icon;
+            return (
+              <div key={g.id} className="grid items-center gap-3 px-3 py-2.5 rounded-xl"
+                style={{ gridTemplateColumns: '2fr 1.4fr 2fr', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                {/* Gesture cell */}
+                <div className="flex items-center gap-2.5">
+                  <span style={{ fontSize: 17 }}>{g.emoji}</span>
+                  <div>
+                    <span style={{ fontFamily: 'monospace', fontSize: 10, color: g.color, fontWeight: 700, display: 'block' }}>{g.label}</span>
+                    <span style={{ fontFamily: 'monospace', fontSize: 8, color: '#334155' }}>{g.sublabel}</span>
+                  </div>
+                </div>
+                {/* Action cell */}
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: `${g.color}15` }}>
+                    <Icon size={10} style={{ color: g.color }} />
+                  </div>
+                  <span style={{ fontSize: 9.5, color: '#94a3b8' }}>{g.action}</span>
+                </div>
+                {/* Use case cell */}
+                <span style={{ fontSize: 9, color: '#475569', lineHeight: 1.5 }}>{g.useCase}</span>
               </div>
-            </div>
-            {/* Action cell */}
-            <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: `${g.color}15` }}>
-                <Icon size={10} style={{ color: g.color }} />
-              </div>
-              <span style={{ fontSize: 9.5, color: '#94a3b8' }}>{g.action}</span>
-            </div>
-            {/* Use case cell */}
-            <span style={{ fontSize: 9, color: '#475569', lineHeight: 1.5 }}>{g.useCase}</span>
-          </div>
-        );
-      })}
-    </div>
+            );
+          })}
+        </div>
 
-    {/* Tip */}
-    <div className="mt-3 px-3 py-2 rounded-xl" style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.14)' }}>
-      <p style={{ fontFamily: 'monospace', fontSize: 8, color: '#475569', letterSpacing: '0.08em', lineHeight: 1.7 }}>
-        💡 Hold gestures fill the ring before firing · Swipe = fast horizontal palm &gt; 0.6 u/s · Pinch = bring thumb + index tip close together
-      </p>
-    </div>
-  </motion.div>
-);
+        {/* Tip */}
+        <div className="mt-3 px-3 py-2 rounded-xl" style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.14)' }}>
+          <p style={{ fontFamily: 'monospace', fontSize: 8, color: '#475569', letterSpacing: '0.08em', lineHeight: 1.7 }}>
+            Hold gestures fill the ring before firing · Swipe = fast horizontal palm &gt; 0.6 u/s · Pinch = bring thumb + index tip close together
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Toast notification
@@ -373,6 +425,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
   onLaserPointer, onAnnotate,
   onToggleTheme, onResetZoom, onZoom,
   onPositionChange, isActive, onToggle,
+  cameraSource, onCameraSourceChange,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const gestureRecRef = useRef<GestureRecognizer | null>(null);
@@ -410,7 +463,6 @@ const GestureController: React.FC<GestureControllerProps> = ({
   const fpsRef = useRef({ n: 0, last: Date.now() });
   
   const [cameraMode, setCameraMode] = useState<'webcam' | 'phone' | 'none'>('none');
-  const [cameraSource, setCameraSource] = useState<"local" | "remote">("local");
   const signalingUrl = getDefaultSignalingUrl();
   const phoneSenderUrl = getPhoneSenderUrl(signalingUrl);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
@@ -426,8 +478,8 @@ const GestureController: React.FC<GestureControllerProps> = ({
   const switchToRemoteCamera = useCallback((reason: string) => {
     console.warn(reason);
     setCameraMode('phone');
-    setCameraSource('remote');
-  }, []);
+    onCameraSourceChange('remote');
+  }, [onCameraSourceChange]);
 
   const copyPhoneLink = useCallback(async () => {
     try {
@@ -971,22 +1023,6 @@ const GestureController: React.FC<GestureControllerProps> = ({
             : <Camera size={17} style={{ color: '#64748b' }} />}
         </motion.button>
       </div>
-      <div className="fixed bottom-20 right-4 z-[120] hidden overflow-hidden rounded-2xl border border-white/10 bg-slate-950/90 p-1 shadow-2xl backdrop-blur-xl md:flex">
-        {(['local', 'remote'] as const).map((source) => (
-          <button
-            key={source}
-            onClick={() => setCameraSource(source)}
-            className={`px-4 py-2 text-[9px] font-mono uppercase tracking-[0.2em] transition-colors ${
-              cameraSource === source
-                ? 'rounded-xl bg-indigo-600 text-white'
-                : 'text-slate-500 hover:text-slate-200'
-            }`}
-          >
-            {source === 'local' ? 'Local' : 'Phone'}
-          </button>
-        ))}
-      </div>
-
       <AnimatePresence>
         {isActive && cameraSource === 'remote' && (
           <motion.div
@@ -994,7 +1030,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.96 }}
             transition={{ type: 'spring', stiffness: 360, damping: 28 }}
-            className="fixed bottom-32 right-4 z-[120] w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-indigo-400/20 bg-slate-950/95 shadow-2xl shadow-indigo-950/40 backdrop-blur-xl"
+            className="fixed bottom-24 right-4 z-[130] w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-indigo-400/20 bg-slate-950/95 shadow-2xl shadow-indigo-950/40 backdrop-blur-xl md:bottom-6 md:right-60"
           >
             <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300">
@@ -1016,7 +1052,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
                 onCopy={copyPhoneLink}
               />
               <button
-                onClick={() => setCameraSource('local')}
+                onClick={() => onCameraSourceChange('local')}
                 className="w-full rounded-xl border border-white/10 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-400 transition-colors hover:text-slate-100"
               >
                 Use Local Camera

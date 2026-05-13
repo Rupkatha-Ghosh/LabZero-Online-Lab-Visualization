@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
-  Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen, Download
+  Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen, Download, Camera, Smartphone
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LandingPage from './components/pages/LandingPage';
@@ -198,6 +198,7 @@ const AppContent: React.FC = () => {
   const [language, setLanguage] = useState<Language>(() => (localStorage.getItem('labzero_language') as Language) || 'en');
 
   const [isGestureActive, setIsGestureActive] = useState(false);
+  const [cameraSource, setCameraSource] = useState<"local" | "remote">("local");
   const [atomRotation, setAtomRotation] = useState({ dx: 0, dy: 0 });
   const [atomZoom, setAtomZoom] = useState(1);
   const [moleculeRotation, setMoleculeRotation] = useState({ dx: 0, dy: 0 });
@@ -569,6 +570,35 @@ const AppContent: React.FC = () => {
                         <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-300 ${colorBlindMode ? 'left-6' : 'left-1'}`} />
                       </button>
                     </div>
+                    <div className="flex flex-col gap-3 p-3 rounded-2xl bg-white/5 border border-white/5">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-indigo-300">
+                            {cameraSource === 'local' ? <Camera size={16} /> : <Smartphone size={16} />}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">Gesture Camera</span>
+                            <span className="text-[8px] font-mono text-slate-500">{cameraSource === 'local' ? 'Local webcam' : 'Phone camera'} source</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 rounded-2xl bg-slate-950/80 p-1">
+                        {(['local', 'remote'] as const).map((source) => (
+                          <button
+                            key={source}
+                            onClick={() => setCameraSource(source)}
+                            className={`flex h-10 items-center justify-center gap-2 rounded-xl text-[9px] font-mono uppercase tracking-[0.2em] transition-all ${
+                              cameraSource === source
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                : 'text-slate-500 hover:text-slate-300'
+                            }`}
+                          >
+                            {source === 'local' ? <Camera size={13} /> : <Smartphone size={13} />}
+                            {source === 'local' ? 'Local' : 'Phone'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300">{t('theme')}</span>
@@ -685,6 +715,8 @@ const AppContent: React.FC = () => {
               onSelect={handleGestureSelect}
               onPositionChange={setGesturePos}
               onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+              cameraSource={cameraSource}
+              onCameraSourceChange={setCameraSource}
             />
 
             {isGestureActive && gesturePos && user?.role !== 'student' && (
