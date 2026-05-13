@@ -54,6 +54,7 @@ export enum TopicId {
   THERMODYNAMICS = "THERMODYNAMICS",
   KINETIC_THEORY = "KINETIC_THEORY",
   NUCLEAR_PHYSICS = "NUCLEAR_PHYSICS",
+  REFRACTION = "REFRACTION",
   
   CALCULUS = "CALCULUS",
   PROBABILITY = "PROBABILITY",
@@ -187,4 +188,18 @@ export interface SimulationProps {
     zoom: number;
   };
   language: string;
+}
+
+// --- REFRACTION SIMULATION TYPES ---
+export interface RefractionPreset {
+  name: string;
+  n1: number;
+  n2: number;
+  angle: number;
+}
+
+export interface RefractionProps extends Partial<SimulationProps> {
+  initialN1?: number;
+  initialN2?: number;
+  initialAngle?: number;
 }

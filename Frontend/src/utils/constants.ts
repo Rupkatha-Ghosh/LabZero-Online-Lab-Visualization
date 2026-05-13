@@ -281,7 +281,45 @@ Study of heat, work, temperature, and their relation to energy and physical prop
 - **Efficiency**: Ratio of net work done to total heat absorbed.
 - **Refrigerators**: Devices that transfer heat from cold to hot reservoirs.
         `
-      }
+      },
+      {
+         id: TopicId.REFRACTION,
+         slug: 'refraction-of-light',
+  name: 'Refraction of Light',
+  description: 'The bending of light as it passes across the boundary separating two media, governing optical density and total internal reflection.',
+  targetClass: ['Class 11'],
+  theory: `
+# Refraction of Light
+The phenomenon of the change in the path of light as it passes obliquely from one transparent medium to another is called refraction. This bending occurs because light travels at different speeds in different optical media.
+
+## Laws of Refraction
+- **First Law**: The incident ray, the refracted ray, and the normal to the interface at the point of incidence all lie in the same plane.
+- **Second Law (Snell's Law)**: The ratio of the sine of the angle of incidence to the sine of the angle of refraction is constant for a given pair of media and a specific wavelength of light.
+  sin(i) / sin(r) = n21
+
+## Refractive Index
+- **Absolute Refractive Index (n)**: The ratio of the speed of light in a vacuum (c) to the speed of light in the given medium (v).
+  n = c / v
+- **Relative Refractive Index (n21)**: The refractive index of medium 2 with respect to medium 1.
+  n21 = n2 / n1 = v1 / v2
+- **Optical Density**: A medium with a higher refractive index is optically denser. Light bends towards the normal when entering a denser medium and away from the normal when entering a rarer medium.
+
+## Total Internal Reflection (TIR)
+- **Critical Angle (ic)**: The angle of incidence in an optically denser medium for which the angle of refraction in the rarer medium is exactly 90°.
+  sin(ic) = n_rarer / n_denser
+- **Conditions for TIR**:
+  1. The light ray must travel from an optically denser medium to an optically rarer medium.
+  2. The angle of incidence must exceed the critical angle of the interface (i > ic).
+- **Applications**: Optical fibers, the brilliance of diamonds, mirages in deserts, and totally reflecting glass prisms.
+
+## Real and Apparent Depth
+An object placed in a denser medium (like water), when viewed from a rarer medium (like air), appears to be raised due to refraction.
+- **Formula**: n = Real Depth / Apparent Depth
+- **Apparent Shift**: The apparent rise of the object is given by:
+  Shift = Real Depth * (1 - 1/n)
+`
+
+       }
     ]
   },
   {
