@@ -425,3 +425,118 @@
 .light-mode .institute-dashboard .fixed .bg-slate-950 {
   background-color: #ffffff !important;
 }
+
+/* Teacher dashboard dark-mode skin. Light mode keeps the component Tailwind classes. */
+body:not(.light-mode) .teacher-dashboard {
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.13), transparent 30rem),
+    radial-gradient(circle at top right, rgba(124, 58, 237, 0.14), transparent 30rem),
+    linear-gradient(180deg, #020617 0%, #07111f 52%, #020617 100%) !important;
+  color: #e2e8f0 !important;
+}
+
+body:not(.light-mode) .teacher-dashboard-bg,
+body:not(.light-mode) .teacher-detail-bg {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(34, 211, 238, 0.13), transparent 26rem),
+    radial-gradient(circle at 84% 10%, rgba(167, 139, 250, 0.14), transparent 26rem),
+    radial-gradient(circle at 52% 100%, rgba(16, 185, 129, 0.08), transparent 30rem) !important;
+}
+
+body:not(.light-mode) .teacher-heading,
+body:not(.light-mode) .teacher-section-title,
+body:not(.light-mode) .teacher-stat-value,
+body:not(.light-mode) .teacher-class-title {
+  color: #f8fafc !important;
+}
+
+body:not(.light-mode) .teacher-muted,
+body:not(.light-mode) .teacher-stat-label,
+body:not(.light-mode) .teacher-class-meta,
+body:not(.light-mode) .teacher-muted-link,
+body:not(.light-mode) .teacher-dashboard label {
+  color: #94a3b8 !important;
+}
+
+body:not(.light-mode) .teacher-kicker,
+body:not(.light-mode) .teacher-muted-link:hover {
+  color: #67e8f9 !important;
+}
+
+body:not(.light-mode) .teacher-kicker-icon,
+body:not(.light-mode) .teacher-stat-icon {
+  background-color: rgba(14, 165, 233, 0.12) !important;
+  border-color: rgba(34, 211, 238, 0.22) !important;
+  color: #67e8f9 !important;
+}
+
+body:not(.light-mode) .teacher-stat-card,
+body:not(.light-mode) .teacher-class-row,
+body:not(.light-mode) .teacher-inquiries-card,
+body:not(.light-mode) .teacher-list-card,
+body:not(.light-mode) .teacher-form-modal {
+  background-color: rgba(15, 23, 42, 0.78) !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28) !important;
+}
+
+body:not(.light-mode) .teacher-stat-card:hover,
+body:not(.light-mode) .teacher-class-row:hover,
+body:not(.light-mode) .teacher-list-card:hover {
+  background-color: rgba(15, 23, 42, 0.92) !important;
+  border-color: rgba(34, 211, 238, 0.34) !important;
+}
+
+body:not(.light-mode) .teacher-secondary-button {
+  background-color: rgba(15, 23, 42, 0.74) !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-mode) .teacher-secondary-button:hover {
+  background-color: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(34, 211, 238, 0.28) !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-mode) .teacher-feature-card {
+  background:
+    linear-gradient(135deg, rgba(8, 145, 178, 0.88), rgba(15, 23, 42, 0.96) 48%, rgba(109, 40, 217, 0.86)) !important;
+  border-color: rgba(103, 232, 249, 0.22) !important;
+  box-shadow: 0 22px 60px rgba(8, 47, 73, 0.42) !important;
+}
+
+body:not(.light-mode) .teacher-detail-panel {
+  background-color: #020617 !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+}
+
+body:not(.light-mode) .teacher-detail-header,
+body:not(.light-mode) .teacher-detail-toolbar {
+  background-color: rgba(15, 23, 42, 0.78) !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+}
+
+body:not(.light-mode) .teacher-tabs {
+  background-color: rgba(2, 6, 23, 0.72) !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+}
+
+body:not(.light-mode) .teacher-input {
+  background-color: rgba(2, 6, 23, 0.72) !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+  color: #f8fafc !important;
+}
+
+body:not(.light-mode) .teacher-input::placeholder {
+  color: rgba(148, 163, 184, 0.7) !important;
+}
+
+body:not(.light-mode) .teacher-dashboard select option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+body:not(.light-mode) .teacher-modal-scrim {
+  background-color: rgba(2, 6, 23, 0.76) !important;
+}

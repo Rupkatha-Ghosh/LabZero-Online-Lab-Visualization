@@ -4,8 +4,6 @@ import { uploadAssignmentFile, deleteAssignmentFile } from '../../utils/supabase
 import {
   Users,
   BookOpen,
-  Clock,
-  BarChart,
   Calendar,
   MessageSquare,
   Plus,
@@ -19,8 +17,7 @@ import {
   Trash2,
   Search,
   X,
-  FileText,
-  Settings
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
@@ -193,43 +190,43 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
   };
 
   const stats = [
-    { label: 'Total Students', value: (Array.isArray(classes) ? classes.reduce((acc, curr) => acc + (curr.students_count || 0), 0) : 0).toString(), icon: Users, color: 'text-cyan-300', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
-    { label: 'Active Courses', value: (Array.isArray(classes) ? classes.length : 0).toString(), icon: BookOpen, color: 'text-emerald-300', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-    { label: 'Avg. Progress', value: '84%', icon: TrendingUp, color: 'text-amber-300', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
-    { label: 'Engagement', value: '92', icon: Award, color: 'text-violet-300', bg: 'bg-violet-500/10', border: 'border-violet-500/20' },
+    { label: 'Total Students', value: (Array.isArray(classes) ? classes.reduce((acc, curr) => acc + (curr.students_count || 0), 0) : 0).toString(), icon: Users, color: 'text-sky-700', bg: 'bg-sky-100', border: 'border-sky-200', glow: 'from-sky-500/10' },
+    { label: 'Active Courses', value: (Array.isArray(classes) ? classes.length : 0).toString(), icon: BookOpen, color: 'text-emerald-700', bg: 'bg-emerald-100', border: 'border-emerald-200', glow: 'from-emerald-500/10' },
+    { label: 'Avg. Progress', value: '84%', icon: TrendingUp, color: 'text-amber-700', bg: 'bg-amber-100', border: 'border-amber-200', glow: 'from-amber-500/10' },
+    { label: 'Engagement', value: '92', icon: Award, color: 'text-violet-700', bg: 'bg-violet-100', border: 'border-violet-200', glow: 'from-violet-500/10' },
   ];
 
   return (
-    <div className="h-full overflow-y-auto bg-transparent p-8 space-y-12 pb-32 relative">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
+    <div className="teacher-dashboard h-full overflow-y-auto bg-[#f6f8fb] p-8 space-y-12 pb-32 relative text-slate-900">
+      <div className="teacher-dashboard-bg absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_30rem),radial-gradient(circle_at_top_right,_rgba(124,58,237,0.13),_transparent_28rem),linear-gradient(180deg,_#f8fbff_0%,_#eef6f4_100%)] pointer-events-none" />
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-7xl mx-auto relative z-10 w-full">
         <div className="flex items-center gap-4">
           {onBack && (
             <button
               onClick={onBack}
-              className="p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 text-white transition-all shadow-md mt-6 md:mt-0 self-start"
+              className="teacher-secondary-button p-3 bg-white/85 border border-slate-200 rounded-xl hover:bg-white text-slate-700 transition-all shadow-sm mt-6 md:mt-0 self-start"
             >
               Go Back
             </button>
           )}
           <div className="space-y-2">
-            <div className="flex items-center gap-3 text-cyan-300 font-mono text-[10px] uppercase tracking-[0.3em] drop-shadow-sm">
-              <div className="p-1.5 rounded-lg bg-cyan-500/20 border border-cyan-400/30">
-                <Sparkles size={12} className="drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+            <div className="teacher-kicker flex items-center gap-3 text-sky-700 font-mono text-[10px] uppercase tracking-[0.3em]">
+              <div className="teacher-kicker-icon p-1.5 rounded-lg bg-sky-100 border border-sky-200 text-sky-700 shadow-sm">
+                <Sparkles size={12} />
               </div>
               Professional Dashboard
             </div>
-            <h1 className="text-4xl font-display font-medium text-white tracking-tight drop-shadow-md">
-              Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-violet-500">{user?.first_name}</span>
+            <h1 className="teacher-heading text-4xl font-display font-medium text-slate-950 tracking-tight">
+              Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-teal-600 to-violet-600">{user?.first_name}</span>
             </h1>
-            <p className="text-white/60 font-sans text-sm drop-shadow-sm">Monitor your classes and student engagement today.</p>
+            <p className="teacher-muted text-slate-600 font-sans text-sm">Monitor your classes and student engagement today.</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-6 py-3 rounded-2xl bg-black/40 border border-white/10 text-white/80 text-xs font-medium hover:bg-white/10 hover:text-white transition-all shadow-inner hover:border-white/20"
+            className="teacher-secondary-button px-6 py-3 rounded-2xl bg-white/90 border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 hover:text-slate-950 transition-all shadow-sm hover:border-sky-200"
           >
             Create Class
           </button>
@@ -239,10 +236,10 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
               setNewAssignment(prev => ({ ...prev, classroom: selectedClass?.id || '' }));
               setIsAssignmentModalOpen(true);
             }}
-            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-600 text-white text-xs font-medium hover:from-cyan-400 hover:to-violet-500 shadow-[0_4px_20px_rgba(34,211,238,0.3)] border border-white/20 transition-all flex items-center gap-2 group"
+            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-sky-600 to-violet-600 text-white text-xs font-semibold hover:from-sky-500 hover:to-violet-500 shadow-[0_12px_30px_rgba(2,132,199,0.22)] border border-white/50 transition-all flex items-center gap-2 group"
           >
-            <Plus size={16} className="drop-shadow-sm group-hover:rotate-90 transition-transform" />
-            <span className="drop-shadow-sm">New Assignment</span>
+            <Plus size={16} className="group-hover:rotate-90 transition-transform" />
+            <span>New Assignment</span>
           </button>
         </div>
       </header>
@@ -256,13 +253,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="p-8 rounded-[32px] bg-black/40 border border-white/10 backdrop-blur-xl group hover:border-white/20 hover:bg-black/60 transition-all shadow-lg"
+              className={`teacher-stat-card p-8 rounded-[32px] bg-white/90 border border-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl group hover:-translate-y-1 hover:shadow-[0_22px_60px_rgba(15,23,42,0.12)] transition-all relative overflow-hidden`}
             >
-              <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.border} border ${stat.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-inner`}>
-                <stat.icon size={24} className="drop-shadow-md" />
+              <div className={`absolute inset-x-0 top-0 h-24 bg-gradient-to-b ${stat.glow} to-transparent pointer-events-none`} />
+              <div className={`teacher-stat-icon w-12 h-12 rounded-2xl ${stat.bg} ${stat.border} border ${stat.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-inner`}>
+                <stat.icon size={24} />
               </div>
-              <div className="text-3xl font-display font-medium text-white mb-1 drop-shadow-sm group-hover:text-cyan-300 transition-colors">{stat.value}</div>
-              <div className="text-[10px] font-mono text-white/40 uppercase tracking-[0.2em] leading-none">{stat.label}</div>
+              <div className="teacher-stat-value text-3xl font-display font-semibold text-slate-950 mb-1 relative">{stat.value}</div>
+              <div className="teacher-stat-label text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em] leading-none relative">{stat.label}</div>
             </motion.div>
           ))}
         </section>
@@ -272,11 +270,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
         {/* Main Content: Upcoming Classes */}
         <div className="lg:col-span-8 space-y-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-display font-medium text-white uppercase tracking-tight flex items-center gap-3 drop-shadow-sm">
-              <Calendar size={20} className="text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+            <h2 className="teacher-section-title text-xl font-display font-semibold text-slate-900 uppercase tracking-tight flex items-center gap-3">
+              <Calendar size={20} className="text-sky-600" />
               Schedule Today
             </h2>
-            <button className="text-[10px] font-mono text-white/40 hover:text-cyan-300 uppercase tracking-[0.2em] transition-all drop-shadow-sm">
+            <button className="teacher-muted-link text-[10px] font-mono text-slate-500 hover:text-sky-700 uppercase tracking-[0.2em] transition-all font-semibold">
               View Calendar
             </button>
           </div>
@@ -291,27 +289,27 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + i * 0.1 }}
                       onClick={() => setSelectedClass(item)}
-                      className="group p-6 rounded-[28px] bg-[var(--bg-panel)] backdrop-blur-md border border-[var(--border-glass)] hover:border-[var(--color-cyan)]/30 hover:bg-[var(--color-cyan)]/5 transition-all flex items-center justify-between shadow-lg cursor-pointer"
+                      className="teacher-class-row group p-6 rounded-[28px] bg-white/90 backdrop-blur-md border border-slate-200/80 hover:border-sky-300 hover:bg-sky-50/70 transition-all flex items-center justify-between shadow-[0_12px_35px_rgba(15,23,42,0.07)] cursor-pointer"
                     >
                       <div className="flex items-center gap-6">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-inner ${item.is_live ? 'bg-[var(--color-cyan)]/20 text-[var(--color-cyan)] border-[var(--color-cyan)]/30 animate-pulse shadow-[0_0_15px_rgba(var(--color-cyan-rgb),0.2)]' : 'bg-[var(--bg-deep)] text-[var(--text-muted)] border-[var(--border-glass)]'
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-inner ${item.is_live ? 'bg-sky-100 text-sky-700 border-sky-200 animate-pulse shadow-[0_0_15px_rgba(14,165,233,0.18)]' : 'bg-slate-100 text-slate-500 border-slate-200'
                           }`}>
-                          <Play size={20} className={item.is_live ? 'drop-shadow-[0_0_8px_rgba(var(--color-cyan-rgb),0.8)]' : ''} />
+                          <Play size={20} />
                         </div>
                         <div>
-                          <h3 className="text-sm font-sans font-medium text-[var(--text-primary)] mb-1 group-hover:text-[var(--color-cyan)] transition-colors drop-shadow-sm">{item.name}</h3>
-                          <div className="flex items-center gap-4 text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">
-                            <span className="flex items-center gap-1.5 text-[var(--color-cyan)]/80 font-bold"><Sparkles size={12} /> Invite Code: {item.invite_code}</span>
+                          <h3 className="teacher-class-title text-sm font-sans font-semibold text-slate-900 mb-1 group-hover:text-sky-700 transition-colors">{item.name}</h3>
+                          <div className="teacher-class-meta flex items-center gap-4 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+                            <span className="flex items-center gap-1.5 text-teal-700 font-bold"><Sparkles size={12} /> Invite Code: {item.invite_code}</span>
                             <span className="flex items-center gap-1.5"><Users size={12} /> {item.students_count} Students</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className={`text-[9px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border ${item.is_live ? 'bg-[var(--color-cyan)]/10 text-[var(--color-cyan)] border-[var(--color-cyan)]/20 shadow-inner' : 'bg-[var(--bg-deep)] text-[var(--text-muted)] border-[var(--border-glass)] shadow-inner'
+                        <span className={`text-[9px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border ${item.is_live ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-inner' : 'bg-slate-100 text-slate-500 border-slate-200 shadow-inner'
                           }`}>
                           {item.is_live ? 'Live' : 'Inactive'}
                         </span>
-                        <div className="w-10 h-10 rounded-xl bg-[var(--bg-panel)] border border-[var(--border-glass)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-all">
+                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 group-hover:text-sky-700 group-hover:border-sky-200 transition-all shadow-sm">
                           <ChevronRight size={18} />
                         </div>
                       </div>
@@ -325,43 +323,43 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
 
         {/* Sidebar: Announcements & Tasks */}
         <div className="lg:col-span-4 space-y-8">
-          <div className="p-8 rounded-[40px] bg-gradient-to-br from-cyan-600/90 to-violet-800/90 backdrop-blur-2xl text-white relative overflow-hidden group shadow-[0_8px_32px_rgba(34,211,238,0.2)] border border-white/20">
-            <div className="absolute -right-8 -bottom-8 opacity-20 group-hover:scale-110 transition-transform duration-1000 mix-blend-overlay">
+          <div className="teacher-feature-card p-8 rounded-[40px] bg-gradient-to-br from-sky-600 via-teal-600 to-violet-700 backdrop-blur-2xl text-white relative overflow-hidden group shadow-[0_18px_50px_rgba(14,116,144,0.24)] border border-white/40">
+            <div className="absolute -right-8 -bottom-8 opacity-20 group-hover:scale-110 transition-transform duration-1000">
               <Sparkles size={200} />
             </div>
             <div className="relative z-10 space-y-6">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-cyan-100 drop-shadow-sm">Gesture Control</span>
-                <span className="px-3 py-1 rounded-lg bg-black/30 border border-white/20 text-[8px] font-mono uppercase tracking-widest shadow-inner drop-shadow-sm">Active</span>
+                <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-sky-50">Gesture Control</span>
+                <span className="px-3 py-1 rounded-lg bg-white/15 border border-white/25 text-[8px] font-mono uppercase tracking-widest shadow-inner">Active</span>
               </div>
-              <h3 className="text-2xl font-display font-medium tracking-tight leading-tight drop-shadow-md">
+              <h3 className="text-2xl font-display font-semibold tracking-tight leading-tight">
                 Ready for Immersive Teaching
               </h3>
-              <p className="text-sm font-sans text-cyan-50 leading-relaxed drop-shadow-sm">
+              <p className="text-sm font-sans text-sky-50 leading-relaxed">
                 Use advanced hand gestures to manipulate models and navigate materials during your session.
               </p>
-              <button className="w-full py-4 rounded-[20px] bg-white text-slate-900 text-[10px] font-mono uppercase tracking-[0.2em] hover:bg-cyan-50 transition-all shadow-[0_4px_15px_rgba(255,255,255,0.4)]">
+              <button className="w-full py-4 rounded-[20px] bg-white text-slate-900 text-[10px] font-mono uppercase tracking-[0.2em] hover:bg-sky-50 transition-all shadow-[0_10px_24px_rgba(15,23,42,0.18)] font-semibold">
                 Launch Presentation
               </button>
             </div>
           </div>
 
-          <div className="p-8 rounded-[40px] bg-black/40 backdrop-blur-xl border border-white/10 space-y-6 shadow-lg">
-            <h3 className="text-[10px] font-mono text-cyan-300 uppercase tracking-[0.3em] flex items-center gap-2 drop-shadow-sm">
-              <MessageSquare size={12} className="drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+          <div className="teacher-inquiries-card p-8 rounded-[40px] bg-white/90 backdrop-blur-xl border border-slate-200/80 space-y-6 shadow-[0_16px_45px_rgba(15,23,42,0.08)]">
+            <h3 className="text-[10px] font-mono text-violet-700 uppercase tracking-[0.3em] flex items-center gap-2 font-bold">
+              <MessageSquare size={12} />
               Recent Inquiries
             </h3>
             <div className="space-y-4">
               {[1, 2, 3].map(i => (
                 <div key={i} className="flex gap-4 group cursor-pointer">
-                  <div className="w-10 h-10 rounded-xl bg-black/50 border border-white/10 flex items-center justify-center text-white/40 shrink-0 group-hover:text-cyan-300 group-hover:border-cyan-400/30 transition-all shadow-inner">
-                    <Users size={16} className="group-hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                  <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600 shrink-0 group-hover:text-sky-700 group-hover:border-sky-200 transition-all shadow-inner">
+                    <Users size={16} />
                   </div>
                   <div>
-                    <p className="text-xs font-sans text-white/70 leading-snug group-hover:text-white transition-colors drop-shadow-sm">
+                    <p className="text-xs font-sans text-slate-600 leading-snug group-hover:text-slate-950 transition-colors">
                       Student #0{i} asked about Electron Affinity in Section B...
                     </p>
-                    <span className="text-[9px] font-mono text-cyan-300/50 uppercase tracking-widest mt-1.5 inline-block drop-shadow-sm">10 min ago</span>
+                    <span className="text-[9px] font-mono text-teal-700/70 uppercase tracking-widest mt-1.5 inline-block">10 min ago</span>
                   </div>
                 </div>
               ))}
@@ -379,30 +377,30 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedClass(null)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              className="teacher-modal-scrim absolute inset-0 bg-slate-900/35 backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full h-full max-w-6xl bg-[var(--bg-deep)] border border-[var(--border-glass)] shadow-2xl overflow-hidden flex flex-col md:rounded-[40px]"
+              className="teacher-detail-panel relative w-full h-full max-w-6xl bg-[#f8fafc] border border-white shadow-2xl overflow-hidden flex flex-col md:rounded-[40px]"
             >
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-cyan-500/5 via-transparent to-transparent pointer-events-none" />
+              <div className="teacher-detail-bg absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.15),_transparent_26rem),radial-gradient(circle_at_bottom_left,_rgba(124,58,237,0.09),_transparent_24rem)] pointer-events-none" />
               
               {/* Overlay Header */}
-              <div className="p-8 border-b border-[var(--border-glass)] flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 bg-[var(--bg-panel)]/50">
+              <div className="teacher-detail-header p-8 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 bg-white/82 backdrop-blur-xl">
                 <div className="flex items-center gap-6">
                   <div className={`w-16 h-16 rounded-3xl flex items-center justify-center border shadow-lg ${
-                    selectedClass.is_live ? 'bg-[var(--color-cyan)]/20 text-[var(--color-cyan)] border-[var(--color-cyan)]/30' : 'bg-[var(--bg-deep)] text-[var(--text-muted)] border-[var(--border-glass)]'
+                    selectedClass.is_live ? 'bg-sky-100 text-sky-700 border-sky-200' : 'bg-slate-100 text-slate-500 border-slate-200'
                   }`}>
                     <Play size={28} />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-display font-bold text-[var(--text-primary)] tracking-tight">{selectedClass.name}</h2>
+                    <h2 className="teacher-heading text-3xl font-display font-bold text-slate-950 tracking-tight">{selectedClass.name}</h2>
                     <div className="flex items-center gap-4 mt-1">
-                      <span className="text-[10px] font-mono text-[var(--color-cyan)] uppercase tracking-[0.2em] font-bold">Invite: {selectedClass.invite_code}</span>
-                      <div className="w-1 h-1 rounded-full bg-[var(--border-glass)]" />
-                      <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">{selectedClass.students_count} Students Enrolled</span>
+                      <span className="text-[10px] font-mono text-sky-700 uppercase tracking-[0.2em] font-bold">Invite: {selectedClass.invite_code}</span>
+                      <div className="w-1 h-1 rounded-full bg-slate-300" />
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{selectedClass.students_count} Students Enrolled</span>
                     </div>
                   </div>
                 </div>
@@ -416,7 +414,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                   </button>
                   <button 
                     onClick={() => setSelectedClass(null)}
-                    className="p-3 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all shadow-sm"
+                    className="teacher-secondary-button p-3 rounded-2xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 transition-all shadow-sm"
                   >
                     <X size={24} />
                   </button>
@@ -426,8 +424,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
               {/* Overlay Body */}
               <div className="flex-1 overflow-hidden flex flex-col relative z-10">
                 {/* Tabs & Search */}
-                <div className="px-8 py-6 bg-[var(--bg-panel)]/30 border-b border-[var(--border-glass)] flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex p-1 bg-[var(--bg-deep)] rounded-2xl border border-[var(--border-glass)] w-fit">
+                <div className="teacher-detail-toolbar px-8 py-6 bg-white/60 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="teacher-tabs flex p-1 bg-slate-100 rounded-2xl border border-slate-200 w-fit">
                     {[
                       { id: 'students', label: 'Students', icon: Users },
                       { id: 'assignments', label: 'Assignments', icon: FileText },
@@ -436,7 +434,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all ${
-                          activeTab === tab.id ? 'bg-[var(--color-cyan)]/20 text-[var(--color-cyan)] shadow-inner' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                          activeTab === tab.id ? 'bg-white text-sky-700 shadow-sm border border-sky-100' : 'text-slate-500 hover:text-slate-900'
                         }`}
                       >
                         <tab.icon size={14} />
@@ -446,13 +444,13 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                   </div>
 
                   <div className="relative group max-w-md w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--color-cyan)] transition-colors" size={18} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-600 transition-colors" size={18} />
                     <input 
                       type="text"
                       placeholder={`Search ${activeTab}...`}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-6 py-3.5 rounded-2xl bg-[var(--bg-deep)] border border-[var(--border-glass)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/30 focus:border-[var(--color-cyan)]/50 outline-none transition-all shadow-inner"
+                      className="teacher-input w-full pl-12 pr-6 py-3.5 rounded-2xl bg-white border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-300 outline-none transition-all shadow-inner"
                     />
                   </div>
                 </div>
@@ -467,27 +465,27 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                           `${s.first_name} ${s.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
                         )
                         .map((student: any) => (
-                          <div key={student.id} className="p-5 rounded-3xl bg-[var(--bg-panel)] border border-[var(--border-glass)] hover:border-[var(--color-cyan)]/30 transition-all flex items-center justify-between group">
+                          <div key={student.id} className="teacher-list-card p-5 rounded-3xl bg-white/90 border border-slate-200 hover:border-sky-300 transition-all flex items-center justify-between group shadow-sm">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-violet-500/10 border border-[var(--border-glass)] flex items-center justify-center text-indigo-400 font-display font-bold text-lg shadow-inner group-hover:scale-110 transition-transform">
+                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-50 to-violet-50 border border-slate-200 flex items-center justify-center text-violet-700 font-display font-bold text-lg shadow-inner group-hover:scale-110 transition-transform">
                                 {student.first_name?.[0] || student.username[0]}
                               </div>
                               <div>
-                                <div className="text-sm font-sans font-medium text-[var(--text-primary)]">{student.first_name} {student.last_name}</div>
-                                <div className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">@{student.username}</div>
+                                <div className="teacher-class-title text-sm font-sans font-medium text-slate-900">{student.first_name} {student.last_name}</div>
+                                <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">@{student.username}</div>
                               </div>
                             </div>
-                            <button className="p-2 rounded-xl text-[var(--text-muted)] hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100">
+                            <button className="p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100">
                               <Trash2 size={16} />
                             </button>
                           </div>
                       ))}
                       {(!selectedClass.students || selectedClass.students.length === 0) && (
                         <div className="col-span-full py-20 text-center space-y-4">
-                          <div className="w-16 h-16 rounded-3xl bg-[var(--bg-panel)] border border-[var(--border-glass)] flex items-center justify-center text-[var(--text-muted)] mx-auto">
+                          <div className="w-16 h-16 rounded-3xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 mx-auto">
                             <Users size={32} strokeWidth={1} />
                           </div>
-                          <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">No students found</p>
+                          <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">No students found</p>
                         </div>
                       )}
                     </div>
@@ -496,17 +494,17 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                   {activeTab === 'assignments' && (
                     <div className="space-y-4">
                       {selectedClass.assignments && selectedClass.assignments.map((task: any) => (
-                        <div key={task.id} className="p-6 rounded-3xl bg-black/20 border border-white/5 hover:border-white/10 transition-all flex items-center justify-between group relative">
+                        <div key={task.id} className="teacher-list-card p-6 rounded-3xl bg-white/90 border border-slate-200 hover:border-sky-300 transition-all flex items-center justify-between group relative shadow-sm">
                           <div className="flex items-center gap-6">
-                            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/40">
+                            <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700">
                               <FileText size={20} />
                             </div>
                             <div>
-                              <h4 className="text-sm font-sans font-medium text-white mb-1">{task.title}</h4>
-                              <div className="flex items-center gap-4 text-[10px] font-mono text-white/40 uppercase tracking-widest">
+                              <h4 className="teacher-class-title text-sm font-sans font-semibold text-slate-900 mb-1">{task.title}</h4>
+                              <div className="flex items-center gap-4 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
                                 <span>Due: {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No date'}</span>
-                                <span className="w-1 h-1 rounded-full bg-white/20" />
-                                <span className="text-cyan-400/60 font-bold">{task.topic_name || 'General'}</span>
+                                <span className="w-1 h-1 rounded-full bg-slate-300" />
+                                <span className="text-teal-700 font-bold">{task.topic_name || 'General'}</span>
                               </div>
                             </div>
                           </div>
@@ -517,7 +515,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                                 e.stopPropagation();
                                 setActiveMenuId(activeMenuId === task.id ? null : task.id);
                               }}
-                              className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all"
+                              className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all"
                             >
                               <MoreVertical size={18} />
                             </button>
@@ -528,7 +526,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                                   initial={{ opacity: 0, scale: 0.9, y: 10 }}
                                   animate={{ opacity: 1, scale: 1, y: 0 }}
                                   exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                  className="absolute right-0 top-12 w-40 bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl shadow-2xl z-50 overflow-hidden"
+                                  className="absolute right-0 top-12 w-40 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden"
                                 >
                                   <button 
                                     onClick={() => handleDeleteAssignment(task.id)}
@@ -544,16 +542,16 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                       ))}
                       {(!selectedClass.assignments || selectedClass.assignments.length === 0) && (
                         <div className="py-20 text-center space-y-4">
-                          <div className="w-16 h-16 rounded-3xl bg-[var(--bg-panel)] border border-[var(--border-glass)] flex items-center justify-center text-[var(--text-muted)] mx-auto">
+                          <div className="w-16 h-16 rounded-3xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 mx-auto">
                             <Plus size={32} strokeWidth={1} />
                           </div>
-                          <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">No assignments created yet</p>
+                          <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">No assignments created yet</p>
                           <button 
                             onClick={() => {
                               setNewAssignment(prev => ({ ...prev, classroom: selectedClass.id }));
                               setIsAssignmentModalOpen(true);
                             }}
-                            className="px-6 py-2.5 rounded-xl bg-[var(--color-cyan)]/10 border border-[var(--color-cyan)]/20 text-[var(--color-cyan)] text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--color-cyan)]/20 transition-all"
+                            className="px-6 py-2.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 text-[10px] font-mono uppercase tracking-widest hover:bg-sky-100 transition-all"
                           >
                             Create First Task
                           </button>
@@ -577,34 +575,34 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsCreateModalOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
+              className="teacher-modal-scrim absolute inset-0 bg-slate-900/35 backdrop-blur-sm" 
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="relative w-full max-w-md p-8 rounded-[40px] bg-[var(--bg-deep)] border border-[var(--border-glass)] shadow-2xl overflow-hidden"
+              className="teacher-form-modal relative w-full max-w-md p-8 rounded-[40px] bg-white border border-white shadow-2xl overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-cyan-500/10 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-100/70 via-transparent to-sky-100/70 pointer-events-none" />
               
               <div className="relative z-10 space-y-6">
                 <div className="space-y-2 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-300 mx-auto mb-4">
+                  <div className="w-16 h-16 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-700 mx-auto mb-4">
                     <Plus size={32} />
                   </div>
-                  <h2 className="text-2xl font-display font-medium text-[var(--text-primary)]">Create a Classroom</h2>
-                  <p className="text-sm text-[var(--text-muted)]">Launch a new learning space where you can share labs and monitor your students.</p>
+                  <h2 className="teacher-heading text-2xl font-display font-semibold text-slate-950">Create a Classroom</h2>
+                  <p className="teacher-muted text-sm text-slate-600">Launch a new learning space where you can share labs and monitor your students.</p>
                 </div>
 
                 <form onSubmit={handleCreateClass} className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-[0.2em] ml-2">Classroom Name</label>
+                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em] ml-2">Classroom Name</label>
                     <input 
                       autoFocus
                       type="text" 
                       placeholder="E.g. Grade 11 Physics - Sec A"
                       value={newClassName}
                       onChange={(e) => setNewClassName(e.target.value)}
-                      className="w-full px-6 py-4 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/30 focus:border-[var(--color-cyan)]/50 outline-none transition-all shadow-inner"
+                      className="teacher-input w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-sky-300 outline-none transition-all shadow-inner"
                     />
                   </div>
 
@@ -612,14 +610,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                     <button 
                       type="button"
                       onClick={() => setIsCreateModalOpen(false)}
-                      className="flex-1 py-4 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-[var(--text-muted)] text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--bg-deep)] transition-all shadow-sm"
+                      className="teacher-secondary-button flex-1 py-4 rounded-2xl bg-white border border-slate-200 text-slate-600 text-[10px] font-mono uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
                     >
                       Cancel
                     </button>
                     <button 
                       type="submit"
                       disabled={isCreating || !newClassName}
-                      className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-[var(--color-violet)] to-[var(--color-cyan)] text-white text-[10px] font-mono uppercase tracking-widest shadow-lg disabled:opacity-50 disabled:grayscale transition-all"
+                      className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-sky-600 text-white text-[10px] font-mono uppercase tracking-widest shadow-lg disabled:opacity-50 disabled:grayscale transition-all"
                     >
                       {isCreating ? 'Creating...' : 'Launch Class'}
                     </button>
@@ -639,24 +637,24 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsAssignmentModalOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
+              className="teacher-modal-scrim absolute inset-0 bg-slate-900/35 backdrop-blur-sm" 
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="relative w-full max-w-2xl p-8 rounded-[40px] bg-[var(--bg-deep)] border border-[var(--border-glass)] shadow-2xl overflow-hidden"
+              className="teacher-form-modal relative w-full max-w-2xl p-8 rounded-[40px] bg-white border border-white shadow-2xl overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-violet-500/10 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-sky-100/70 via-transparent to-violet-100/70 pointer-events-none" />
               
               <div className="relative z-10 space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700">
                       <Plus size={24} />
                     </div>
                     <div>
-                      <h2 className="text-xl font-display font-medium text-[var(--text-primary)]">New Assignment</h2>
-                      <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">For {selectedClass?.name}</p>
+                      <h2 className="teacher-heading text-xl font-display font-semibold text-slate-950">New Assignment</h2>
+                      <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">For {selectedClass?.name}</p>
                     </div>
                   </div>
                   <button 
@@ -664,7 +662,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                       setIsAssignmentModalOpen(false);
                       setNewAssignment({ title: '', description: '', topic: '', due_date: '', file: null, classroom: '' });
                     }}
-                    className="p-2 rounded-xl hover:bg-[var(--bg-panel)] text-[var(--text-muted)] transition-all"
+                    className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-all"
                   >
                     <X size={20} />
                   </button>
@@ -672,85 +670,85 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
 
                 <form onSubmit={handleCreateAssignment} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-2">Target Classroom</label>
+                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Target Classroom</label>
                     <div className="relative">
                       <select 
                         required
                         value={newAssignment.classroom}
                         onChange={(e) => setNewAssignment({...newAssignment, classroom: e.target.value})}
-                        className="w-full px-6 py-3.5 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-sm text-[var(--text-primary)] focus:border-[var(--color-cyan)]/50 outline-none transition-all appearance-none"
+                        className="teacher-input w-full px-6 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:border-sky-300 outline-none transition-all appearance-none"
                       >
                         <option value="">Select a Classroom</option>
                         {classes.map((c: any) => (
                           <option key={c.id} value={c.id}>{c.name}</option>
                         ))}
                       </select>
-                      <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 text-[var(--text-muted)] pointer-events-none" size={16} />
+                      <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" size={16} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-2">Assignment Title</label>
+                      <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Assignment Title</label>
                       <input 
                         required
                         type="text" 
                         placeholder="E.g. Hydrogen Spectroscopy Lab"
                         value={newAssignment.title}
                         onChange={(e) => setNewAssignment({...newAssignment, title: e.target.value})}
-                        className="w-full px-6 py-3.5 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/30 focus:border-[var(--color-cyan)]/50 outline-none transition-all"
+                        className="teacher-input w-full px-6 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-300 outline-none transition-all"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-2">Due Date</label>
+                      <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Due Date</label>
                       <input 
                         type="datetime-local"
                         value={newAssignment.due_date}
                         onChange={(e) => setNewAssignment({...newAssignment, due_date: e.target.value})}
-                        className="w-full px-6 py-3.5 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-sm text-[var(--text-primary)] focus:border-[var(--color-cyan)]/50 outline-none transition-all"
+                        className="teacher-input w-full px-6 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:border-sky-300 outline-none transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-2">Related Lab Topic</label>
+                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Related Lab Topic</label>
                     <div className="relative">
                       <select 
                         value={newAssignment.topic}
                         onChange={(e) => setNewAssignment({...newAssignment, topic: e.target.value})}
-                        className="w-full px-6 py-3.5 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-sm text-[var(--text-primary)] focus:border-[var(--color-cyan)]/50 outline-none transition-all appearance-none"
+                        className="teacher-input w-full px-6 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:border-sky-300 outline-none transition-all appearance-none"
                       >
                         <option value="">Select a Lab (Optional)</option>
                         {topics.map((t: any) => (
                           <option key={t.id} value={t.id}>{t.name}</option>
                         ))}
                       </select>
-                      <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 text-[var(--text-muted)] pointer-events-none" size={16} />
+                      <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" size={16} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-2">Instructions</label>
+                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Instructions</label>
                     <textarea 
                       placeholder="Enter assignment details or instructions..."
                       value={newAssignment.description}
                       onChange={(e) => setNewAssignment({...newAssignment, description: e.target.value})}
                       rows={3}
-                      className="w-full px-6 py-4 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/30 focus:border-[var(--color-cyan)]/50 outline-none transition-all resize-none"
+                      className="teacher-input w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-300 outline-none transition-all resize-none"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-2">Attachment (PDF/Doc)</label>
+                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Attachment (PDF/Doc)</label>
                     <div className="relative group">
                       <input 
                         type="file" 
                         onChange={(e) => setNewAssignment({...newAssignment, file: e.target.files?.[0] || null})}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
-                      <div className="w-full px-6 py-4 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] border-dashed group-hover:border-[var(--color-cyan)]/50 transition-all flex items-center gap-4">
-                        <Upload size={20} className="text-[var(--text-muted)]" />
-                        <span className="text-sm text-[var(--text-muted)]">
+                      <div className="teacher-input w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 border-dashed group-hover:border-sky-300 transition-all flex items-center gap-4">
+                        <Upload size={20} className="text-slate-500" />
+                        <span className="text-sm text-slate-600">
                           {newAssignment.file ? newAssignment.file.name : 'Upload instruction file...'}
                         </span>
                       </div>
@@ -764,14 +762,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                         setIsAssignmentModalOpen(false);
                         setNewAssignment({ title: '', description: '', topic: '', due_date: '', file: null, classroom: '' });
                       }}
-                      className="flex-1 py-4 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-glass)] text-[var(--text-muted)] text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--bg-deep)] transition-all shadow-sm"
+                      className="teacher-secondary-button flex-1 py-4 rounded-2xl bg-white border border-slate-200 text-slate-600 text-[10px] font-mono uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
                     >
                       Cancel
                     </button>
                     <button 
                       type="submit"
                       disabled={isCreating || !newAssignment.title}
-                      className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-violet)] text-white text-[10px] font-mono uppercase tracking-widest shadow-lg disabled:opacity-50 disabled:grayscale transition-all flex items-center justify-center gap-2"
+                      className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-sky-600 to-violet-600 text-white text-[10px] font-mono uppercase tracking-widest shadow-lg disabled:opacity-50 disabled:grayscale transition-all flex items-center justify-center gap-2"
                     >
                       {isCreating ? (
                         <>
