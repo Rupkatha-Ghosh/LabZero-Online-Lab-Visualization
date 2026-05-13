@@ -1,43 +1,87 @@
-import { WebSocketServer, WebSocket } from "ws";
+import { WebSocketServer } from "ws";
 
 const PORT = Number(process.env.PORT || 5000);
 const wss = new WebSocketServer({ port: PORT });
 
-const clients = new Set();
+let sender = null;
+let receiver = null;
 
 wss.on("connection", (ws) => {
-  clients.add(ws);
-  ws.isAlive = true;
-
-  ws.on("pong", () => {
-    ws.isAlive = true;
-  });
+  console.log("🔌 New client connected");
 
   ws.on("message", (message) => {
-    // Broadcast to everyone except sender
-    for (const client of clients) {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message.toString());
+    try {
+      const data = JSON.parse(message.toString());
+      console.log("📩 Received:", data);
+
+      // ─────────────────────────────
+      // REGISTER ROLES
+      // ─────────────────────────────
+      if (data.type === "sender-ready") {
+        sender = ws;
+        console.log("📱 Sender registered");
+
+        // Notify receiver
+        if (receiver) {
+          receiver.send(JSON.stringify({ type: "sender-ready" }));
+        }
       }
+
+      if (data.type === "receiver-ready") {
+        receiver = ws;
+        console.log("🖥 Receiver registered");
+
+        // Notify sender
+        if (sender) {
+          sender.send(JSON.stringify({ type: "receiver-ready" }));
+        }
+      }
+
+      // ─────────────────────────────
+      // SIGNALING: OFFER → RECEIVER
+      // ─────────────────────────────
+      if (data.offer && receiver) {
+        console.log("📤 Forwarding offer → receiver");
+        receiver.send(JSON.stringify({ offer: data.offer }));
+      }
+
+      // ─────────────────────────────
+      // SIGNALING: ANSWER → SENDER
+      // ─────────────────────────────
+      if (data.answer && sender) {
+        console.log("📤 Forwarding answer → sender");
+        sender.send(JSON.stringify({ answer: data.answer }));
+      }
+
+      // ─────────────────────────────
+      // ICE → BOTH SIDES
+      // ─────────────────────────────
+      if (data.candidate) {
+        if (ws === sender && receiver) {
+          receiver.send(JSON.stringify({ candidate: data.candidate }));
+        } else if (ws === receiver && sender) {
+          sender.send(JSON.stringify({ candidate: data.candidate }));
+        }
+      }
+
+    } catch (err) {
+      console.error("❌ Error parsing message:", err);
     }
   });
 
   ws.on("close", () => {
-    clients.delete(ws);
+    console.log("❌ Client disconnected");
+
+    if (ws === sender) {
+      sender = null;
+      console.log("📱 Sender cleared");
+    }
+
+    if (ws === receiver) {
+      receiver = null;
+      console.log("🖥 Receiver cleared");
+    }
   });
 });
 
-setInterval(() => {
-  for (const client of clients) {
-    if (!client.isAlive) {
-      clients.delete(client);
-      client.terminate();
-      continue;
-    }
-
-    client.isAlive = false;
-    client.ping();
-  }
-}, 30000);
-
-console.log(`Signaling server running on ws://0.0.0.0:${PORT}`);
+console.log(`🚀 Signaling server running on ws://0.0.0.0:${PORT}`);
