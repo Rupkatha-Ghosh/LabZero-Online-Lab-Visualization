@@ -283,12 +283,12 @@ Study of heat, work, temperature, and their relation to energy and physical prop
         `
       },
       {
-         id: TopicId.REFRACTION,
-         slug: 'refraction-of-light',
-  name: 'Refraction of Light',
-  description: 'The bending of light as it passes across the boundary separating two media, governing optical density and total internal reflection.',
-  targetClass: ['Class 11'],
-  theory: `
+        id: TopicId.REFRACTION,
+        slug: 'refraction-of-light',
+        name: 'Refraction of Light',
+        description: 'The bending of light as it passes across the boundary separating two media, governing optical density and total internal reflection.',
+        targetClass: ['Class 9'],
+        theory: `
 # Refraction of Light
 The phenomenon of the change in the path of light as it passes obliquely from one transparent medium to another is called refraction. This bending occurs because light travels at different speeds in different optical media.
 
@@ -319,7 +319,7 @@ An object placed in a denser medium (like water), when viewed from a rarer mediu
   Shift = Real Depth * (1 - 1/n)
 `
 
-       }
+      }
     ]
   },
   {
@@ -378,6 +378,7 @@ As n approaches infinity, **Perimeter → 2π**.
         name: 'Complex Numbers & Rotation',
         description: 'Explore the Argand plane and watch how multiplying by imaginary numbers rotates space.',
         targetClass: ['Class 11'],
+        simulation_id: 'complex_numbers',
         theory: `
 # The Argand Plane
 A complex number like **Z = a + bi** has two parts: a Real part (a) and an Imaginary part (b). Instead of a standard XY graph, we plot these on the **Argand Plane**, where the X-axis is Real and the Y-axis is Imaginary.
@@ -475,6 +476,7 @@ The branch of mathematics concerning numerical descriptions of how likely an eve
         name: 'Trigonometry',
         description: 'Relationships between side lengths and angles of triangles.',
         targetClass: ['Class 10', 'Class 11'],
+        simulation_id: 'trigonometry',
         theory: `
 # Trigonometry
 Study of the relationships involving lengths and angles of triangles.
