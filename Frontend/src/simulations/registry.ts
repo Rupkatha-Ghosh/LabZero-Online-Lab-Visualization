@@ -27,6 +27,7 @@ const TrigonometrySim = React.lazy(() => import('./math/TrigonometrySim'));
 const CalculusSim = React.lazy(() => import('./math/CalculusSim'));
 
 // Biology
+const PlantSim = React.lazy(() => import('./biology/PlantSim'));
 const CellBiologySim = React.lazy(() => import('./biology/CellBiologySim'));
 const MicrobiologySim = React.lazy(() => import('./biology/MicrobiologySim'));
 
@@ -51,4 +52,5 @@ export const SIMULATION_REGISTRY: Record<string, React.LazyExoticComponent<React
   "calculus": CalculusSim,
   "microbiology": MicrobiologySim,
   "cell_biology": CellBiologySim,
+  "plant_physiology": PlantSim,
 };
