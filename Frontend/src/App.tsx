@@ -19,6 +19,100 @@ import AuthPage from './components/auth/AuthPage';
 import FloatingBrain from './components/common/FloatingBrain';
 import MemoryMapOverlay from './components/shared/MemoryMapOverlay';
 
+const useAnimatedFavicon = () => {
+  useEffect(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let frame = 0;
+    let animId: number;
+    const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link');
+    faviconLink.type = 'image/x-icon';
+    faviconLink.rel = 'shortcut icon';
+
+    const draw = (isStatic: boolean = false) => {
+      ctx.clearRect(0, 0, 32, 32);
+
+      // 1. Draw Glow (subtle pulse or fixed)
+      const glowOpacity = isStatic ? 0.15 : 0.1 + Math.sin(frame * 0.05) * 0.05;
+      ctx.strokeStyle = `rgba(99, 102, 241, ${glowOpacity})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(3, 4); ctx.lineTo(29, 4); ctx.lineTo(3, 28); ctx.lineTo(29, 28);
+      ctx.stroke();
+
+      // 2. Draw Z
+      ctx.strokeStyle = '#ffffff'; 
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(3, 4); ctx.lineTo(29, 4); ctx.lineTo(3, 28); ctx.lineTo(29, 28);
+      ctx.stroke();
+
+      if (!isStatic) {
+        // 3. Draw Animated "0" Formation
+        const drawProgress = (Math.sin(frame * 0.03) + 1) / 2;
+        ctx.strokeStyle = '#6366f1'; 
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(16, 16, 9, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * drawProgress));
+        ctx.stroke();
+
+        // 4. Draw Precision Nodes (Pulsating)
+        const nodePulse = 1 + Math.sin(frame * 0.1) * 0.3;
+        
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(3, 4, 2.5 * nodePulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#6366f1';
+        ctx.beginPath();
+        ctx.arc(29, 28, 2.5 * nodePulse, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Static dots for hidden state
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath(); ctx.arc(3, 4, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#6366f1';
+        ctx.beginPath(); ctx.arc(29, 28, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      faviconLink.href = canvas.toDataURL('image/png');
+      if (!document.head.contains(faviconLink)) {
+        document.head.appendChild(faviconLink);
+      }
+    };
+
+    const animate = () => {
+      draw(false);
+      frame++;
+      animId = requestAnimationFrame(animate);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animId);
+        draw(true); // Draw static frame
+      } else {
+        animate(); // Resume animation
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    animate(); // Start initial animation
+
+    return () => {
+      cancelAnimationFrame(animId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+};
+
 import QuizPage from './components/shared/Quiz';
 import { generateQuizAI } from './data/quizData';
 import { Skeleton } from 'boneyard-js/react';
@@ -71,6 +165,7 @@ const BackgroundLayer = ({ theme }: { theme: 'dark' | 'light' }) => (
 );
 
 const AppContent: React.FC = () => {
+  useAnimatedFavicon();
   const { user, isLoading, logout, handleGoogleCallback } = useAuth();
   const { isInstallable, handleInstallClick } = usePWAInstall();
 
@@ -90,6 +185,7 @@ const AppContent: React.FC = () => {
   const [viewState, setViewState] = useState<ViewState>(ViewState.LANDING);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
   const [showAITutor, setShowAITutor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -203,9 +299,24 @@ const AppContent: React.FC = () => {
     setViewState(ViewState.TOPIC);
   }, []);
 
+  const handleSelectClass = useCallback((className: string) => {
+    setSelectedClass(className);
+    setViewState(ViewState.CLASS_SUBJECTS);
+  }, []);
+
   const handleBackToLanding = () => {
     setViewState(ViewState.LANDING);
     setSelectedSubject(null);
+  };
+
+  const handleBack = () => {
+    switch (viewState) {
+      case ViewState.TOPIC: setViewState(ViewState.SUBJECT); break;
+      case ViewState.SUBJECT: setViewState(ViewState.CLASS_SUBJECTS); break;
+      case ViewState.CLASS_SUBJECTS: setViewState(ViewState.LANDING); break;
+      case ViewState.DASHBOARD: setViewState(ViewState.LANDING); break;
+      default: setViewState(ViewState.LANDING);
+    }
   };
 
   const handleDashboardClick = () => {
@@ -214,6 +325,7 @@ const AppContent: React.FC = () => {
 
   const handleBackToSubject = () => {
     setViewState(ViewState.SUBJECT);
+    setSelectedClass(null);
     setSelectedTopic(null);
   };
 
@@ -221,7 +333,7 @@ const AppContent: React.FC = () => {
   const startQuiz = () => {
     if (!selectedSubject) return;
 
-    const generated = generateQuizAI(selectedSubject.name, quizLevel);
+    const generated = generateQuizAI(selectedSubject.slug, quizLevel);
 
     if (!generated || generated.length === 0) {
       alert("Quiz generation failed");
@@ -235,7 +347,7 @@ const AppContent: React.FC = () => {
   // ================= VISUALIZATION =================
   const renderVisualization = useCallback((topicSlug: string, topic?: Topic) => {
     // 1. Check the dynamic Registry first (Step 2 & 3)
-    const DynamicSim = topic?.simulation_id ? SIMULATION_REGISTRY[topic.simulation_id] : null;
+    const DynamicSim = topic?.simulation_id ? SIMULATION_REGISTRY[topic.simulation_id.toLowerCase()] : null;
 
     if (DynamicSim) {
       return (
@@ -243,7 +355,7 @@ const AppContent: React.FC = () => {
           <DynamicSim
             elements={elements}
             molecules={molecules}
-            selectedElement={selectedElement}
+            selectedElement={selectedElement ?? undefined}
             onSelectElement={setSelectedElement}
             theme={theme}
             language={language}
@@ -364,6 +476,7 @@ const AppContent: React.FC = () => {
         {!showQuiz && (
           <>
             <AnimatePresence mode="wait">
+              {/* 1. MAIN LANDING PAGE (Now includes the Class Dropdown internally) */}
               {viewState === ViewState.LANDING && (
                 <motion.div key="landing" className="h-full w-full overflow-y-auto">
                   <LandingPage
@@ -371,6 +484,8 @@ const AppContent: React.FC = () => {
                     language={language}
                     theme={theme}
                     user={user}
+                    selectedClass={selectedClass}         // Pass current class state
+                    onSelectClass={setSelectedClass}      // Let dropdown update the state
                     onLoginClick={() => setShowAuth(true)}
                     onLogoutClick={logout}
                     onProfileClick={() => setShowAuth(true)}
@@ -381,20 +496,28 @@ const AppContent: React.FC = () => {
                   />
                 </motion.div>
               )}
+
+              {/* 2. SUBJECT PAGE (Preserves selected class to filter units) */}
               {viewState === ViewState.SUBJECT && selectedSubject && (
                 <motion.div key="subject" className="h-full w-full overflow-y-auto">
                   <SubjectPage
                     subject={selectedSubject}
                     onSelectTopic={handleSelectTopic}
-                    onBack={handleBackToLanding}
+                    onBack={() => setViewState(ViewState.LANDING)} // Directly back to landing!
                     language={language}
                     theme={theme}
                     onStartQuiz={startQuiz}
                     quizLevel={quizLevel}
                     onLevelChange={setQuizLevel}
+                    selectedClass={selectedClass} // Keeps unit modules filtered
                   />
                 </motion.div>
               )}
+
+              {/* ... Rest of your views (TOPIC, DASHBOARD, ADMIN) stay the same ... */}
+
+
+              {/* ... Remaining view conditions (TOPIC, DASHBOARD, ADMIN) persist cleanly ... */}
               {viewState === ViewState.TOPIC && selectedTopic && (
                 <motion.div key="topic" className="h-full w-full">
                   <TopicPage

@@ -14,13 +14,16 @@ interface LandingPageProps {
   language: Language;
   theme: 'dark' | 'light';
   user?: any;
-  onLoginClick?: () => void;
-  onLogoutClick?: () => void;
-  onProfileClick?: () => void;
-  onOpenGlossary?: () => void;
-  onDashboardClick?: () => void;
-  onAdminClick?: () => void;
-  subjects: Subject[];
+
+onLoginClick?: () => void;
+onLogoutClick?: () => void;
+onProfileClick?: () => void;
+onOpenGlossary?: () => void;
+onDashboardClick?: () => void;
+onAdminClick?: () => void;
+subjects: Subject[];
+  selectedClass?: string | null;                   // <-- ADD THIS
+  onSelectClass?: (cls: string | null) => void;
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({
@@ -30,9 +33,18 @@ const LandingPage: React.FC<LandingPageProps> = ({
   onProfileClick,
   onDashboardClick,
   onAdminClick,
+  language,
   theme,
-  subjects
+  subjects,
+  selectedClass,
+  onSelectClass,
 }) => {
+  const t = (key: string) => translations[key]?.[language] || key;
+
+  // Dynamically filter subjects based on active dropdown selection
+  const displayedSubjects = selectedClass
+    ? subjects.filter(sub => !sub.targetClass || sub.targetClass.includes(selectedClass))
+    : subjects;
   return (
     <div className={`relative min-h-screen bg-[var(--bg-deep)] text-[var(--text-primary)] font-sans selection:bg-[#7DD3FC]/30 overflow-hidden transition-colors duration-500 ${theme === 'light' ? 'light-mode' : ''}`}>
 
@@ -46,7 +58,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
         <nav className="hidden md:flex items-center gap-8">
           {['Home', 'Explore', 'Simulations', 'About', 'Contact'].map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="text-[15px] font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors brightness-[1.2]">
+            <a key={item} href={`#${item.toLowerCase()}`} className="text-[15px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
               {item}
             </a>
           ))}
@@ -112,7 +124,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               <motion.p
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
-                className="text-lg md:text-xl text-[var(--text-muted)] max-w-md leading-relaxed font-bold brightness-[1.1] contrast-[1.1]"
+                className="text-lg md:text-xl text-[var(--text-muted)] max-w-md leading-relaxed font-normal"
               >
                 Interactive 3D labs for Physics, Chemistry, Math & Biology.<br className="hidden md:block" /><br className="hidden md:block" />
                 Turn abstract concepts into real understanding.
@@ -170,14 +182,45 @@ const LandingPage: React.FC<LandingPageProps> = ({
         {/* Subject Cards Grid */}
         {/* Subject Cards Grid */}
         <Skeleton name="landing-cards" loading={subjects.length === 0}>
-          <section id="explore" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[440px] scroll-mt-24">
-            {subjects.length === 0 ? (
+          <section className="min-h-[440px]">
+            {/* CLASS SELECTION DROPDOWN BAR */}
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
+                <span className="text-xs font-mono uppercase tracking-widest opacity-60">
+                  Curriculum Filter
+                </span>
+              </div>
+
+              {onSelectClass && (
+                <div className="relative min-w-[200px]">
+                  <select
+                    value={selectedClass || ''}
+                    onChange={(e) => onSelectClass(e.target.value || null)}
+                    className="w-full appearance-none rounded-xl border border-[var(--border-glass)] bg-[var(--bg-panel)] px-4 py-3 pr-10 text-sm font-medium tracking-wide text-[var(--text-primary)] outline-none transition-all hover:border-sky-500/50 focus:border-sky-500 backdrop-blur-md cursor-pointer shadow-sm"
+                  >
+                    <option value="" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>All Standards (Combined)</option>
+                    <option value="Class 9" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 9</option>
+                    <option value="Class 10" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 10</option>
+                    <option value="Class 11" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 11</option>
+                    <option value="Class 12" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 12</option>
+                  </select>
+                  {/* Custom absolute dropdown arrow for clean styling */}
+                  <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>
+                    ▼
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {displayedSubjects.length === 0 ? (
               // Empty placeholders so the section has height for the Boneyard Skeleton to show
               Array.from({ length: Number(localStorage.getItem('labzero_last_subject_count')) || 4 }).map((_, i) => (
                 <div key={`ghost-${i}`} className="h-[440px] invisible" />
               ))
             ) : (
-              subjects.map((subject, i) => {
+              displayedSubjects.map((subject, i) => {
                 const subjectMeta = {
                   name: subject.name,
                   desc: subject.description || `Explore interactive 3D visualizations and virtual experiments for ${subject.name}.`,
@@ -216,6 +259,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 );
               })
             )}
+            </div>
           </section>
         </Skeleton>
 

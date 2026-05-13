@@ -35,12 +35,6 @@
   /* Emerald 500 */
   --color-warning: #f59e0b;
   /* Amber 500 */
-
-  /* Theme-aware Accents */
-  --color-cyan: #22d3ee; /* Cyan 400 */
-  --color-cyan-rgb: 34, 211, 238;
-  --color-violet: #8b5cf6; /* Violet 500 */
-  --color-violet-rgb: 139, 92, 246;
 }
 
 .light-mode {
@@ -48,22 +42,20 @@
   --bg-deep: #fafaf8;
   --bg-panel: rgba(255, 255, 255, 0.8);
   --text-primary: #0f172a;
-  --text-muted: #475569; /* Darker Slate 600 for better contrast */
-  --border-glass: rgba(15, 23, 42, 0.12); /* Slightly more visible border */
+  --text-muted: #64748b;
+  --border-glass: rgba(15, 23, 42, 0.08);
 
   /* Standard Colors */
-  --color-primary: #4f46e5; /* Darker Indigo 600 */
-  --color-primary-rgb: 79, 70, 229;
-  --color-secondary: #e11d48; /* Darker Rose 600 */
-  --color-secondary-rgb: 225, 29, 72;
-  --color-accent: #059669; /* Darker Emerald 600 */
-  --color-warning: #d97706; /* Darker Amber 600 */
-
-  /* Theme-aware Accents (Darker for Light Mode) */
-  --color-cyan: #0891b2; /* Cyan 600 */
-  --color-cyan-rgb: 8, 145, 178;
-  --color-violet: #7c3aed; /* Violet 600 */
-  --color-violet-rgb: 124, 58, 237;
+  --color-primary: #6366f1;
+  /* Indigo 500 */
+  --color-primary-rgb: 99, 102, 241;
+  --color-secondary: #f43f5e;
+  /* Rose 500 */
+  --color-secondary-rgb: 244, 63, 94;
+  --color-accent: #10b981;
+  /* Emerald 500 */
+  --color-warning: #f59e0b;
+  /* Amber 500 */
 }
 
 @layer base {
