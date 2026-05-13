@@ -3,6 +3,7 @@ import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import Sender from './components/shared/Sender';
 import { registerSW } from 'virtual:pwa-register';
 
 // Register PWA service worker
@@ -14,8 +15,11 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+const params = new URLSearchParams(window.location.search);
+const isPhoneSender = params.get('camera') === 'sender';
+
 root.render(
   <React.StrictMode>
-    <App />
+    {isPhoneSender ? <Sender /> : <App />}
   </React.StrictMode>
 );

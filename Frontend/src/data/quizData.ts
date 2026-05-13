@@ -183,20 +183,23 @@ const biologyPool: Question[] = [
 export const generateQuizAI = (subject: string, quizLevel: string): Question[] => {
   let pool: Question[] = [];
 
-  switch (subject) {
-    case "Mathematics":
+  const sub = subject.toLowerCase();
+  switch (sub) {
+    case "math":
+    case "mathematics":
       pool = mathPool;
       break;
-    case "Physics":
+    case "physics":
       pool = physicsPool;
       break;
-    case "Chemistry":
+    case "chemistry":
       pool = chemistryPool;
       break;
-    case "Biology":
+    case "biology":
       pool = biologyPool;
       break;
     default:
+      console.warn(`No quiz pool found for subject: ${subject}`);
       return [];
   }
 

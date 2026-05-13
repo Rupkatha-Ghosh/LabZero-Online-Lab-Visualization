@@ -4,7 +4,7 @@ import VectorCalculusLab from '../../components/labs/math/VectorCalculusLab';
 import SimulationLayout from '../SimulationLayout';
 
 const VectorCalculusSim: React.FC<SimulationProps> = () => (
-  <SimulationLayout>
+  <SimulationLayout isDashboard>
     <VectorCalculusLab />
   </SimulationLayout>
 );
