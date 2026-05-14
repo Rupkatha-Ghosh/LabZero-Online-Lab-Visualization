@@ -789,11 +789,11 @@ const GestureController: React.FC<GestureControllerProps> = ({
   const panelBorder = isLight
     ? (isActive ? activeColor + '55' : 'rgba(148,163,184,0.32)')
     : (isActive ? activeColor + '42' : 'rgba(255,255,255,0.06)');
-  const subtleText = isLight ? '#64748b' : '#64748b';
-  const quietText = isLight ? '#475569' : '#334155';
+  const subtleText = isLight ? '#475569' : '#94a3b8';
+  const quietText = isLight ? '#64748b' : '#475569';
   const tileOffBg = isLight ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.04)';
   const tileOffBorder = isLight ? 'rgba(148,163,184,0.24)' : 'rgba(255,255,255,0.07)';
-  const tileOffText = isLight ? '#64748b' : '#475569';
+  const tileOffText = isLight ? '#475569' : '#64748b';
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -960,14 +960,23 @@ const GestureController: React.FC<GestureControllerProps> = ({
                 <div className="h-10 w-px flex-shrink-0" style={{ background: isLight ? 'rgba(148,163,184,0.24)' : 'rgba(255,255,255,0.07)' }} />
 
                 {/* Mini camera viewport */}
-                <div className="relative flex-shrink-0 rounded-xl overflow-hidden"
-                  style={{ width: 116, height: 66, background: '#000', border: isLight ? '1px solid rgba(148,163,184,0.28)' : '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="relative flex-shrink-0 rounded-xl overflow-hidden transition-colors duration-500"
+                  style={{ 
+                    width: 116, 
+                    height: 66, 
+                    background: isLight ? 'rgba(241,245,249,0.95)' : '#000', 
+                    border: isLight ? '1px solid rgba(148,163,184,0.28)' : '1px solid rgba(255,255,255,0.07)' 
+                  }}>
                   <video ref={videoRef} autoPlay playsInline muted
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ opacity: 0.32, filter: 'grayscale(100%) contrast(1.2)', transform: 'scaleX(-1)' }} />
+                    className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                    style={{ 
+                      opacity: isLight ? 0.85 : 0.32, 
+                      filter: isLight ? 'none' : 'grayscale(100%) contrast(1.2)', 
+                      transform: 'scaleX(-1)' 
+                    }} />
                   {/* Sweep line */}
                   <motion.div className="absolute left-0 right-0 h-px pointer-events-none"
-                    style={{ background: `linear-gradient(90deg, transparent, ${activeColor}65, transparent)` }}
+                    style={{ background: `linear-gradient(90deg, transparent, ${activeColor}${isLight ? '90' : '65'}, transparent)` }}
                     animate={{ top: ['0%', '100%', '0%'] }}
                     transition={{ duration: 2.8, repeat: Infinity, ease: 'linear' }} />
                   {/* HUD corner brackets */}
