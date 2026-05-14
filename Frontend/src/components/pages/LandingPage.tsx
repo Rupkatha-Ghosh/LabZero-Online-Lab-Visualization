@@ -25,7 +25,7 @@ subjects: Subject[];
   selectedClass?: string | null;
   onSelectClass?: (cls: string | null) => void;
   onLaunchSimulation?: (topicId: string) => void;
-  stats?: { subjects: number; topics: number; students: number };
+  stats?: { subjects: number; topics: number; students: number; average_rating?: number; feedback_count?: number };
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({
@@ -41,7 +41,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
   selectedClass,
   onSelectClass,
   onLaunchSimulation,
-  stats = { subjects: 0, topics: 0, students: 0 }
+  stats = { subjects: 0, topics: 0, students: 0, average_rating: 4.9, feedback_count: 1000 }
 }) => {
   const t = (key: string) => translations[key]?.[language] || key;
 
@@ -163,9 +163,12 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   <img src="https://i.pravatar.cc/100?img=47" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[#F8FAFC] shadow-sm" />
                 </div>
                 <div className="text-sm text-[#64748B] flex flex-col justify-center">
-                  <p>Loved by <strong className="text-[#0F172A]">1000+</strong> students</p>
+                  <p>Loved by <strong className="text-[#0F172A]">{stats.feedback_count || '1000+'}</strong> students</p>
                   <div className="flex items-center gap-1 text-[#FBBF24] mt-0.5 text-xs">
-                    {'★★★★★'.split('').map((s, i) => <span key={i}>{s}</span>)} <span className="text-[#64748B] ml-1 font-medium">4.9/5</span>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <span key={s} className={s <= Math.round(stats.average_rating || 4.9) ? 'text-amber-400' : 'text-slate-300'}>★</span>
+                    ))}
+                    <span className="text-[#64748B] ml-1 font-medium">{stats.average_rating || '4.9'}/5</span>
                   </div>
                 </div>
               </motion.div>

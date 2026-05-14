@@ -4,14 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Search, Edit2, Trash2, Save, X, ArrowLeft,
   Database, Beaker, Atom, BookOpen, Layers,
-  ChevronRight, ChevronDown, AlertCircle, CheckCircle, RefreshCcw, Folder
+  ChevronRight, ChevronDown, AlertCircle, CheckCircle, RefreshCcw, Folder, MessageSquare, Star
 } from 'lucide-react';
 import axios from 'axios';
 import { Subject, Topic, ElementData, Molecule } from '../../types/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
-type Tab = 'subjects' | 'topics' | 'elements' | 'molecules' | 'glossary';
+type Tab = 'subjects' | 'topics' | 'elements' | 'molecules' | 'glossary' | 'feedback';
 
 interface AdminDashboardProps {
   onBack?: () => void;
@@ -42,6 +42,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
   const [elements, setElements] = useState<ElementData[]>([]);
   const [molecules, setMolecules] = useState<Molecule[]>([]);
   const [terms, setTerms] = useState<any[]>([]);
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
 
   const groupedTopics = useMemo(() => {
     const groups: Record<string, Topic[]> = {};
@@ -171,6 +172,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
       } else if (activeTab === 'glossary') {
         const res = await axios.get(`${API_URL}/glossary/terms/`);
         setTerms(res.data.sort((a: any, b: any) => a.term.localeCompare(b.term)));
+      } else if (activeTab === 'feedback') {
+        const res = await axios.get(`${API_URL}/feedback/`);
+        setFeedbacks(res.data.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
       }
     } catch (err: any) {
       setError("Failed to fetch data. Ensure backend is running.");
@@ -199,6 +203,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
     else if (activeTab === 'elements') endpoint = `${API_URL}/elements/${id}/`;
     else if (activeTab === 'molecules') endpoint = `${API_URL}/molecules/${id}/`;
     else if (activeTab === 'glossary') endpoint = `${API_URL}/glossary/terms/${id}/`;
+    else if (activeTab === 'feedback') endpoint = `${API_URL}/feedback/${id}/`;
 
     setItemToDelete({ id, name, endpoint });
     setItemsToBulkDelete([]); // Clear bulk if single delete
@@ -234,6 +239,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
         const item = terms.find(t => t.id === id);
         name = item?.term || String(id);
         endpoint = `${API_URL}/glossary/terms/${id}/`;
+      } else if (activeTab === 'feedback') {
+        const item = feedbacks.find(f => f.id === id);
+        const fullName = item ? (item.first_name || item.last_name ? `${item.first_name} ${item.last_name}` : item.username) : id;
+        name = `Feedback from ${fullName}`;
+        endpoint = `${API_URL}/feedback/${id}/`;
       }
       
       return { id, name, endpoint };
@@ -284,6 +294,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
     else if (activeTab === 'elements') currentIds = elements.map(e => e.number);
     else if (activeTab === 'molecules') currentIds = molecules.map(m => m.formula);
     else if (activeTab === 'glossary') currentIds = terms.map(t => t.id);
+    else if (activeTab === 'feedback') currentIds = feedbacks.map(f => f.id);
 
     if (selectedIds.length === currentIds.length) {
       setSelectedIds([]);
@@ -422,12 +433,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
             >
               <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /> Refresh
             </button>
-            <button
-              onClick={startCreate}
-              className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20 text-sm font-bold text-white"
-            >
-              <Plus size={18} /> Add New
-            </button>
+            {activeTab !== 'feedback' && (
+              <button
+                onClick={startCreate}
+                className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20 text-sm font-bold text-white"
+              >
+                <Plus size={18} /> Add New
+              </button>
+            )}
           </div>
         </header>
 
@@ -461,6 +474,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
             <div className="flex items-center gap-2">
               <Search size={14} />
               Glossary
+            </div>
+          </button>
+          <button
+            onClick={() => { setActiveTab('feedback'); setSelectedIds([]); }}
+            className={`px-8 py-4 rounded-3xl font-bold uppercase tracking-widest text-[10px] transition-all border shrink-0 ${activeTab === 'feedback'
+              ? 'bg-indigo-600 border-indigo-500 shadow-lg shadow-indigo-600/30 text-white'
+              : 'bg-[var(--bg-panel)] border-[var(--border-glass)] text-[var(--text-muted)] hover:bg-indigo-500/10 hover:text-indigo-500'
+              }`}
+          >
+            <div className="flex items-center gap-2">
+              <MessageSquare size={14} />
+              Feedback
             </div>
           </button>
         </div>
@@ -531,19 +556,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                         (activeTab === 'topics' && selectedIds.length === topics.length) ||
                         (activeTab === 'elements' && selectedIds.length === elements.length) ||
                         (activeTab === 'molecules' && selectedIds.length === molecules.length) ||
-                        (activeTab === 'glossary' && selectedIds.length === terms.length)
+                        (activeTab === 'glossary' && selectedIds.length === terms.length) ||
+                        (activeTab === 'feedback' && selectedIds.length === feedbacks.length)
                       )}
                       onChange={toggleSelectAll}
                     />
                   </th>
                   <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
-                    {activeTab === 'elements' || activeTab === 'molecules' ? 'Identity' : activeTab === 'subjects' ? 'Subject Info' : activeTab === 'glossary' ? 'Term' : 'Topic Info'}
+                    {activeTab === 'elements' || activeTab === 'molecules' ? 'Identity' : activeTab === 'subjects' ? 'Subject Info' : activeTab === 'glossary' ? 'Term' : activeTab === 'feedback' ? 'Student Info' : 'Topic Info'}
                   </th>
                   <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
-                    {activeTab === 'elements' ? 'Physical Stats' : activeTab === 'molecules' ? 'Structural Data' : activeTab === 'subjects' ? 'Topics' : activeTab === 'glossary' ? 'Definition' : 'Description & Theory'}
+                    {activeTab === 'elements' ? 'Physical Stats' : activeTab === 'molecules' ? 'Structural Data' : activeTab === 'subjects' ? 'Topics' : activeTab === 'glossary' ? 'Definition' : activeTab === 'feedback' ? 'Comment' : 'Description & Theory'}
                   </th>
                   <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
-                    {activeTab === 'elements' ? 'Chemical Attributes' : activeTab === 'molecules' ? 'Geometry' : activeTab === 'subjects' ? 'Metadata' : activeTab === 'glossary' ? 'Subject' : 'Target Audience'}
+                    {activeTab === 'elements' ? 'Chemical Attributes' : activeTab === 'molecules' ? 'Geometry' : activeTab === 'subjects' ? 'Metadata' : activeTab === 'glossary' ? 'Subject' : activeTab === 'feedback' ? 'Rating' : 'Target Audience'}
                   </th>
                   <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">Actions</th>
                 </tr>
@@ -790,12 +816,52 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                   </tr>
                 ))}
 
+                {activeTab === 'feedback' && feedbacks.map((item) => (
+                  <tr key={item.id} className={`border-b border-[var(--border-glass)] hover:bg-indigo-500/5 transition-colors ${selectedIds.includes(item.id) ? 'bg-indigo-500/10' : ''}`}>
+                    <td className="p-6">
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
+                        checked={selectedIds.includes(item.id)}
+                        onChange={() => toggleSelect(item.id)}
+                      />
+                    </td>
+                    <td className="p-6">
+                      <div className="font-bold text-lg text-[var(--text-primary)]">
+                        {item.first_name || item.last_name ? `${item.first_name} ${item.last_name}` : item.username}
+                      </div>
+                      <div className="text-[10px] text-indigo-500 font-mono uppercase font-black opacity-70">{item.user_role}</div>
+                      <div className="text-[10px] text-[var(--text-muted)] font-mono mt-1 italic">{new Date(item.created_at).toLocaleString()}</div>
+                    </td>
+                    <td className="p-6 text-sm text-[var(--text-primary)]/80 max-w-md">
+                      <div className="line-clamp-3 italic leading-relaxed">"{item.comment || 'No comment provided.'}"</div>
+                    </td>
+                    <td className="p-6">
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} size={14} className={s <= item.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'} />
+                        ))}
+                        <span className="ml-2 font-mono text-sm font-bold">{item.rating}/5</span>
+                      </div>
+                    </td>
+                    <td className="p-6">
+                      <div className="flex gap-2">
+                        <button onClick={() => {
+                          const fullName = item.first_name || item.last_name ? `${item.first_name} ${item.last_name}` : item.username;
+                          startDelete(item.id, `Feedback from ${fullName}`);
+                        }} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
                 {(!loading && ((activeTab === 'subjects' && subjects.length === 0) ||
                   (activeTab === 'topics' && topics.length === 0) ||
                   (activeTab === 'elements' && elements.length === 0) ||
-                  (activeTab === 'molecules' && molecules.length === 0))) && (
+                  (activeTab === 'molecules' && molecules.length === 0) ||
+                  (activeTab === 'feedback' && feedbacks.length === 0))) && (
                     <tr>
-                      <td colSpan={4} className="p-20 text-center text-[var(--text-muted)] font-mono text-sm uppercase tracking-widest">
+                      <td colSpan={5} className="p-20 text-center text-[var(--text-muted)] font-mono text-sm uppercase tracking-widest">
                         No data protocols found in this sector.
                       </td>
                     </tr>

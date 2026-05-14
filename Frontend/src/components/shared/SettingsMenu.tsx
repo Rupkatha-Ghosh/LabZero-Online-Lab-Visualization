@@ -25,6 +25,7 @@ interface SettingsMenuProps {
   onCopyPhoneLink: () => void;
   colorBlindMode: boolean;
   onToggleColorBlind: () => void;
+  user: any;
 }
 
 export const SettingsMenu: React.FC<SettingsMenuProps> = ({
@@ -43,7 +44,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   copyStatus,
   onCopyPhoneLink,
   colorBlindMode,
-  onToggleColorBlind
+  onToggleColorBlind,
+  user
 }) => {
   const isDark = theme === 'dark';
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -56,6 +58,55 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   // Collapse states
   const [isCameraExpanded, setIsCameraExpanded] = useState(false);
   const [isFeedbackExpanded, setIsFeedbackExpanded] = useState(false);
+
+  // Feedback states
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleSendFeedback = async () => {
+    if (!user) {
+      alert("Please login to send feedback");
+      return;
+    }
+    if (rating === 0) {
+      alert("Please select a star rating");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const token = localStorage.getItem('labzero_token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/feedback/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          rating,
+          comment
+        })
+      });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setComment('');
+        setRating(0);
+        setTimeout(() => setSubmitStatus('idle'), 3000);
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      console.error("Feedback submission failed:", error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const checkStandalone = () => {
@@ -455,32 +506,55 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                     <div className="flex items-center justify-between mb-4">
                       {[1, 2, 3, 4, 5].map((s) => (
                         <motion.button 
+                          key={s} 
                           whileHover={{ scale: 1.2 }}
                           whileTap={{ scale: 0.8 }}
-                          key={s} 
+                          onClick={() => setRating(s)}
                           className={`p-1.5 rounded-lg transition-all active:scale-95 ${
-                          isDark ? 'hover:bg-white/5 text-slate-600' : 'hover:bg-slate-200 text-slate-300'
-                        }`}>
-                          <Star size={18} />
+                            rating >= s 
+                              ? 'text-amber-400 bg-amber-400/10' 
+                              : isDark ? 'text-slate-600 hover:bg-white/5' : 'text-slate-300 hover:bg-slate-200'
+                          }`}
+                        >
+                          <Star size={18} fill={rating >= s ? "currentColor" : "none"} />
                         </motion.button>
                       ))}
                     </div>
 
                     <textarea 
-                      placeholder="Any suggestions?"
+                      placeholder={user ? "Any suggestions?" : "Login to share suggestions..."}
+                      disabled={!user || isSubmitting}
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
                       className={`w-full p-4 rounded-2xl border text-xs min-h-[80px] outline-none transition-all resize-none ${
                         isDark 
                           ? 'bg-black/20 border-white/5 text-white placeholder:text-slate-600 focus:border-indigo-500/50' 
                           : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500/50'
-                      }`}
+                      } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
                     />
 
                     <motion.button 
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full mt-4 py-3 rounded-2xl bg-indigo-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
+                      disabled={!user || isSubmitting}
+                      onClick={handleSendFeedback}
+                      className={`w-full mt-4 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 ${
+                        submitStatus === 'success' 
+                          ? 'bg-emerald-600 text-white' 
+                          : submitStatus === 'error'
+                          ? 'bg-rose-600 text-white'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-600/20'
+                      } ${(!user || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      <Heart size={14} /> Send with Love
+                      {isSubmitting ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : submitStatus === 'success' ? (
+                        <><CheckCircle size={14} /> Sent!</>
+                      ) : submitStatus === 'error' ? (
+                        <>Error!</>
+                      ) : (
+                        <><Heart size={14} /> Send with Love</>
+                      )}
                     </motion.button>
                   </div>
                 </motion.div>

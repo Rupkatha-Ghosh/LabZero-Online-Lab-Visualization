@@ -5,7 +5,8 @@ from .views import (
     SubjectList, SubjectDetail,
     TopicList, TopicDetail,
     GlobalSettingsView,
-    PublicStatsView
+    PublicStatsView,
+    FeedbackList
 )
 
 urlpatterns = [
@@ -20,4 +21,5 @@ urlpatterns = [
     path('subjects/<int:pk>/', SubjectDetail.as_view(), name='subject-detail'),
     path('topics/', TopicList.as_view(), name='topic-list'),
     path('topics/<int:pk>/', TopicDetail.as_view(), name='topic-detail'),
-]
+    path('feedback/', FeedbackList.as_view(), name='feedback-list'),
+]

@@ -208,7 +208,13 @@ const AppContent: React.FC = () => {
   const [moleculeRotation, setMoleculeRotation] = useState({ dx: 0, dy: 0 });
   const [moleculeZoom, setMoleculeZoom] = useState(1);
   const [gesturePos, setGesturePos] = useState<{ x: number; y: number } | null>(null);
-  const [publicStats, setPublicStats] = useState({ subjects: 0, topics: 0, students: 0 });
+  const [publicStats, setPublicStats] = useState({ 
+    subjects: 0, 
+    topics: 0, 
+    students: 0, 
+    average_rating: 4.9, 
+    feedback_count: 1000 
+  });
 
   // ================= QUIZ =================
   const [showQuiz, setShowQuiz] = useState(false);
@@ -340,6 +346,10 @@ const AppContent: React.FC = () => {
   }, []);
 
   const handleLaunchSimulation = useCallback((topicId: string | number) => {
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
     // Find the topic in any of the subjects
     for (const subject of subjects) {
       const topic = subject.topics.find(t => t.id === topicId || t.slug === topicId);
@@ -639,24 +649,25 @@ const AppContent: React.FC = () => {
                     onClick={() => setShowSettings(false)}
                     className={`fixed inset-0 z-[115] backdrop-blur-[2px] cursor-pointer ${theme === 'dark' ? 'bg-black/20' : 'bg-slate-900/10'}`}
                   />
-                  <SettingsMenu
-                    onClose={() => setShowSettings(false)}
-                    theme={theme}
-                    onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
-                    language={language}
-                    onLanguageChange={setLanguage}
-                    onOpenMindMap={() => { setShowMindMap(true); setShowSettings(false); }}
-                    onOpenGlossary={() => { setShowGlossary(true); setShowSettings(false); }}
-                    isInstallable={isInstallable}
-                    onInstallApp={handleInstallClick}
-                    cameraSource={cameraSource}
-                    onCameraSourceChange={setCameraSource}
-                    phoneSenderUrl={phoneSenderUrl}
-                    copyStatus={copyStatus}
-                    onCopyPhoneLink={copyPhoneLink}
-                    colorBlindMode={colorBlindMode}
-                    onToggleColorBlind={() => setColorBlindMode(prev => !prev)}
-                  />
+                    <SettingsMenu
+                      onClose={() => setShowSettings(false)}
+                      theme={theme}
+                      onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+                      language={language}
+                      onLanguageChange={setLanguage}
+                      onOpenMindMap={() => { setShowMindMap(true); setShowSettings(false); }}
+                      onOpenGlossary={() => { setShowGlossary(true); setShowSettings(false); }}
+                      isInstallable={isInstallable}
+                      onInstallApp={handleInstallClick}
+                      cameraSource={cameraSource}
+                      onCameraSourceChange={setCameraSource}
+                      phoneSenderUrl={phoneSenderUrl}
+                      copyStatus={copyStatus}
+                      onCopyPhoneLink={copyPhoneLink}
+                      colorBlindMode={colorBlindMode}
+                      onToggleColorBlind={() => setColorBlindMode(prev => !prev)}
+                      user={user}
+                    />
                 </>
               )}
             </AnimatePresence>

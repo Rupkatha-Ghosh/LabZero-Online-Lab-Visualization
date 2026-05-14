@@ -1,8 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework import generics
-from .models import Element, Molecule, Subject, Topic, GlobalSettings
-from .serializers import ElementSerializer, MoleculeSerializer, SubjectSerializer, TopicSerializer, GlobalSettingsSerializer
+from .models import Element, Molecule, Subject, Topic, GlobalSettings, Feedback
+from .serializers import (
+    ElementSerializer, MoleculeSerializer, SubjectSerializer, 
+    TopicSerializer, GlobalSettingsSerializer, FeedbackSerializer
+)
+from django.db.models import Avg
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 class GlobalSettingsView(APIView):
     def get(self, request):
@@ -61,8 +66,25 @@ class PublicStatsView(APIView):
         from django.contrib.auth import get_user_model
         User = get_user_model()
         
+        # Calculate average rating
+        avg_rating = Feedback.objects.aggregate(Avg('rating'))['rating__avg'] or 5.0
+        feedback_count = Feedback.objects.count()
+        
         return Response({
             "subjects": Subject.objects.count(),
             "topics": Topic.objects.count(),
-            "students": User.objects.filter(role='student').count()
+            "students": User.objects.filter(role='student').count(),
+            "average_rating": round(avg_rating, 1),
+            "feedback_count": feedback_count
         })
+
+class FeedbackList(generics.ListCreateAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    def perform_create(self, serializer):
+        if self.request.user.is_authenticated:
+            serializer.save(user=self.request.user)
+        else:
+            pass

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Element, Molecule, AtomPosition, LonePair, Subject, Topic, GlobalSettings
+from .models import Element, Molecule, AtomPosition, LonePair, Subject, Topic, GlobalSettings, Feedback
 
 class GlobalSettingsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -86,3 +86,14 @@ class MoleculeSerializer(serializers.ModelSerializer):
                 LonePair.objects.create(molecule=instance, **lp_data)
                 
         return instance
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    user_role = serializers.CharField(source='user.role', read_only=True)
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+
+    class Meta:
+        model = Feedback
+        fields = ['id', 'username', 'user_role', 'first_name', 'last_name', 'rating', 'comment', 'created_at']
+        read_only_fields = ['id', 'created_at']

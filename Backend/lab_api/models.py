@@ -124,4 +124,16 @@ class Topic(models.Model):
         ordering = ['order', 'id']
 
     def __str__(self):
-        return f"{self.name} ({self.subject.name})"
+        return f"{self.name} ({self.subject.name})"
+
+class Feedback(models.Model):
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name='feedbacks')
+    rating = models.IntegerField(default=5)
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.rating} stars"
