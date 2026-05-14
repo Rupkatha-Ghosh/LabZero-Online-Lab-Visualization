@@ -100,7 +100,7 @@ const AuthPage: React.FC = () => {
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop')] mix-blend-overlay opacity-50 object-cover w-full h-full" />
 
           <div className="relative z-10">
-            <Logo className="mb-8" />
+            <Logo className="mb-8" lightText={true} />
 
             <h2 className="text-5xl font-display font-semibold leading-[0.9] uppercase italic mb-8 drop-shadow-md">
               The Future of <br /> Interactive <br /> Learning.

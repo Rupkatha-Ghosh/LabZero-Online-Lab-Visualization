@@ -3,9 +3,9 @@ import { SimulationProps } from '../../types/types';
 import ProbabilityLab from '../../components/labs/math/ProbabilityLab';
 import SimulationLayout from '../SimulationLayout';
 
-const ProbabilitySim: React.FC<SimulationProps> = () => (
+const ProbabilitySim: React.FC<SimulationProps> = ({ theme, language }) => (
   <SimulationLayout className="overflow-hidden">
-    <ProbabilityLab />
+    <ProbabilityLab theme={theme} language={language} />
   </SimulationLayout>
 );
 

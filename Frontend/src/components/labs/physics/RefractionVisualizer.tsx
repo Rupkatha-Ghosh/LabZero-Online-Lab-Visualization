@@ -4,7 +4,8 @@ import { RefractionPreset, RefractionProps } from '../../../types/types';
 const RefractionSimulator: React.FC<RefractionProps> = ({ 
   initialN1 = 1.0, 
   initialN2 = 1.5, 
-  initialAngle = 30 
+  initialAngle = 30,
+  theme = 'light'
 }) => {
   // --- State Management ---
   const [n1, setN1] = useState<number>(initialN1); // Medium 1 (Top)
@@ -12,6 +13,8 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
   const [incidentAngle, setIncidentAngle] = useState<number>(initialAngle); // Angle in degrees
   
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const isDark = theme === 'dark';
 
   // Quick presets for common textbook scenarios
   const presets: RefractionPreset[] = [
@@ -28,23 +31,18 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
   };
 
   // --- Physics Calculations ---
-  // Convert degrees to radians
   const rad = (deg: number) => (deg * Math.PI) / 180;
-  // Convert radians to degrees
   const deg = (rad: number) => (rad * 180) / Math.PI;
 
   const theta1Rad = rad(incidentAngle);
   
-  // Calculate Critical Angle if traveling from Denser to Rarer medium
   let criticalAngle: number | null = null;
   if (n1 > n2) {
     criticalAngle = deg(Math.asin(n2 / n1));
   }
 
-  // Determine if Total Internal Reflection (TIR) occurs
   const isTIR = criticalAngle !== null && incidentAngle >= criticalAngle;
 
-  // Calculate angle of refraction using Snell's Law: n1 * sin(θ1) = n2 * sin(θ2)
   let refractedAngleRad = 0;
   let refractedAngleDeg = 0;
   if (!isTIR) {
@@ -53,7 +51,6 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
     refractedAngleDeg = deg(refractedAngleRad);
   }
 
-  // Calculate relative speed of light in both media (c = 3x10^8 m/s)
   const speed1 = (1 / n1).toFixed(2);
   const speed2 = (1 / n2).toFixed(2);
 
@@ -70,29 +67,40 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
     const cy = height / 2;
     const rayLength = Math.min(width, height) * 0.42;
 
+    const textColor = isDark ? '#f1f5f9' : '#333333';
+    const borderColor = isDark ? '#334155' : '#94a3b8';
+    const normalColor = isDark ? '#94a3b8' : '#64748b';
+    const medium1Color = isDark 
+      ? (n1 > 1.2 ? '#1e293b' : '#0f172a') 
+      : (n1 > 1.2 ? '#f0f4f8' : '#ffffff');
+
     // 1. Clear Canvas
     ctx.clearRect(0, 0, width, height);
 
     // 2. Draw Medium 1 (Top Half)
-    ctx.fillStyle = n1 > 1.2 ? '#f0f4f8' : '#ffffff';
+    ctx.fillStyle = medium1Color;
     ctx.fillRect(0, 0, width, cy);
-    ctx.fillStyle = '#333333';
-    ctx.font = '14px sans-serif';
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold 14px sans-serif';
     ctx.fillText(`Medium 1 (n₁ = ${n1.toFixed(2)})`, 20, 30);
 
     // 3. Draw Medium 2 (Bottom Half)
-    // Darker blue tint based on optical density
-    const densityTint = Math.min(255, Math.floor(240 - (n2 - 1) * 60));
-    ctx.fillStyle = `rgb(${densityTint}, 225, 255)`;
+    const baseDensity = isDark ? 40 : 240;
+    const densityStep = isDark ? 20 : -60;
+    const densityTint = Math.min(255, Math.floor(baseDensity + (n2 - 1) * densityStep));
+    
+    ctx.fillStyle = isDark 
+      ? `rgb(15, ${Math.floor(densityTint/2)}, ${densityTint})`
+      : `rgb(${densityTint}, 225, 255)`;
     ctx.fillRect(0, cy, width, cy);
-    ctx.fillStyle = '#333333';
+    ctx.fillStyle = textColor;
     ctx.fillText(`Medium 2 (n₂ = ${n2.toFixed(2)})`, 20, cy + 30);
 
     // 4. Draw Interface Boundary
     ctx.beginPath();
     ctx.moveTo(0, cy);
     ctx.lineTo(width, cy);
-    ctx.strokeStyle = '#94a3b8';
+    ctx.strokeStyle = borderColor;
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -101,126 +109,129 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
     ctx.setLineDash([6, 6]);
     ctx.moveTo(cx, 40);
     ctx.lineTo(cx, height - 40);
-    ctx.strokeStyle = '#64748b';
+    ctx.strokeStyle = normalColor;
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    ctx.setLineDash([]); // Reset line dash
+    ctx.setLineDash([]); 
 
-    // 6. Draw Incident Ray (Coming from top-left quadrant)
+    // 6. Draw Incident Ray
     const startX = cx - rayLength * Math.sin(theta1Rad);
     const startY = cy - rayLength * Math.cos(theta1Rad);
 
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(cx, cy);
-    ctx.strokeStyle = '#ef4444'; // Bright Laser Red
+    ctx.strokeStyle = '#f43f5e'; // Rose-500
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Draw Incident Angle Arc
     if (incidentAngle > 3) {
       ctx.beginPath();
       ctx.arc(cx, cy, 40, -Math.PI / 2 - theta1Rad, -Math.PI / 2);
-      ctx.strokeStyle = '#ef4444';
+      ctx.strokeStyle = '#f43f5e';
       ctx.lineWidth = 1.5;
       ctx.stroke();
-      ctx.fillStyle = '#ef4444';
-      ctx.font = '12px sans-serif';
-      ctx.fillText(`i = ${Math.round(incidentAngle)}°`, cx - 50, cy - 50);
+      ctx.fillStyle = '#f43f5e';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText(`i = ${Math.round(incidentAngle)}°`, cx - 55, cy - 50);
     }
 
     // 7. Draw Refracted or Reflected Ray
     if (isTIR) {
-      // Total Internal Reflection: Ray reflects back into top-right quadrant
       const endX = cx + rayLength * Math.sin(theta1Rad);
       const endY = cy - rayLength * Math.cos(theta1Rad);
 
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(endX, endY);
-      ctx.strokeStyle = '#eab308'; // Warning Yellow/Orange for TIR
+      ctx.strokeStyle = '#fbbf24'; // Amber-400
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Label Reflection
-      ctx.fillStyle = '#eab308';
+      ctx.fillStyle = '#fbbf24';
       ctx.fillText(`r = ${Math.round(incidentAngle)}°`, cx + 35, cy - 50);
     } else {
-      // Standard Refraction: Ray passes into bottom-right quadrant
       const endX = cx + rayLength * Math.sin(refractedAngleRad);
       const endY = cy + rayLength * Math.cos(refractedAngleRad);
 
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(endX, endY);
-      ctx.strokeStyle = '#ef4444';
+      ctx.strokeStyle = isDark ? '#f43f5e' : '#ef4444';
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Draw Refracted Angle Arc
       if (refractedAngleDeg > 3) {
         ctx.beginPath();
         ctx.arc(cx, cy, 50, Math.PI / 2, Math.PI / 2 - refractedAngleRad, true);
-        ctx.strokeStyle = '#ef4444';
+        ctx.strokeStyle = isDark ? '#f43f5e' : '#ef4444';
         ctx.lineWidth = 1.5;
         ctx.stroke();
-        ctx.fillStyle = '#ef4444';
+        ctx.fillStyle = isDark ? '#f43f5e' : '#ef4444';
         ctx.fillText(`r = ${Math.round(refractedAngleDeg)}°`, cx + 25, cy + 65);
       }
     }
 
-    // Draw origin point
     ctx.beginPath();
     ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = isDark ? '#ffffff' : '#000000';
     ctx.fill();
 
-  }, [n1, n2, incidentAngle, theta1Rad, refractedAngleRad, isTIR, refractedAngleDeg]);
+  }, [n1, n2, incidentAngle, theta1Rad, refractedAngleRad, isTIR, refractedAngleDeg, isDark]);
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
-      <h2 style={{ textAlign: 'center', color: '#1e293b', marginBottom: '5px' }}>
-      </h2>
-      <p style={{ textAlign: 'center', color: '#64748b', fontSize: '14px', marginTop: 0 }}>
-       
-      </p>
-
+    <div className={`w-full max-w-4xl mx-auto p-6 transition-colors duration-500 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
       {/* Canvas Display Viewport */}
-      <div style={{ position: 'relative', border: '1px solid #cbd5e1', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fff' }}>
+      <div className={`relative border rounded-2xl overflow-hidden shadow-2xl transition-colors duration-500 ${
+        isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
+      }`}>
         <canvas 
           ref={canvasRef} 
           width={760} 
           height={400} 
-          style={{ display: 'block', width: '100%', height: 'auto' }}
+          className="block w-full h-auto"
         />
         
         {/* TIR Alert Badge */}
         {isTIR && (
-          <div style={{ position: 'absolute', top: '15px', right: '15px', background: '#fef08a', color: '#854d0e', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', border: '1px solid #facc15' }}>
-            ⚠️ Total Internal Reflection (TIR)
+          <div className={`absolute top-4 right-4 px-3 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wider border animate-pulse ${
+            isDark ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-800 border-amber-200'
+          }`}>
+            ⚠️ Total Internal Reflection
           </div>
         )}
       </div>
 
       {/* Preset Controls */}
-      <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-        {presets.map((preset, idx) => (
-          <button
-            key={idx}
-            onClick={() => handlePreset(preset)}
-            style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', color: '#334155', transition: 'all 0.2s' }}
-          >
-            {preset.name}
-          </button>
-        ))}
+      <div className="mt-6 flex gap-2 justify-center flex-wrap">
+        {presets.map((preset, idx) => {
+          const isActive = n1 === preset.n1 && n2 === preset.n2 && incidentAngle === preset.angle;
+          return (
+            <button
+              key={idx}
+              onClick={() => handlePreset(preset)}
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-xl border transition-all ${
+                isActive
+                  ? 'bg-primary text-white border-primary shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.4)]'
+                  : isDark 
+                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white' 
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              {preset.name}
+            </button>
+          );
+        })}
       </div>
 
       {/* Parameters & Controls Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginTop: '20px', padding: '15px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+      <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 p-6 rounded-2xl border transition-colors duration-500 ${
+        isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-50 border-slate-200'
+      }`}>
         {/* Angle Slider */}
-        <div>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '5px' }}>
-            Angle of Incidence (i): {incidentAngle}°
+        <div className="space-y-3">
+          <label className={`block text-xs font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Angle of Incidence: <span className="text-rose-500">{incidentAngle}°</span>
           </label>
           <input
             type="range"
@@ -228,14 +239,14 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
             max={89}
             value={incidentAngle}
             onChange={(e) => setIncidentAngle(Number(e.target.value))}
-            style={{ width: '100%', cursor: 'pointer' }}
+            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-rose-500 dark:bg-slate-700"
           />
         </div>
 
         {/* Medium 1 Slider */}
-        <div>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '5px' }}>
-            Medium 1 Index (n₁): {n1.toFixed(2)}
+        <div className="space-y-3">
+          <label className={`block text-xs font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Index n₁: <span className="text-indigo-500">{n1.toFixed(2)}</span>
           </label>
           <input
             type="range"
@@ -244,15 +255,15 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
             step={0.01}
             value={n1}
             onChange={(e) => setN1(Number(e.target.value))}
-            style={{ width: '100%', cursor: 'pointer' }}
+            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-500 dark:bg-slate-700"
           />
-          <span style={{ fontSize: '11px', color: '#64748b' }}>Speed: {speed1}c</span>
+          <div className="text-[10px] font-mono opacity-60">Light Speed: {speed1}c</div>
         </div>
 
         {/* Medium 2 Slider */}
-        <div>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '5px' }}>
-            Medium 2 Index (n₂): {n2.toFixed(2)}
+        <div className="space-y-3">
+          <label className={`block text-xs font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Index n₂: <span className="text-blue-500">{n2.toFixed(2)}</span>
           </label>
           <input
             type="range"
@@ -261,23 +272,30 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
             step={0.01}
             value={n2}
             onChange={(e) => setN2(Number(e.target.value))}
-            style={{ width: '100%', cursor: 'pointer' }}
+            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500 dark:bg-slate-700"
           />
-          <span style={{ fontSize: '11px', color: '#64748b' }}>Speed: {speed2}c</span>
+          <div className="text-[10px] font-mono opacity-60">Light Speed: {speed2}c</div>
         </div>
       </div>
 
       {/* Real-Time Metrics Output */}
-      <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', color: '#1e3a8a', fontSize: '14px', display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: '10px' }}>
-        <div>
-          <strong>Condition:</strong> {n1 === n2 ? 'No Bending' : n1 < n2 ? 'Bends Towards Normal' : 'Bends Away From Normal'}
+      <div className={`mt-6 p-4 rounded-xl border flex flex-wrap justify-around gap-4 text-xs font-bold uppercase tracking-widest transition-colors duration-500 ${
+        isDark ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-300' : 'bg-indigo-50 border-indigo-100 text-indigo-700'
+      }`}>
+        <div className="flex items-center gap-2">
+          <span className="opacity-60">Mode:</span>
+          <span className={n1 === n2 ? '' : 'text-amber-500'}>
+            {n1 === n2 ? 'Linear' : n1 < n2 ? 'Convergent' : 'Divergent'}
+          </span>
         </div>
-        <div>
-          <strong>Angle of Refraction (r):</strong> {isTIR ? 'N/A (Reflected)' : `${refractedAngleDeg.toFixed(1)}°`}
+        <div className="flex items-center gap-2">
+          <span className="opacity-60">Refraction (r):</span>
+          <span>{isTIR ? 'REFL' : `${refractedAngleDeg.toFixed(1)}°`}</span>
         </div>
         {criticalAngle !== null && (
-          <div>
-            <strong>Critical Angle (i_c):</strong> {criticalAngle.toFixed(1)}°
+          <div className="flex items-center gap-2">
+            <span className="opacity-60">Critical (i_c):</span>
+            <span className="text-amber-500">{criticalAngle.toFixed(1)}°</span>
           </div>
         )}
       </div>

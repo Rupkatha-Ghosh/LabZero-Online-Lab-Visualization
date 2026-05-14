@@ -56,7 +56,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
       {/* Navbar */}
       <header className="fixed top-0 inset-x-0 h-20 z-50 bg-[var(--bg-deep)]/80 backdrop-blur-lg border-b border-[var(--border-glass)] px-6 md:px-12 flex items-center justify-between">
-        <Logo />
+        <Logo lightText={theme === 'dark'} />
 
         <nav className="hidden md:flex items-center gap-8">
           {['Home', 'Explore', 'Simulations', 'About', 'Contact'].map((item) => (
@@ -274,16 +274,20 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Theory to Visual */}
         <Skeleton name="landing-theory" loading={false}>
-          <section id="about" className="bg-[#FAFBFD] rounded-[32px] p-8 md:p-12 border border-[#E2E8F0] shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row items-stretch gap-8 w-full max-w-[1400px] mx-auto overflow-hidden relative scroll-mt-24">
+          <section id="about" className={`rounded-[32px] p-8 md:p-12 border transition-all duration-500 flex flex-col xl:flex-row items-stretch gap-8 w-full max-w-[1400px] mx-auto overflow-hidden relative scroll-mt-24 ${
+            theme === 'dark' 
+              ? 'bg-slate-900/40 border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)]' 
+              : 'bg-[#FAFBFD] border-[#E2E8F0] shadow-[0_4px_20px_rgba(0,0,0,0.02)]'
+          }`}>
 
             {/* Left Text */}
             <div className="w-full xl:w-[30%] flex flex-col justify-center min-w-[280px]">
-              <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-widest mb-4 block">ABSTRACT TO VISUAL</span>
-              <h2 className="text-4xl md:text-[52px] font-display font-semibold text-[#0F172A] mb-8 leading-[1.1] tracking-tight">
+              <span className={`text-[11px] font-bold uppercase tracking-widest mb-4 block ${theme === 'dark' ? 'text-slate-500' : 'text-[#64748b]'}`}>ABSTRACT TO VISUAL</span>
+              <h2 className={`text-4xl md:text-[52px] font-display font-semibold mb-8 leading-[1.1] tracking-tight ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
                 From Theory<br />
                 to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">Reality</span>
               </h2>
-              <p className="text-[#64748B] text-[15px] leading-relaxed mb-8">
+              <p className={`text-[15px] leading-relaxed mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>
                 We bridge the gap between abstract theory and real-world understanding through immersive 3D visualizations.
               </p>
               <button className="text-[#f43f5e] font-medium flex items-center gap-2 hover:gap-3 transition-all text-sm">
@@ -294,12 +298,16 @@ const LandingPage: React.FC<LandingPageProps> = ({
             <div className="flex-1 flex flex-col lg:flex-row items-center justify-end gap-6 lg:gap-8 w-full">
 
               {/* LEFT CARD: Abstract Theory */}
-              <div className="w-full lg:w-[320px] bg-white rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-[#F1F5F9] flex flex-col isolate relative h-[450px]">
-                <h3 className="text-[17px] font-semibold text-[#0F172A] mb-1">Abstract Theory</h3>
+              <div className={`w-full lg:w-[320px] rounded-[20px] p-6 border flex flex-col isolate relative h-[450px] transition-colors duration-500 ${
+                theme === 'dark' 
+                  ? 'bg-slate-900/80 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]' 
+                  : 'bg-white border-[#F1F5F9] shadow-[0_8px_30px_rgba(0,0,0,0.03)]'
+              }`}>
+                <h3 className={`text-[17px] font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>Abstract Theory</h3>
                 <span className="text-[13px] font-medium text-[#f43f5e] mb-8 block">Electric Field</span>
 
                 <div className="flex-1 flex flex-col opacity-95">
-                  <div className="flex justify-center items-center gap-4 text-[#0F172A] font-serif text-[1.75rem] leading-none mb-6">
+                  <div className={`flex justify-center items-center gap-4 font-serif text-[1.75rem] leading-none mb-6 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
                     <div className="flex flex-col items-center">
                       <span className="relative">
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[1rem]">→</span>
@@ -308,11 +316,11 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
                     <span>=</span>
                     <div className="flex flex-col items-center justify-center">
-                      <span className="border-b border-[#0F172A] px-1 pb-1">1</span>
+                      <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>1</span>
                       <span className="pt-1">4π<span className="italic font-sans">ε</span><sub className="text-[1rem]">0</sub></span>
                     </div>
                     <div className="flex flex-col items-center justify-center">
-                      <span className="border-b border-[#0F172A] px-1 pb-1">q</span>
+                      <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>q</span>
                       <span className="pt-1">r<sup className="text-[1rem]">2</sup></span>
                     </div>
                     <div className="flex flex-col items-center">
@@ -322,33 +330,43 @@ const LandingPage: React.FC<LandingPageProps> = ({
                       </span>
                     </div>
                   </div>
-                  <p className="text-[13px] text-[#64748B] text-center mb-8">Electric field due to a point charge.</p>
+                  <p className={`text-[13px] text-center mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric field due to a point charge.</p>
 
                   <div className="w-full flex-1 relative -mt-5">
-                    <InverseSquareGraph />
+                    <InverseSquareGraph theme={theme} />
                   </div>
                 </div>
               </div>
 
               {/* CONNECTOR ELEMENT */}
-              <div className="w-12 h-12 rounded-full bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] border border-[#E2E8F0] flex items-center justify-center shrink-0 z-10 -my-4 lg:my-0 lg:-mx-12 rotate-90 lg:rotate-0 transition-transform">
+              <div className={`w-12 h-12 rounded-full border flex items-center justify-center shrink-0 z-10 -my-4 lg:my-0 lg:-mx-12 rotate-90 lg:rotate-0 transition-all ${
+                theme === 'dark' 
+                  ? 'bg-slate-900 border-white/20 shadow-[0_4px_15px_rgba(0,0,0,0.4)]' 
+                  : 'bg-white border-[#E2E8F0] shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
+              }`}>
                 <ArrowRight strokeWidth={2.5} className="w-5 h-5 text-[#f43f5e]" />
               </div>
 
               {/* RIGHT CARD: 3D Visualization */}
-              <div className="w-full lg:flex-1 bg-white rounded-[20px] p-6 shadow-[0_12px_40px_rgba(0,0,0,0.04)] border border-[#F1F5F9] h-[450px] relative isolate flex flex-col">
+              <div className={`w-full lg:flex-1 rounded-[20px] p-6 border h-[450px] relative isolate flex flex-col transition-colors duration-500 ${
+                theme === 'dark' 
+                  ? 'bg-slate-900/80 border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.5)]' 
+                  : 'bg-white border-[#F1F5F9] shadow-[0_12px_40px_rgba(0,0,0,0.04)]'
+              }`}>
                 <div className="flex justify-between items-start mb-2 relative z-20">
                   <div>
                     <h3 className="text-[17px] font-semibold text-[#f43f5e] mb-1">3D Visualization</h3>
-                    <span className="text-[13px] text-[#64748B] block">Electric Dipole Field</span>
+                    <span className={`text-[13px] block ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric Dipole Field</span>
                   </div>
-                  <button className="w-9 h-9 rounded-xl border border-[#E2E8F0] flex items-center justify-center text-[#14B8A6] hover:bg-slate-50 transition-colors">
+                  <button className={`w-9 h-9 rounded-xl border flex items-center justify-center text-[#14B8A6] transition-colors ${
+                    theme === 'dark' ? 'border-white/10 hover:bg-white/5' : 'border-[#E2E8F0] hover:bg-slate-50'
+                  }`}>
                     <Maximize2 size={16} strokeWidth={2.5} />
                   </button>
                 </div>
 
                 <div className="absolute inset-0 pt-20 px-4 pb-4">
-                  <ElectricFieldSimulation />
+                  <ElectricFieldSimulation theme={theme} />
                 </div>
               </div>
 

@@ -156,15 +156,20 @@ const GlossyCharges = () => {
     );
 };
 
-export const ElectricFieldSimulation = () => {
+export const ElectricFieldSimulation = ({ theme = 'light' }: { theme?: 'light' | 'dark' }) => {
     const lines = useMemo(() => generateDipoleLines(), []);
+    const bgColor = theme === 'dark' ? "#0f172a" : "#F8FAFC";
+    const textColor = theme === 'dark' ? "#f8fafc" : "#0F172A";
+    const mutedColor = theme === 'dark' ? "#94a3b8" : "#64748B";
+    const gridColor1 = theme === 'dark' ? "#334155" : "#CBD5E1";
+    const gridColor2 = theme === 'dark' ? "#1e293b" : "#F1F5F9";
 
     return (
-        <div className="w-full h-full relative p-0 overflow-hidden bg-[#F8FAFC] rounded-[24px]">
+        <div className={`w-full h-full relative p-0 overflow-hidden rounded-[24px] transition-colors duration-500`} style={{ backgroundColor: bgColor }}>
             <Canvas camera={{ position: [0, 4, 8], fov: 40 }} dpr={[1, 2]}>
-                <color attach="background" args={["#F8FAFC"]} />
-                <ambientLight intensity={1.5} />
-                <spotLight position={[10, 10, 10]} intensity={1.5} />
+                <color attach="background" args={[bgColor]} />
+                <ambientLight intensity={theme === 'dark' ? 1 : 1.5} />
+                <spotLight position={[10, 10, 10]} intensity={theme === 'dark' ? 1 : 1.5} />
 
                 <group position={[0, 0, 0]}>
                     {lines.map((pts, i) => <FieldLine key={i} points={pts} />)}
@@ -173,7 +178,7 @@ export const ElectricFieldSimulation = () => {
                 </group>
 
                 {/* Ground grid */}
-                <gridHelper args={[10, 20, "#CBD5E1", "#F1F5F9"]} position={[0, -2, 0]} material-transparent material-opacity={0.4} />
+                <gridHelper args={[10, 20, gridColor1, gridColor2]} position={[0, -2, 0]} material-transparent material-opacity={0.4} />
 
                 <OrbitControls
                     enableZoom={false}
@@ -186,17 +191,23 @@ export const ElectricFieldSimulation = () => {
             </Canvas>
 
             {/* Legend */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center z-10 p-4 bg-white/40 backdrop-blur-md rounded-3xl border border-white/50 shadow-sm">
-                <span className="text-[12px] text-[#0F172A] font-bold mb-3 tracking-wide">|E|</span>
-                <span className="text-[10px] text-[#64748B] mb-1">High</span>
+            <div className={`absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center z-10 p-4 backdrop-blur-md rounded-3xl border shadow-sm transition-all duration-500 ${
+                theme === 'dark' ? 'bg-slate-900/60 border-white/10' : 'bg-white/40 border-white/50'
+            }`}>
+                <span className={`text-[12px] font-bold mb-3 tracking-wide transition-colors duration-500`} style={{ color: textColor }}>|E|</span>
+                <span className={`text-[10px] mb-1 transition-colors duration-500`} style={{ color: mutedColor }}>High</span>
                 <div className="w-2.5 h-36 rounded-full bg-gradient-to-b from-[#EF4444] via-[#FDE047] to-[#3B82F6] my-1" />
-                <span className="text-[10px] text-[#64748B] mt-1">Low</span>
+                <span className={`text-[10px] mt-1 transition-colors duration-500`} style={{ color: mutedColor }}>Low</span>
             </div>
         </div>
     );
 };
 
-export const InverseSquareGraph = () => {
+export const InverseSquareGraph = ({ theme = 'light' }: { theme?: 'light' | 'dark' }) => {
+    const axisColor = theme === 'dark' ? "#f8fafc" : "#0F172A";
+    const labelColor = theme === 'dark' ? "#cbd5e1" : "#64748B";
+    const gridColor = theme === 'dark' ? "#334155" : "#CBD5E1";
+
     const generatePath = () => {
         let path = "";
         for (let i = 0; i <= 100; i++) {
@@ -212,20 +223,25 @@ export const InverseSquareGraph = () => {
 
     return (
         <svg viewBox="0 0 250 190" className="w-full h-full overflow-visible">
-            <line x1="35" y1="96" x2="48" y2="96" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="4 4" />
-            <line x1="48" y1="160" x2="48" y2="96" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="4 4" />
-            <line x1="35" y1="15" x2="35" y2="160" stroke="#0F172A" strokeWidth="1.5" />
-            <polygon points="32,20 38,20 35,10" fill="#0F172A" />
-            <text x="12" y="24" fontSize="13" fill="#0F172A" fontFamily="serif" fontWeight="600">|E|</text>
-            <line x1="35" y1="160" x2="235" y2="160" stroke="#0F172A" strokeWidth="1.5" />
-            <polygon points="230,157 230,163 240,160" fill="#0F172A" />
-            <text x="238" y="172" fontSize="14" fill="#0F172A" fontStyle="italic" fontFamily="serif" fontWeight="600">r</text>
+            <line x1="35" y1="96" x2="48" y2="96" stroke={gridColor} strokeWidth="1" strokeDasharray="4 4" />
+            <line x1="48" y1="160" x2="48" y2="96" stroke={gridColor} strokeWidth="1" strokeDasharray="4 4" />
+            
+            {/* Y Axis */}
+            <line x1="35" y1="15" x2="35" y2="160" stroke={axisColor} strokeWidth="1.5" />
+            <polygon points="32,20 38,20 35,10" fill={axisColor} />
+            <text x="12" y="24" fontSize="13" fill={axisColor} fontFamily="serif" fontWeight="600">|E|</text>
+            
+            {/* X Axis */}
+            <line x1="35" y1="160" x2="235" y2="160" stroke={axisColor} strokeWidth="1.5" />
+            <polygon points="230,157 230,163 240,160" fill={axisColor} />
+            <text x="238" y="172" fontSize="14" fill={axisColor} fontStyle="italic" fontFamily="serif" fontWeight="600">r</text>
+            
             {[1, 2, 3, 4].map(val => {
                 const tickX = 35 + ((val - 0.7) / 4.3) * 185;
                 return (
                     <g key={val}>
-                        <line x1={tickX} y1="160" x2={tickX} y2="166" stroke="#0F172A" strokeWidth="1.5" />
-                        <text x={tickX} y="180" fontSize="12" fill="#64748B" textAnchor="middle" fontWeight="500">{val}</text>
+                        <line x1={tickX} y1="160" x2={tickX} y2="166" stroke={axisColor} strokeWidth="1.5" />
+                        <text x={tickX} y="180" fontSize="12" fill={labelColor} textAnchor="middle" fontWeight="500">{val}</text>
                     </g>
                 );
             })}

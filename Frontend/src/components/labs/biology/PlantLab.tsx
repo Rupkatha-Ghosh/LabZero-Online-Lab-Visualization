@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { SimulationProps } from '../../../types/types';
 
-const PlantPhysiologySimulator: React.FC = () => {
+
+const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light' }) => {
+  const isDark = theme === 'dark';
   // --- Interface State ---
   const [activeTab, setActiveTab] = useState<'photosynthesis' | 'transpiration'>('photosynthesis');
+  const [activePreset, setActivePreset] = useState<string | null>('optimal');
   
   // --- Environmental Chamber Parameters ---
   const [light, setLight] = useState<number>(60);       // Light Intensity (%)
@@ -53,14 +57,22 @@ const PlantPhysiologySimulator: React.FC = () => {
 
   // Quick Preset Handlers
   const applyPreset = (type: 'optimal' | 'drought' | 'night' | 'heatwave') => {
+    setActivePreset(type);
     if (type === 'optimal') { setLight(85); setCo2(1000); setTemp(28); setHumidity(60); }
     if (type === 'drought') { setLight(90); setCo2(400); setTemp(38); setHumidity(15); }
     if (type === 'night')   { setLight(0); setCo2(450); setTemp(18); setHumidity(80); }
     if (type === 'heatwave'){ setLight(95); setCo2(600); setTemp(46); setHumidity(30); }
   };
 
+  const handleSliderChange = (setter: (val: number) => void, val: number) => {
+    setter(val);
+    setActivePreset(null);
+  };
+
   return (
-    <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto p-6 font-sans bg-slate-50 border border-slate-200 rounded-2xl shadow-sm select-none">
+    <div className={`flex flex-col gap-6 w-full max-w-5xl mx-auto p-6 font-sans border rounded-2xl shadow-sm select-none transition-colors duration-500 ${
+      isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'
+    }`}>
       
       {/* Inline CSS Animation definitions for floating oxygen bubbles */}
       <style>{`
@@ -75,19 +87,21 @@ const PlantPhysiologySimulator: React.FC = () => {
 
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-800 m-0">Plant Physiology Chamber</h2>
-        <p className="text-sm text-slate-500 mt-1">
+        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>Plant Physiology Chamber</h2>
+        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           Model internal chemical energy synthesis and environmental fluid mechanics
         </p>
       </div>
 
       {/* Lab Navigation / Toggles */}
-      <div className="flex justify-center border-b border-slate-200">
-        <div className="flex gap-2 bg-slate-200/60 p-1 rounded-lg">
+      <div className={`flex justify-center border-b transition-colors duration-500 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+        <div className={`flex gap-2 p-1 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-slate-200/60'}`}>
           <button
             onClick={() => setActiveTab('photosynthesis')}
             className={`px-4 py-2 rounded-md text-xs font-bold transition-all ${
-              activeTab === 'photosynthesis' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'photosynthesis' 
+                ? isDark ? 'bg-slate-700 text-emerald-400 shadow-sm' : 'bg-white text-emerald-800 shadow-sm' 
+                : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             🌿 Photosynthesis Lab (O₂ Output)
@@ -95,7 +109,9 @@ const PlantPhysiologySimulator: React.FC = () => {
           <button
             onClick={() => setActiveTab('transpiration')}
             className={`px-4 py-2 rounded-md text-xs font-bold transition-all ${
-              activeTab === 'transpiration' ? 'bg-white text-sky-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'transpiration' 
+                ? isDark ? 'bg-slate-700 text-sky-400 shadow-sm' : 'bg-white text-sky-800 shadow-sm' 
+                : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             🔬 Transpiration Lab (Stomata View)
@@ -107,13 +123,17 @@ const PlantPhysiologySimulator: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Graphical Viewport Frame (Spans 2 columns) */}
-        <div className="lg:col-span-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between items-center relative overflow-hidden">
+        <div className={`lg:col-span-2 p-4 rounded-xl border shadow-sm flex flex-col justify-between items-center relative overflow-hidden transition-colors duration-500 ${
+          isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
+        }`}>
           
           <div className="w-full flex justify-between items-center px-2 z-10">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>
               {activeTab === 'photosynthesis' ? 'Aquatic Elodea O₂ Output' : 'Microscopic Epidermal Peel'}
             </span>
-            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+            <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded border transition-colors duration-500 ${
+              isDark ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-slate-100 text-slate-600 border-slate-200'
+            }`}>
               Chamber Live
             </span>
           </div>
@@ -123,12 +143,12 @@ const PlantPhysiologySimulator: React.FC = () => {
             <div className="w-full flex flex-col items-center my-2">
               <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
                 {/* Background Light Ray tinting based on light intensity */}
-                <rect x="0" y="0" width="300" height="240" fill="#fcfedd" opacity={light / 200} />
+                <rect x="0" y="0" width="300" height="240" fill={isDark ? '#facc15' : '#fcfedd'} opacity={isDark ? light / 400 : light / 200} />
                 
                 {/* Water Beaker Container */}
-                <path d="M 70 20 L 70 220 A 10 10 0 0 0 80 230 L 220 230 A 10 10 0 0 0 230 220 L 230 20" fill="none" stroke="#cbd5e1" strokeWidth="4" />
-                <rect x="73" y="40" width="154" height="186" fill="#e0f2fe" opacity="0.6" rx="4" />
-                <line x1="73" y1="40" x2="227" y2="40" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="4 2" />
+                <path d="M 70 20 L 70 220 A 10 10 0 0 0 80 230 L 220 230 A 10 10 0 0 0 230 220 L 230 20" fill="none" stroke={isDark ? '#334155' : '#cbd5e1'} strokeWidth="4" />
+                <rect x="73" y="40" width="154" height="186" fill={isDark ? '#0c4a6e' : '#e0f2fe'} opacity="0.6" rx="4" />
+                <line x1="73" y1="40" x2="227" y2="40" stroke={isDark ? '#0ea5e9' : '#0284c7'} strokeWidth="1.5" strokeDasharray="4 2" />
 
                 {/* Aquatic Plant Stem & Leaves */}
                 <g stroke="#15803d" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -170,8 +190,8 @@ const PlantPhysiologySimulator: React.FC = () => {
               </svg>
 
               <div className="text-center mt-1">
-                <span className="text-xs text-slate-500 block">Visual Indicator: Oxygen Evolution Rate</span>
-                <span className="text-xs font-bold text-emerald-700">
+                <span className={`text-xs block ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Visual Indicator: Oxygen Evolution Rate</span>
+                <span className={`text-xs font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                   {photoRate < 3 ? 'No Activity' : photoRate < 35 ? 'Slow Bubbling' : photoRate < 75 ? 'Moderate Bubbling' : 'Vigorous O₂ Saturation'}
                 </span>
               </div>
@@ -180,10 +200,12 @@ const PlantPhysiologySimulator: React.FC = () => {
             
             /* LAB 2: TRANSPIRATION & STOMATA VISUALIZATION */
             <div className="w-full flex flex-col items-center my-2">
-              <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto bg-emerald-50/20 rounded-lg border border-emerald-100">
+              <svg viewBox="0 0 300 240" className={`w-full max-w-[280px] h-auto rounded-lg border transition-colors duration-500 ${
+                isDark ? 'bg-emerald-950/20 border-emerald-900' : 'bg-emerald-50/20 border-emerald-100'
+              }`}>
                 
                 {/* Epidermal Wall backdrop lines */}
-                <path d="M 0 50 Q 80 60 120 0 M 300 80 Q 220 100 180 0 M 0 180 Q 100 200 120 300 M 300 200 Q 200 220 180 300" fill="none" stroke="#bbf7d0" strokeWidth="2" />
+                <path d="M 0 50 Q 80 60 120 0 M 300 80 Q 220 100 180 0 M 0 180 Q 100 200 120 300 M 300 200 Q 200 220 180 300" fill="none" stroke={isDark ? '#064e3b' : '#bbf7d0'} strokeWidth="2" />
 
                 {/* Stomatal Complex Center: (150, 120) */}
                 {/* Left Guard Cell */}
@@ -231,8 +253,8 @@ const PlantPhysiologySimulator: React.FC = () => {
               </svg>
 
               <div className="text-center mt-1">
-                <span className="text-xs text-slate-500 block">Microscopic Geometry: Stomatal Guard Cells</span>
-                <span className="text-xs font-bold text-sky-700">
+                <span className={`text-xs block ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Microscopic Geometry: Stomatal Guard Cells</span>
+                <span className={`text-xs font-bold ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>
                   Pore Aperture Width: {Math.round(aperture * 100)}% ({stomatalStatus})
                 </span>
               </div>
@@ -240,9 +262,11 @@ const PlantPhysiologySimulator: React.FC = () => {
           )}
 
           {/* Bottom Alert/Status Bar */}
-          <div className="w-full flex justify-between items-center bg-slate-50 border-t border-slate-100 pt-2 px-1 text-xs">
-            <span className="font-semibold text-slate-500">Chamber Status:</span>
-            <span className="font-mono font-bold text-slate-800">
+          <div className={`w-full flex justify-between items-center border-t pt-2 px-1 text-xs transition-colors duration-500 ${
+            isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'
+          }`}>
+            <span className={`font-semibold ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Chamber Status:</span>
+            <span className={`font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
               {temp > 42 ? '⚠️ High Temp Alert' : humidity < 25 ? '⚠️ High VPD / Arid' : 'Normal Equilibrium'}
             </span>
           </div>
@@ -253,45 +277,67 @@ const PlantPhysiologySimulator: React.FC = () => {
         <div className="flex flex-col gap-4">
           
           {/* Quick Environment Presets */}
-          <div className="bg-slate-100 p-3 rounded-xl border border-slate-200">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+          <div className={`p-3 rounded-xl border transition-colors duration-500 ${
+            isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
+          }`}>
+            <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
               Chamber Presets
             </span>
             <div className="grid grid-cols-2 gap-1.5">
-              <button onClick={() => applyPreset('optimal')}  className="p-1 text-[11px] font-semibold bg-white hover:bg-slate-50 border border-slate-200 rounded text-slate-700">Tropical Day</button>
-              <button onClick={() => applyPreset('drought')}  className="p-1 text-[11px] font-semibold bg-white hover:bg-slate-50 border border-slate-200 rounded text-slate-700">Arid Drought</button>
-              <button onClick={() => applyPreset('night')}    className="p-1 text-[11px] font-semibold bg-white hover:bg-slate-50 border border-slate-200 rounded text-slate-700">Cool Night</button>
-              <button onClick={() => applyPreset('heatwave')} className="p-1 text-[11px] font-semibold bg-white hover:bg-slate-50 border border-slate-200 rounded text-slate-700">Heatwave</button>
+              <button onClick={() => applyPreset('optimal')}  className={`p-1 text-[11px] font-semibold border rounded transition-colors ${
+                activePreset === 'optimal'
+                  ? isDark ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm' : 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                  : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}>Tropical Day</button>
+              <button onClick={() => applyPreset('drought')}  className={`p-1 text-[11px] font-semibold border rounded transition-colors ${
+                activePreset === 'drought'
+                  ? isDark ? 'bg-amber-500 text-white border-amber-500 shadow-sm' : 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                  : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}>Arid Drought</button>
+              <button onClick={() => applyPreset('night')}    className={`p-1 text-[11px] font-semibold border rounded transition-colors ${
+                activePreset === 'night'
+                  ? isDark ? 'bg-indigo-500 text-white border-indigo-500 shadow-sm' : 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                  : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}>Cool Night</button>
+              <button onClick={() => applyPreset('heatwave')} className={`p-1 text-[11px] font-semibold border rounded transition-colors ${
+                activePreset === 'heatwave'
+                  ? isDark ? 'bg-red-500 text-white border-red-500 shadow-sm' : 'bg-red-600 text-white border-red-600 shadow-sm'
+                  : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}>Heatwave</button>
             </div>
           </div>
 
           {/* Environmental Controls Stack */}
-          <div className="bg-white border border-slate-200 p-4 rounded-xl space-y-3.5 shadow-sm">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-100 pb-1">
+          <div className={`p-4 rounded-xl space-y-3.5 border shadow-sm transition-colors duration-500 ${
+            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          }`}>
+            <div className={`text-xs font-bold uppercase tracking-wider border-b pb-1 ${
+              isDark ? 'text-slate-300 border-slate-800' : 'text-slate-700 border-slate-100'
+            }`}>
               Environmental Controls
             </div>
 
             {/* Light Intensity Slider */}
             <div>
-              <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-                <span className="flex items-center gap-1">☀ Light Intensity</span>
-                <span className="font-mono text-amber-600 font-bold">{light}%</span>
+              <div className="flex justify-between text-xs font-semibold mb-1">
+                <span className={`flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>☀ Light Intensity</span>
+                <span className={`font-mono font-bold ${isDark ? 'text-amber-500' : 'text-amber-600'}`}>{light}%</span>
               </div>
               <input
                 type="range"
                 min="0"
                 max="100"
                 value={light}
-                onChange={(e) => setLight(Number(e.target.value))}
+                onChange={(e) => handleSliderChange(setLight, Number(e.target.value))}
                 className="w-full accent-amber-500 cursor-pointer"
               />
             </div>
 
             {/* CO2 Concentration Slider */}
             <div>
-              <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-                <span className="flex items-center gap-1">☁ Atmospheric CO₂</span>
-                <span className="font-mono text-emerald-700 font-bold">{co2} ppm</span>
+              <div className="flex justify-between text-xs font-semibold mb-1">
+                <span className={`flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>☁ Atmospheric CO₂</span>
+                <span className={`font-mono font-bold ${isDark ? 'text-emerald-500' : 'text-emerald-700'}`}>{co2} ppm</span>
               </div>
               <input
                 type="range"
@@ -299,39 +345,39 @@ const PlantPhysiologySimulator: React.FC = () => {
                 max="1500"
                 step="25"
                 value={co2}
-                onChange={(e) => setCo2(Number(e.target.value))}
+                onChange={(e) => handleSliderChange(setCo2, Number(e.target.value))}
                 className="w-full accent-emerald-600 cursor-pointer"
               />
             </div>
 
             {/* Temperature Slider */}
             <div>
-              <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-                <span className="flex items-center gap-1">🌡 Temperature</span>
-                <span className="font-mono text-red-600 font-bold">{temp}°C</span>
+              <div className="flex justify-between text-xs font-semibold mb-1">
+                <span className={`flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>🌡 Temperature</span>
+                <span className={`font-mono font-bold ${isDark ? 'text-red-500' : 'text-red-600'}`}>{temp}°C</span>
               </div>
               <input
                 type="range"
                 min="0"
                 max="50"
                 value={temp}
-                onChange={(e) => setTemp(Number(e.target.value))}
+                onChange={(e) => handleSliderChange(setTemp, Number(e.target.value))}
                 className="w-full accent-red-500 cursor-pointer"
               />
             </div>
 
             {/* Humidity Slider */}
             <div>
-              <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-                <span className="flex items-center gap-1">💧 Relative Humidity</span>
-                <span className="font-mono text-sky-600 font-bold">{humidity}%</span>
+              <div className="flex justify-between text-xs font-semibold mb-1">
+                <span className={`flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>💧 Relative Humidity</span>
+                <span className={`font-mono font-bold ${isDark ? 'text-sky-500' : 'text-sky-600'}`}>{humidity}%</span>
               </div>
               <input
                 type="range"
                 min="0"
                 max="100"
                 value={humidity}
-                onChange={(e) => setHumidity(Number(e.target.value))}
+                onChange={(e) => handleSliderChange(setHumidity, Number(e.target.value))}
                 className="w-full accent-sky-500 cursor-pointer"
               />
             </div>
@@ -345,35 +391,43 @@ const PlantPhysiologySimulator: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
         
         {/* Output 1: Photosynthetic Rate */}
-        <div className="p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl flex flex-col justify-between">
-          <span className="text-[10px] font-bold text-emerald-700 uppercase block">Photosynthesis Rate</span>
+        <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
+          isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50/50 border-emerald-100'
+        }`}>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>Photosynthesis Rate</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-xl font-mono font-bold text-emerald-900">{photoRate.toFixed(1)}</span>
-            <span className="text-[10px] text-emerald-600 font-bold">% max</span>
+            <span className={`text-xl font-mono font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-900'}`}>{photoRate.toFixed(1)}</span>
+            <span className={`text-[10px] font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>% max</span>
           </div>
         </div>
 
         {/* Output 2: Active Limiting Factor */}
-        <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-xl flex flex-col justify-between">
-          <span className="text-[10px] font-bold text-amber-700 uppercase block">Active Limiting Factor</span>
-          <span className="text-xs font-bold text-amber-900 mt-1 leading-tight">{limitingFactor}</span>
+        <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
+          isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50/50 border-amber-100'
+        }`}>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>Active Limiting Factor</span>
+          <span className={`text-xs font-bold mt-1 leading-tight ${isDark ? 'text-amber-300' : 'text-amber-900'}`}>{limitingFactor}</span>
         </div>
 
         {/* Output 3: Transpiration Rate */}
-        <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl flex flex-col justify-between">
-          <span className="text-[10px] font-bold text-sky-700 uppercase block">Transpiration Rate</span>
+        <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
+          isDark ? 'bg-sky-500/10 border-sky-500/20' : 'bg-sky-50/50 border-sky-100'
+        }`}>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>Transpiration Rate</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-xl font-mono font-bold text-sky-900">{transpirationRate.toFixed(1)}</span>
-            <span className="text-[10px] text-sky-600 font-bold">% max</span>
+            <span className={`text-xl font-mono font-bold ${isDark ? 'text-sky-300' : 'text-sky-900'}`}>{transpirationRate.toFixed(1)}</span>
+            <span className={`text-[10px] font-bold ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>% max</span>
           </div>
         </div>
 
         {/* Output 4: Vapor Pressure Deficit */}
-        <div className="p-3 bg-slate-100/70 border border-slate-200 rounded-xl flex flex-col justify-between">
-          <span className="text-[10px] font-bold text-slate-600 uppercase block">Evaporative Pull (VPD)</span>
+        <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
+          isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100/70 border-slate-200'
+        }`}>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>Evaporative Pull (VPD)</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-xl font-mono font-bold text-slate-800">{vpd.toFixed(2)}</span>
-            <span className="text-[10px] text-slate-500 font-bold">kPa proxy</span>
+            <span className={`text-xl font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>{vpd.toFixed(2)}</span>
+            <span className={`text-[10px] font-bold ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>kPa proxy</span>
           </div>
         </div>
 

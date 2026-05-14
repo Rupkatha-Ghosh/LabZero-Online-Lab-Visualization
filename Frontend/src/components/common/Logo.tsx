@@ -56,7 +56,7 @@ export const Logo: React.FC<LogoProps> = ({
             strokeWidth={current.stroke}
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-[#0F172A]"
+            className={lightText ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' : 'text-[#0F172A]'}
             variants={{
               initial: { pathLength: 1 },
               hover: { color: "var(--color-primary)" }
