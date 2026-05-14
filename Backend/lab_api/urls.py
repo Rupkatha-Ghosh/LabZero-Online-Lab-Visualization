@@ -4,11 +4,13 @@ from .views import (
     MoleculeList, MoleculeDetail,
     SubjectList, SubjectDetail,
     TopicList, TopicDetail,
-    GlobalSettingsView
+    GlobalSettingsView,
+    PublicStatsView
 )
 
 urlpatterns = [
     path('status/', APIStatus.as_view(), name='api-status'),
+    path('public-stats/', PublicStatsView.as_view(), name='public-stats'),
     path('settings/', GlobalSettingsView.as_view(), name='global-settings'),
     path('elements/', ElementList.as_view(), name='element-list'),
     path('elements/<int:number>/', ElementDetail.as_view(), name='element-detail'),

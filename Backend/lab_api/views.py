@@ -55,3 +55,14 @@ class TopicList(generics.ListCreateAPIView):
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
+
+class PublicStatsView(APIView):
+    def get(self, request):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        return Response({
+            "subjects": Subject.objects.count(),
+            "topics": Topic.objects.count(),
+            "students": User.objects.filter(role='student').count()
+        })

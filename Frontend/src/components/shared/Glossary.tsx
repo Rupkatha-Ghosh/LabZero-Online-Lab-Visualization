@@ -127,7 +127,7 @@ const Glossary: React.FC<GlossaryProps> = ({ onClose, language }) => {
         {/* Footer */}
         <div className="px-8 py-4 bg-white/[0.02] border-t border-white/5 flex justify-between items-center">
           <span className="text-[8px] font-mono text-slate-600 uppercase tracking-widest">
-            Source: OmniScience Global Textbook
+            Source: LabZero Global Textbook
           </span>
           <span className="text-[8px] font-mono text-slate-600 uppercase tracking-widest">
             {filteredTerms.length} Terms Available Offline

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import {
-  Sparkles, MessageSquare, X, Settings, Eye, Moon, Sun, Languages, BookOpen, Download, Camera, Smartphone, Brain, ChevronDown, ChevronUp
+  Sparkles, MessageSquare, X, Settings, Moon, Sun, BookOpen, Download, Brain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import LandingPage from './components/pages/LandingPage';
@@ -14,6 +14,7 @@ import InstituteDashboard from './components/dashboards/InstituteDashboard';
 import GestureController from './components/shared/GestureController';
 import BottomNav from './components/common/BottomNav';
 import Glossary from './components/shared/Glossary';
+import SettingsMenu from './components/shared/SettingsMenu';
 import AuthOverlay from './components/auth/AuthOverlay';
 import AuthPage from './components/auth/AuthPage';
 import MemoryMapOverlay from './components/shared/MemoryMapOverlay';
@@ -191,13 +192,10 @@ const AppContent: React.FC = () => {
   const [showGlossary, setShowGlossary] = useState(false);
   const [showAuth, setShowAuth] = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [showMindMap, setShowMindMap] = useState(false);
-  const settingsScrollRef = useRef<HTMLDivElement>(null);
   const landingScrollRef = useRef<HTMLDivElement>(null);
   const subjectScrollRef = useRef<HTMLDivElement>(null);
   const savedScrollPositions = useRef<Record<string, number>>({});
 
-  const [canSettingsScrollDown, setCanSettingsScrollDown] = useState(false);
-  const [canSettingsScrollUp, setCanSettingsScrollUp] = useState(false);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('labzero_theme') as 'dark' | 'light') || 'light');
   const [colorBlindMode, setColorBlindMode] = useState(() => localStorage.getItem('labzero_colorblind') === 'true');
@@ -210,11 +208,38 @@ const AppContent: React.FC = () => {
   const [moleculeRotation, setMoleculeRotation] = useState({ dx: 0, dy: 0 });
   const [moleculeZoom, setMoleculeZoom] = useState(1);
   const [gesturePos, setGesturePos] = useState<{ x: number; y: number } | null>(null);
+  const [publicStats, setPublicStats] = useState({ subjects: 0, topics: 0, students: 0 });
 
   // ================= QUIZ =================
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
   const [quizLevel, setQuizLevel] = useState<'basic' | 'intermediate' | 'difficult'>('basic');
+
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
+  const signalingUrl = (() => {
+    const host = window.location.hostname || "localhost";
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    return `${protocol}://${host}:5000`;
+  })();
+
+  const phoneSenderUrl = (() => {
+    const url = new URL(window.location.href);
+    url.search = "";
+    url.hash = "";
+    url.searchParams.set("camera", "sender");
+    url.searchParams.set("signal", signalingUrl);
+    return url.toString();
+  })();
+
+  const copyPhoneLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(phoneSenderUrl);
+      setCopyStatus("copied");
+      setTimeout(() => setCopyStatus("idle"), 1400);
+    } catch (error) {
+      console.error("Could not copy phone camera link", error);
+    }
+  }, [phoneSenderUrl]);
 
 
   // ================= FETCH =================
@@ -254,6 +279,10 @@ const AppContent: React.FC = () => {
             }
           })
           .catch(console.error);
+
+        axios.get(`${API_URL}/public-stats/`)
+          .then(res => setPublicStats(res.data))
+          .catch(console.error);
       })
       .catch(err => {
         console.error("Settings fetch failed", err);
@@ -292,34 +321,6 @@ const AppContent: React.FC = () => {
     localStorage.setItem('labzero_language', language);
   }, [language]);
 
-  const updateSettingsScrollState = useCallback(() => {
-    const el = settingsScrollRef.current;
-    if (!el) return;
-
-    setCanSettingsScrollUp(el.scrollTop > 4);
-    setCanSettingsScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
-  }, []);
-
-  useEffect(() => {
-    if (!showSettings) return;
-
-    const frame = requestAnimationFrame(updateSettingsScrollState);
-    window.addEventListener('resize', updateSettingsScrollState);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('resize', updateSettingsScrollState);
-    };
-  }, [showSettings, isInstallable, updateSettingsScrollState]);
-
-  const handleSettingsScrollButton = () => {
-    const el = settingsScrollRef.current;
-    if (!el) return;
-
-    el.scrollBy({
-      top: canSettingsScrollDown ? 220 : -220,
-      behavior: 'smooth',
-    });
-  };
 
   const t = (key: string) => translations[key]?.[language] || key;
 
@@ -559,6 +560,7 @@ const AppContent: React.FC = () => {
                     onAdminClick={() => setViewState(ViewState.ADMIN)}
                     onLaunchSimulation={handleLaunchSimulation}
                     subjects={subjects}
+                    stats={publicStats}
                   />
                 </motion.div>
               )}
@@ -635,198 +637,26 @@ const AppContent: React.FC = () => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setShowSettings(false)}
-                    className={`fixed inset-0 z-[105] backdrop-blur-[2px] cursor-pointer ${theme === 'dark' ? 'bg-black/20' : 'bg-slate-900/10'}`}
+                    className={`fixed inset-0 z-[115] backdrop-blur-[2px] cursor-pointer ${theme === 'dark' ? 'bg-black/20' : 'bg-slate-900/10'}`}
                   />
-                  <motion.div
-                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    className={`fixed top-20 bottom-24 left-4 right-4 md:top-auto md:bottom-28 md:left-auto md:right-28 md:w-80 md:max-h-[min(42rem,calc(100vh-8rem))] rounded-3xl z-[110] border origin-bottom-right mx-auto max-w-[calc(100vw-32px)] overflow-hidden flex flex-col shadow-2xl transition-colors duration-500 ${
-                      theme === 'dark' 
-                        ? 'bg-slate-900/95 backdrop-blur-xl border-white/10' 
-                        : 'bg-white border-slate-300'
-                    }`}
-                  >
-                    <div className={`flex items-center justify-between gap-3 border-b px-6 py-5 ${theme === 'dark' ? 'border-white/10' : 'border-slate-200'}`}>
-                      <h3 className="text-xs font-mono uppercase tracking-[0.3em] text-indigo-600 flex items-center gap-2">
-                        <Eye size={12} /> {t('accessibility')}
-                      </h3>
-                      {(canSettingsScrollDown || canSettingsScrollUp) && (
-                        <button
-                          onClick={handleSettingsScrollButton}
-                          className={`h-8 rounded-xl border px-3 transition-colors flex items-center gap-1.5 ${
-                            theme === 'dark'
-                              ? 'border-indigo-400/20 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20'
-                              : 'border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
-                          }`}
-                        >
-                          <span className="text-[8px] font-mono uppercase tracking-[0.18em]">Scroll</span>
-                          {canSettingsScrollDown ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
-                        </button>
-                      )}
-                    </div>
-                    <div
-                      ref={settingsScrollRef}
-                      onScroll={updateSettingsScrollState}
-                      className="space-y-4 overflow-y-auto scrollbar-hide px-6 py-5"
-                    >
-                      <div className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                        theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200'
-                      }`}>
-                        <div className="flex flex-col">
-                          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>{t('colorblindMode')}</span>
-                        </div>
-                        <button onClick={() => setColorBlindMode(!colorBlindMode)} className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${colorBlindMode ? 'bg-indigo-500' : theme === 'dark' ? 'bg-slate-800' : 'bg-slate-300'}`}>
-                          <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-300 ${colorBlindMode ? 'left-6' : 'left-1'}`} />
-                        </button>
-                      </div>
-                      <div className={`flex flex-col gap-3 p-3 rounded-2xl border transition-colors ${
-                        theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200'
-                      }`}>
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                              theme === 'dark' ? 'bg-slate-800 text-indigo-300' : 'bg-white text-indigo-600 border border-slate-200 shadow-sm'
-                            }`}>
-                              {cameraSource === 'local' ? <Camera size={16} /> : <Smartphone size={16} />}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>Gesture Camera</span>
-                              <span className={`text-[8px] font-mono ${theme === 'dark' ? 'text-slate-500' : 'text-slate-600'}`}>{cameraSource === 'local' ? 'Local webcam' : 'Phone camera'} source</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className={`grid grid-cols-2 gap-1 rounded-2xl p-1 transition-colors ${theme === 'dark' ? 'bg-slate-950/80' : 'bg-slate-200'}`}>
-                          {(['local', 'remote'] as const).map((source) => (
-                            <button
-                              key={source}
-                              onClick={() => setCameraSource(source)}
-                              className={`flex h-10 items-center justify-center gap-2 rounded-xl text-[9px] font-mono uppercase tracking-[0.2em] transition-all ${
-                                cameraSource === source
-                                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                  : theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-800'
-                              }`}
-                            >
-                              {source === 'local' ? <Camera size={13} /> : <Smartphone size={13} />}
-                              {source === 'local' ? 'Local' : 'Phone'}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                        theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'
-                      }`}>
-                        <div className="flex flex-col">
-                          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>{t('theme')}</span>
-                          <span className={`text-[8px] font-mono ${theme === 'dark' ? 'text-slate-500' : 'text-slate-600'}`}>{theme === 'dark' ? t('dark') : t('light')} Visuals</span>
-                        </div>
-                        <button
-                          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                            theme === 'light' ? 'bg-amber-50 text-amber-700 border border-amber-100 hover:bg-amber-100' : 'bg-slate-800 text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
-                        </button>
-                      </div>
-
-                      <div className={`flex flex-col gap-3 p-3 rounded-2xl border transition-colors ${
-                        theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'
-                      }`}>
-                        <div className="flex items-center gap-2">
-                          <Languages size={12} className="text-indigo-600" />
-                          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>{t('language')}</span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          {(['en', 'bn', 'hi'] as Language[]).map((lang) => (
-                            <button
-                              key={lang}
-                              onClick={() => setLanguage(lang)}
-                              className={`py-2 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all ${language === lang
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                : theme === 'light' ? 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 shadow-sm' : 'bg-slate-800 text-slate-500 hover:text-slate-300'
-                                }`}
-                            >
-                              {lang}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                        theme === 'light' ? 'bg-purple-50 border-purple-100' : 'bg-purple-500/10 border-purple-400/20'
-                      }`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                            theme === 'light' ? 'bg-purple-100 text-purple-700' : 'bg-purple-500/20 text-purple-300'
-                          }`}>
-                            <Brain size={16} />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>MindMap</span>
-                            <span className={`text-[8px] font-mono leading-none mt-0.5 ${theme === 'light' ? 'text-purple-700/70' : 'text-purple-300/70'}`}>Memory Map</span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setShowMindMap(true);
-                            setShowSettings(false);
-                          }}
-                          className="rounded-xl bg-purple-500 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-white transition-colors hover:bg-purple-400 shadow-lg shadow-purple-500/20"
-                        >
-                          Open
-                        </button>
-                      </div>
-
-                      <div className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                        theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'
-                      }`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                            theme === 'light' ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'bg-slate-800 text-amber-300'
-                          }`}>
-                            <BookOpen size={16} />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>Glossary</span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setShowGlossary(true);
-                            setShowSettings(false);
-                          }}
-                          className="rounded-xl bg-amber-500 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-slate-950 transition-colors hover:bg-amber-400 shadow-lg shadow-amber-500/20"
-                        >
-                          Open
-                        </button>
-                      </div>
-
-                      {isInstallable && (
-                        <div className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                          theme === 'light' ? 'bg-indigo-50 border-indigo-100' : 'bg-indigo-500/10 border-indigo-500/20'
-                        }`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                              theme === 'light' ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-500/20 text-indigo-400'
-                            }`}>
-                              <Download size={16} />
-                            </div>
-                            <div className="flex flex-col">
-                              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>LabZero App</span>
-                              <span className={`text-[8px] font-mono leading-none mt-0.5 ${theme === 'light' ? 'text-indigo-700/60' : 'text-indigo-400/60'}`}>Offline Ready</span>
-                            </div>
-                          </div>
-                          <button
-                            onClick={handleInstallClick}
-                            className="rounded-xl bg-indigo-600 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-white transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/20"
-                          >
-                            Install
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
+                  <SettingsMenu
+                    onClose={() => setShowSettings(false)}
+                    theme={theme}
+                    onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+                    language={language}
+                    onLanguageChange={setLanguage}
+                    onOpenMindMap={() => { setShowMindMap(true); setShowSettings(false); }}
+                    onOpenGlossary={() => { setShowGlossary(true); setShowSettings(false); }}
+                    isInstallable={isInstallable}
+                    onInstallApp={handleInstallClick}
+                    cameraSource={cameraSource}
+                    onCameraSourceChange={setCameraSource}
+                    phoneSenderUrl={phoneSenderUrl}
+                    copyStatus={copyStatus}
+                    onCopyPhoneLink={copyPhoneLink}
+                    colorBlindMode={colorBlindMode}
+                    onToggleColorBlind={() => setColorBlindMode(prev => !prev)}
+                  />
                 </>
               )}
             </AnimatePresence>
