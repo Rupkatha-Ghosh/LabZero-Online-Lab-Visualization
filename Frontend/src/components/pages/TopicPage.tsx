@@ -76,35 +76,35 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#020617] grainy">
+    <div className="flex flex-col h-full bg-[var(--bg-deep)] grainy">
       {/* Topic Header */}
-      <header className="sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-2xl border-b border-white/5 px-8 py-4">
+      <header className="sticky top-0 z-50 bg-[var(--bg-panel)]/90 backdrop-blur-2xl border-b border-[var(--border-glass)] px-8 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
         <div className="max-w-[1800px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-8">
             <button
               onClick={onBack}
-              className="group flex items-center gap-2 text-slate-500 hover:text-white transition-colors"
+              className="group flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
               <span className="text-[10px] font-mono uppercase tracking-[0.2em]">{t('back')}</span>
             </button>
 
-            <div className="h-8 w-px bg-white/10" />
+            <div className="h-8 w-px bg-[var(--border-glass)]" />
 
             <div>
-              <h1 className="text-xl font-display font-bold tracking-tight text-white uppercase">
+              <h1 className="text-xl font-display font-bold tracking-tight text-[var(--text-primary)] uppercase">
                 {topic.name}
               </h1>
               <div className="flex items-center gap-2">
                 <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-[0.3em]">
+                <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-[0.3em]">
                   Module ID: {String(topic.id).split('_').join('-')}
                 </span>
               </div>
             </div>
           </div>
 
-          <nav className="flex items-center gap-1 p-1 bg-white/[0.02] rounded-full border border-white/5">
+          <nav className="flex items-center gap-1 p-1 bg-[var(--bg-deep)]/70 rounded-full border border-[var(--border-glass)] shadow-inner">
             {[
               { id: TopicView.THEORY, label: t('theory'), icon: BookOpen },
               { id: TopicView.VISUALIZATION, label: t('visualization'), icon: Play },
@@ -114,8 +114,8 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
                 key={view.id}
                 onClick={() => setActiveView(view.id)}
                 className={`relative flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] transition-all duration-300 ${activeView === view.id
-                  ? 'text-white'
-                  : 'text-slate-500 hover:text-slate-300'
+                  ? 'text-[#fff]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                   }`}
               >
                 {activeView === view.id && (
@@ -130,7 +130,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
               </button>
             ))}
 
-            <div className="w-px h-6 bg-white/10 mx-2" />
+            <div className="w-px h-6 bg-[var(--border-glass)] mx-2" />
 
             <button
               onClick={onStartQuiz}
