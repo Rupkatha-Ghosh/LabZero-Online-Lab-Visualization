@@ -3,9 +3,9 @@ import { SimulationProps } from '../../types/types';
 import CalculusLab from '../../components/labs/math/CalculusLab';
 import SimulationLayout from '../SimulationLayout';
 
-const CalculusSim: React.FC<SimulationProps> = () => (
+const CalculusSim: React.FC<SimulationProps> = ({ theme, language }) => (
   <SimulationLayout className="overflow-hidden">
-    <CalculusLab />
+    <CalculusLab theme={theme} language={language} />
   </SimulationLayout>
 );
 

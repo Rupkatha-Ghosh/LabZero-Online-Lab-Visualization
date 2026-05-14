@@ -191,6 +191,7 @@ Dynamic simulation environment for exploring chemical reactions.
         slug: 'mechanics',
         name: 'Classical Mechanics',
         description: 'Study motion, forces, and energy in the macroscopic world.',
+        simulation_id: 'mechanics',
         targetClass: ['Class 11'],
         theory: `
 # Classical Mechanics
@@ -243,6 +244,7 @@ The interaction of electric currents or fields and magnetic fields.
         slug: 'wave_optics',
         name: 'Wave Optics',
         description: 'Study of light as a wave and phenomena like interference and diffraction.',
+        simulation_id: 'wave_optics',
         targetClass: ['Class 12'],
         theory: `
 # Wave Optics
@@ -267,6 +269,7 @@ The study of light phenomena that cannot be explained by ray optics.
         slug: 'thermodynamics',
         name: 'Thermodynamics',
         description: 'Heat, work, and the laws governing energy transformation.',
+        simulation_id: 'thermodynamics',
         targetClass: ['Class 11'],
         theory: `
 # Thermodynamics
@@ -288,6 +291,7 @@ Study of heat, work, temperature, and their relation to energy and physical prop
         slug: 'refraction-of-light',
         name: 'Refraction of Light',
         description: 'The bending of light as it passes across the boundary separating two media, governing optical density and total internal reflection.',
+        simulation_id: 'refraction',
         targetClass: ['Class 9'],
         theory: `
 # Refraction of Light

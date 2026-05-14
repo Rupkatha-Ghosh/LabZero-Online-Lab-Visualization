@@ -538,6 +538,7 @@ const AppContent: React.FC = () => {
                     onOpenGlossary={() => setShowGlossary(true)}
                     onDashboardClick={() => setViewState(ViewState.DASHBOARD)}
                     onAdminClick={() => setViewState(ViewState.ADMIN)}
+                    onLaunchSimulation={handleLaunchSimulation}
                     subjects={subjects}
                   />
                 </motion.div>
@@ -682,16 +683,16 @@ const AppContent: React.FC = () => {
                         </div>
                       </div>
                       <div className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                        theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200'
+                        theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'
                       }`}>
                         <div className="flex flex-col">
-                          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>{t('theme')}</span>
+                          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>{t('theme')}</span>
                           <span className={`text-[8px] font-mono ${theme === 'dark' ? 'text-slate-500' : 'text-slate-600'}`}>{theme === 'dark' ? t('dark') : t('light')} Visuals</span>
                         </div>
                         <button
                           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                           className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                            theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 shadow-sm'
+                            theme === 'light' ? 'bg-amber-50 text-amber-700 border border-amber-100 hover:bg-amber-100' : 'bg-slate-800 text-slate-400 hover:text-white'
                           }`}
                         >
                           {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
@@ -699,11 +700,11 @@ const AppContent: React.FC = () => {
                       </div>
 
                       <div className={`flex flex-col gap-3 p-3 rounded-2xl border transition-colors ${
-                        theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200'
+                        theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'
                       }`}>
                         <div className="flex items-center gap-2">
                           <Languages size={12} className="text-indigo-600" />
-                          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>{t('language')}</span>
+                          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>{t('language')}</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                           {(['en', 'bn', 'hi'] as Language[]).map((lang) => (
@@ -712,7 +713,7 @@ const AppContent: React.FC = () => {
                               onClick={() => setLanguage(lang)}
                               className={`py-2 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all ${language === lang
                                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                : theme === 'dark' ? 'bg-slate-800 text-slate-500 hover:text-slate-300' : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-800 shadow-sm'
+                                : theme === 'light' ? 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 shadow-sm' : 'bg-slate-800 text-slate-500 hover:text-slate-300'
                                 }`}
                             >
                               {lang}
@@ -722,17 +723,17 @@ const AppContent: React.FC = () => {
                       </div>
 
                       <div className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                        theme === 'dark' ? 'bg-purple-500/10 border-purple-400/20' : 'bg-purple-100/50 border-purple-200'
+                        theme === 'light' ? 'bg-purple-50 border-purple-100' : 'bg-purple-500/10 border-purple-400/20'
                       }`}>
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                            theme === 'dark' ? 'bg-purple-500/20 text-purple-300' : 'bg-purple-100 text-purple-600 border border-purple-200'
+                            theme === 'light' ? 'bg-purple-100 text-purple-700' : 'bg-purple-500/20 text-purple-300'
                           }`}>
                             <Brain size={16} />
                           </div>
                           <div className="flex flex-col">
-                            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>MindMap</span>
-                            <span className={`text-[8px] font-mono leading-none mt-0.5 ${theme === 'dark' ? 'text-purple-300/70' : 'text-purple-600'}`}>Memory Map</span>
+                            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>MindMap</span>
+                            <span className={`text-[8px] font-mono leading-none mt-0.5 ${theme === 'light' ? 'text-purple-700/70' : 'text-purple-300/70'}`}>Memory Map</span>
                           </div>
                         </div>
                         <button
@@ -747,16 +748,16 @@ const AppContent: React.FC = () => {
                       </div>
 
                       <div className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                        theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200'
+                        theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'
                       }`}>
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                            theme === 'dark' ? 'bg-slate-800 text-amber-300' : 'bg-amber-100 text-amber-600 border border-amber-200'
+                            theme === 'light' ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'bg-slate-800 text-amber-300'
                           }`}>
                             <BookOpen size={16} />
                           </div>
                           <div className="flex flex-col">
-                            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>Glossary</span>
+                            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>Glossary</span>
                           </div>
                         </div>
                         <button
@@ -772,17 +773,17 @@ const AppContent: React.FC = () => {
 
                       {isInstallable && (
                         <div className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                          theme === 'dark' ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-200'
+                          theme === 'light' ? 'bg-indigo-50 border-indigo-100' : 'bg-indigo-500/10 border-indigo-500/20'
                         }`}>
                           <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                              theme === 'dark' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-100 text-indigo-600 border border-indigo-200'
+                              theme === 'light' ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-500/20 text-indigo-400'
                             }`}>
                               <Download size={16} />
                             </div>
                             <div className="flex flex-col">
-                              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>LabZero App</span>
-                              <span className={`text-[8px] font-mono leading-none mt-0.5 ${theme === 'dark' ? 'text-indigo-400/60' : 'text-indigo-600'}`}>Offline Ready</span>
+                              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>LabZero App</span>
+                              <span className={`text-[8px] font-mono leading-none mt-0.5 ${theme === 'light' ? 'text-indigo-700/60' : 'text-indigo-400/60'}`}>Offline Ready</span>
                             </div>
                           </div>
                           <button
