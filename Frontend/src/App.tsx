@@ -192,6 +192,10 @@ const AppContent: React.FC = () => {
   const [showAuth, setShowAuth] = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [showMindMap, setShowMindMap] = useState(false);
   const settingsScrollRef = useRef<HTMLDivElement>(null);
+  const landingScrollRef = useRef<HTMLDivElement>(null);
+  const subjectScrollRef = useRef<HTMLDivElement>(null);
+  const savedScrollPositions = useRef<Record<string, number>>({});
+
   const [canSettingsScrollDown, setCanSettingsScrollDown] = useState(false);
   const [canSettingsScrollUp, setCanSettingsScrollUp] = useState(false);
 
@@ -269,6 +273,9 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
+
+  // Restore scroll position when view state changes
+  // (Logic moved to ref callbacks for immediate execution)
 
   // ================= THEME =================
   useEffect(() => {
@@ -524,7 +531,19 @@ const AppContent: React.FC = () => {
             <AnimatePresence mode="wait">
               {/* 1. MAIN LANDING PAGE (Now includes the Class Dropdown internally) */}
               {viewState === ViewState.LANDING && (
-                <motion.div key="landing" className="h-full w-full overflow-y-auto">
+                <motion.div 
+                  key="landing" 
+                  ref={(el) => {
+                    landingScrollRef.current = el;
+                    if (el) {
+                      el.scrollTop = savedScrollPositions.current[ViewState.LANDING] || 0;
+                    }
+                  }}
+                  onScroll={(e) => {
+                    savedScrollPositions.current[ViewState.LANDING] = e.currentTarget.scrollTop;
+                  }}
+                  className="h-full w-full overflow-y-auto"
+                >
                   <LandingPage
                     onSelectSubject={handleSelectSubject}
                     language={language}
@@ -546,7 +565,19 @@ const AppContent: React.FC = () => {
 
               {/* 2. SUBJECT PAGE (Preserves selected class to filter units) */}
               {viewState === ViewState.SUBJECT && selectedSubject && (
-                <motion.div key="subject" className="h-full w-full overflow-y-auto">
+                <motion.div 
+                  key="subject" 
+                  ref={(el) => {
+                    subjectScrollRef.current = el;
+                    if (el) {
+                      el.scrollTop = savedScrollPositions.current[ViewState.SUBJECT] || 0;
+                    }
+                  }}
+                  onScroll={(e) => {
+                    savedScrollPositions.current[ViewState.SUBJECT] = e.currentTarget.scrollTop;
+                  }}
+                  className="h-full w-full overflow-y-auto"
+                >
                   <SubjectPage
                     subject={selectedSubject}
                     onSelectTopic={handleSelectTopic}
