@@ -838,8 +838,6 @@ const AppContent: React.FC = () => {
                 onOpenGlossary={() => setShowGlossary(!showGlossary)}
                 onOpenSettings={() => setShowSettings(!showSettings)}
                 onOpenProfile={() => setShowAuth(!showAuth)}
-                onToggleGesture={() => { if (user?.role !== 'student') setIsGestureActive(!isGestureActive); }}
-                isGestureActive={isGestureActive}
                 showSettings={showSettings}
                 showGlossary={showGlossary}
                 showAuth={showAuth}

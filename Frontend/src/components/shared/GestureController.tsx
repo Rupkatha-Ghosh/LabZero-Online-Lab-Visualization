@@ -825,7 +825,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
       <GestureToast gestureId={justFired} theme={theme} />
 
       {/* ── HUD bar ───────────────────────────────────────────────────────── */}
-      <div className={`fixed left-4 md:left-4 z-[100] transition-all duration-500 ${isActive ? 'bottom-24 md:bottom-32' : 'bottom-20'}`}>
+      <div className={`fixed left-4 z-[100] hidden transition-all duration-500 md:block ${isActive ? 'bottom-32' : 'bottom-20'}`}>
 
         <AnimatePresence>
           {showGuide && <GestureGuide onClose={() => setShowGuide(false)} theme={theme} />}
@@ -1037,19 +1037,6 @@ const GestureController: React.FC<GestureControllerProps> = ({
           </AnimatePresence>
         </motion.div>
 
-        {/* Mobile toggle pill */}
-        <motion.button onClick={onToggle}
-          className="md:hidden absolute -top-3 -right-3 w-10 h-10 rounded-full flex items-center justify-center"
-          style={{
-            background: isActive ? activeColor : isLight ? 'rgba(255,255,255,0.95)' : 'rgba(15,23,42,0.9)',
-            border: `1px solid ${isActive ? activeColor : isLight ? 'rgba(148,163,184,0.3)' : 'rgba(255,255,255,0.09)'}`,
-            boxShadow: isActive ? `0 0 18px ${activeGlow}` : isLight ? '0 10px 24px rgba(15,23,42,0.14)' : 'none',
-          }}
-          whileTap={{ scale: 0.88 }}>
-          {isActive
-            ? <Hand size={17} color="#fff" />
-            : <Camera size={17} style={{ color: isLight ? '#475569' : '#64748b' }} />}
-        </motion.button>
       </div>
       <AnimatePresence>
         {isActive && cameraSource === 'remote' && (

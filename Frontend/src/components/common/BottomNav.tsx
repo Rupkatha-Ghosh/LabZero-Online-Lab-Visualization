@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Book, User as UserIcon, Settings, Sparkles, MessageSquare, X, Hand, Camera, Database } from 'lucide-react';
+import { Home, Book, User as UserIcon, Settings, Database } from 'lucide-react';
 import { ViewState, User } from '../../types/types';
 
 interface BottomNavProps {
@@ -9,8 +9,6 @@ interface BottomNavProps {
   onOpenGlossary: () => void;
   onOpenSettings: () => void;
   onOpenProfile: () => void;
-  onToggleGesture?: () => void;
-  isGestureActive?: boolean;
   showSettings?: boolean;
   showAITutor?: boolean;
   showGlossary?: boolean;
@@ -26,8 +24,6 @@ const BottomNav: React.FC<BottomNavProps> = ({
   onOpenGlossary,
   onOpenSettings,
   onOpenProfile,
-  onToggleGesture,
-  isGestureActive,
   showSettings,
   showGlossary,
   showAuth,
@@ -35,7 +31,6 @@ const BottomNav: React.FC<BottomNavProps> = ({
   user,
   theme = 'dark'
 }) => {
-  const isStudent = user?.role === 'student';
   const inactiveClass = theme === 'light'
     ? 'text-slate-500 hover:text-slate-950 hover:bg-slate-100'
     : 'text-slate-500 hover:text-white hover:bg-white/5';
@@ -78,18 +73,6 @@ const BottomNav: React.FC<BottomNavProps> = ({
           <Book size={18} />
           <span className="text-[7px] font-mono mt-1">BOOK</span>
         </button>
-
-        {!isStudent && (
-          <button 
-            onClick={onToggleGesture}
-            className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all ${
-              isGestureActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : inactiveClass
-            }`}
-          >
-            {isGestureActive ? <Hand size={18} /> : <Camera size={18} />}
-            <span className="text-[7px] font-mono mt-1">GEST</span>
-          </button>
-        )}
 
         <button 
           onClick={onOpenProfile}
