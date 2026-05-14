@@ -867,6 +867,7 @@ const AppContent: React.FC = () => {
               onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
               cameraSource={cameraSource}
               onCameraSourceChange={setCameraSource}
+              theme={theme}
             />
 
             {isGestureActive && gesturePos && user?.role !== 'student' && (
