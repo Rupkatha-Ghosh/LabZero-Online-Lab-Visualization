@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Search, Edit2, Trash2, Save, X, ArrowLeft,
   Database, Beaker, Atom, BookOpen, Layers,
-  ChevronRight, ChevronDown, AlertCircle, CheckCircle, RefreshCcw, Folder, MessageSquare, Star
+  ChevronRight, ChevronDown, AlertCircle, CheckCircle, RefreshCcw, Folder, MessageSquare, Star, Upload
 } from 'lucide-react';
 import axios from 'axios';
 import { Subject, Topic, ElementData, Molecule } from '../../types/types';
@@ -31,6 +31,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
   const [securityCode, setSecurityCode] = useState("");
   const [userInput, setUserInput] = useState("");
   const [isDeleting, setIsDeletingProcess] = useState(false);
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [bulkData, setBulkData] = useState("");
 
   // Multi-select states
   const [selectedIds, setSelectedIds] = useState<any[]>([]);
@@ -136,6 +138,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
     }
   }, [success, error]);
 
+  useEffect(() => {
+    if (!isEditing) {
+      setBulkData("");
+      setIsBulkMode(false);
+      setEditItem(null);
+    }
+  }, [isEditing]);
+
   const fetchData = async () => {
     setLoading(true);
     setError(null);
@@ -182,6 +192,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        // Verify it's valid JSON
+        JSON.parse(content);
+        setBulkData(content);
+        setSuccess("JSON file loaded successfully!");
+      } catch (err) {
+        setError("Invalid JSON file format.");
+      }
+    };
+    reader.readAsText(file);
   };
 
   const generateSecurityCode = () => {
@@ -331,23 +360,104 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
         else if (activeTab === 'glossary') endpoint = `${API_URL}/glossary/terms/`;
       }
 
-      let payload = { ...editItem };
+      if (isBulkMode && isNewItem) {
+        let payloads: any[] = [];
+        const trimmedData = bulkData.trim();
 
-      // Only process subject ID as Number for Topics
-      if (activeTab === 'topics') {
-        payload.subject = editItem.subject ? Number(editItem.subject) : null;
-      }
-      // For Glossary, subject is a string (SubjectId), no conversion needed.
+        // 1. Try parsing as a direct JSON array
+        try {
+          const parsed = JSON.parse(trimmedData);
+          if (Array.isArray(parsed)) {
+            payloads = parsed;
+          } else if (typeof parsed === 'object' && parsed !== null) {
+            payloads = [parsed];
+          }
+        } catch (e) {
+          // 2. Try wrapping in brackets if it looks like a sequence of objects
+          try {
+            const wrapped = JSON.parse(`[${trimmedData}]`);
+            if (Array.isArray(wrapped)) {
+              payloads = wrapped;
+            }
+          } catch (e2) {
+            // 3. Try line-by-line JSON (NDJSON)
+            const lines = bulkData.split('\n').map(l => l.trim()).filter(Boolean);
+            const potentialJsonPayloads: any[] = [];
+            let allLinesJson = true;
 
-      if (method === 'post') {
-        await axios.post(endpoint, payload);
+            for (const line of lines) {
+              try {
+                const p = JSON.parse(line);
+                if (typeof p === 'object' && p !== null) {
+                  potentialJsonPayloads.push(p);
+                } else {
+                  allLinesJson = false;
+                  break;
+                }
+              } catch (e3) {
+                allLinesJson = false;
+                break;
+              }
+            }
+
+            if (allLinesJson && potentialJsonPayloads.length > 0) {
+              payloads = potentialJsonPayloads;
+            } else {
+              // 4. Fallback to line-by-line plain text names
+              if (lines.length === 0) {
+                setError("Please provide at least one entry for bulk creation.");
+                setLoading(false);
+                return;
+              }
+
+              payloads = lines.map(line => {
+                let p: any = { name: line };
+                if (activeTab === 'molecules') p = { formula: line };
+                if (activeTab === 'glossary') p = { term: line };
+                return p;
+              });
+            }
+          }
+        }
+
+        // Process payloads (apply defaults and generate slugs)
+        const finalPayloads = payloads.map(item => {
+          let p = { ...editItem, ...item };
+          const nameField = activeTab === 'subjects' || activeTab === 'topics' ? 'name' : activeTab === 'glossary' ? 'term' : 'formula';
+          const nameVal = p[nameField];
+
+          if (!p.slug && nameVal && typeof nameVal === 'string') {
+            p.slug = nameVal.toLowerCase().replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
+          }
+          if (activeTab === 'topics' && p.subject) {
+            p.subject = Number(p.subject);
+          }
+          return p;
+        });
+
+        await Promise.all(finalPayloads.map(p => axios.post(endpoint, p)));
+        setSuccess(`${finalPayloads.length} items created successfully!`);
       } else {
-        await axios.put(endpoint, payload);
-      }
+        let payload = { ...editItem };
 
-      setSuccess(`Item ${method === 'post' ? 'created' : 'updated'} successfully!`);
+        // Only process subject ID as Number for Topics
+        if (activeTab === 'topics') {
+          payload.subject = editItem.subject ? Number(editItem.subject) : null;
+        }
+        // For Glossary, subject is a string (SubjectId), no conversion needed.
+
+        if (method === 'post') {
+          await axios.post(endpoint, payload);
+        } else {
+          await axios.put(endpoint, payload);
+        }
+        setSuccess(`Item ${method === 'post' ? 'created' : 'updated'} successfully!`);
+      }
+      
       setIsEditing(false);
       setEditItem(null);
+      setBulkData("");
+      setIsBulkMode(false);
       fetchData();
       if (onDataUpdate) onDataUpdate();
     } catch (err: any) {
@@ -389,6 +499,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
     setEditItem(newItem);
     setIsNewItem(true);
     setIsEditing(true);
+    setIsBulkMode(false);
+    setBulkData("");
   };
 
   return (
@@ -433,7 +545,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
             >
               <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /> Refresh
             </button>
-            {activeTab !== 'feedback' && (
+            {activeTab !== 'feedback' && activeTab !== 'elements' && (
               <button
                 onClick={startCreate}
                 className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20 text-sm font-bold text-white"
@@ -550,15 +662,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                   <th className="p-6 w-12">
                     <input
                       type="checkbox"
-                      className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
                       checked={selectedIds.length > 0 && (
                         (activeTab === 'subjects' && selectedIds.length === subjects.length) ||
                         (activeTab === 'topics' && selectedIds.length === topics.length) ||
-                        (activeTab === 'elements' && selectedIds.length === elements.length) ||
                         (activeTab === 'molecules' && selectedIds.length === molecules.length) ||
                         (activeTab === 'glossary' && selectedIds.length === terms.length) ||
                         (activeTab === 'feedback' && selectedIds.length === feedbacks.length)
                       )}
+                      disabled={activeTab === 'elements'}
+                      className={`w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all ${activeTab === 'elements' ? 'cursor-not-allowed opacity-30' : 'cursor-pointer'}`}
                       onChange={toggleSelectAll}
                     />
                   </th>
@@ -740,12 +852,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                 {activeTab === 'elements' && elements.map((item) => (
                   <tr key={item.number} className={`border-b border-[var(--border-glass)] hover:bg-indigo-500/5 transition-colors ${selectedIds.includes(item.number) ? 'bg-indigo-500/10' : ''}`}>
                     <td className="p-6">
-                      <input
-                        type="checkbox"
-                        className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
-                        checked={selectedIds.includes(item.number)}
-                        onChange={() => toggleSelect(item.number)}
-                      />
+                      <div className="w-5 h-5 rounded-lg border-2 border-[var(--border-glass)] bg-transparent opacity-10 cursor-not-allowed" />
                     </td>
                     <td className="p-6">
                       <div className="flex items-center gap-4">
@@ -779,7 +886,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                     <td className="p-6">
                       <div className="flex gap-2">
                         <button onClick={() => { setEditItem(item); setIsNewItem(false); setIsEditing(true); }} className="p-2 rounded-xl bg-[var(--bg-deep)] hover:bg-indigo-500 hover:text-white text-[var(--text-primary)] transition-all border border-[var(--border-glass)] shadow-sm"><Edit2 size={16} /></button>
-                        <button onClick={() => startDelete(item.number, item.name)} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
+                        <div className="p-2 rounded-xl bg-[var(--bg-deep)] opacity-20 cursor-not-allowed border border-[var(--border-glass)]"><Trash2 size={16} /></div>
                       </div>
                     </td>
                   </tr>
@@ -902,168 +1009,235 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                   </button>
                 </div>
 
+                {isNewItem && activeTab !== 'elements' && (
+                  <div className="px-10 py-4 bg-indigo-500/5 border-b border-[var(--border-glass)] flex items-center justify-between gap-6">
+                    <div className="flex items-center gap-3">
+                      <Layers size={18} className="text-indigo-500" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500">Bulk Creation Mode</p>
+                        <p className="text-[9px] text-[var(--text-muted)] font-mono">Add multiple {activeTab} via list or JSON file.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      {isBulkMode && (
+                        <>
+                          <input 
+                            type="file" 
+                            accept=".json" 
+                            onChange={handleFileUpload} 
+                            className="hidden" 
+                            id="bulk-json-upload" 
+                          />
+                          <label 
+                            htmlFor="bulk-json-upload" 
+                            className="px-4 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-[10px] font-bold cursor-pointer transition-all flex items-center gap-2 text-indigo-500"
+                          >
+                            <Upload size={14} /> Upload JSON
+                          </label>
+                        </>
+                      )}
+                      
+                      <button
+                        type="button"
+                        onClick={() => setIsBulkMode(!isBulkMode)}
+                        className={`w-14 h-8 rounded-full p-1 transition-all duration-300 flex items-center ${isBulkMode ? 'bg-indigo-600' : 'bg-slate-700'}`}
+                      >
+                        <motion.div
+                          animate={{ x: isBulkMode ? 24 : 0 }}
+                          className="w-6 h-6 rounded-full bg-white shadow-sm"
+                        />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="p-6 md:p-10 max-h-[60vh] overflow-y-auto scrollbar-hide bg-white/30 dark:bg-black/20">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Common Fields */}
                     {activeTab === 'subjects' && (
                       <>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Subject Name</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.name || ''} onChange={(e) => setEditItem({ ...editItem, name: e.target.value })} />
+                        <div className={`space-y-2 ${isBulkMode ? 'col-span-2' : ''}`}>
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">{isBulkMode ? 'Subject Names (One per line or JSON Array)' : 'Subject Name'}</label>
+                          {isBulkMode ? (
+                            <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-6 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-64 font-mono text-sm shadow-inner" placeholder="Paste JSON array or list of names..." value={bulkData} onChange={(e) => setBulkData(e.target.value)} />
+                          ) : (
+                            <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.name || ''} onChange={(e) => setEditItem({ ...editItem, name: e.target.value })} />
+                          )}
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Slug (ID)</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.slug || ''} onChange={(e) => setEditItem({ ...editItem, slug: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Icon Name</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.icon || ''} onChange={(e) => setEditItem({ ...editItem, icon: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Color Theme</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.color || ''} onChange={(e) => setEditItem({ ...editItem, color: e.target.value })} />
-                        </div>
-                        <div className="space-y-2 col-span-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Description</label>
-                          <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-32" value={editItem?.description || ''} onChange={(e) => setEditItem({ ...editItem, description: e.target.value })} />
-                        </div>
-                        <div className="space-y-2 col-span-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Image URL</label>
-                          <input type="url" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.image_url || ''} onChange={(e) => setEditItem({ ...editItem, image_url: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Tailwind Theme Class</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.theme || ''} onChange={(e) => setEditItem({ ...editItem, theme: e.target.value })} />
-                        </div>
-                         <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Tailwind Icon Color Class</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.iconColor || ''} onChange={(e) => setEditItem({ ...editItem, iconColor: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Sort Order</label>
-                          <input type="number" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.order ?? 0} onChange={(e) => setEditItem({ ...editItem, order: parseInt(e.target.value) || 0 })} />
-                        </div>
-                        <div className="space-y-2 col-span-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">3D Model URL (.glb)</label>
-                          <input type="text" placeholder="e.g. /models/chemistry.glb" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.model_url || ''} onChange={(e) => setEditItem({ ...editItem, model_url: e.target.value })} />
-                        </div>
-                        <div className="space-y-2 col-span-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Target Classes (comma separated)</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Class 11, Class 12"
-                            className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all"
-                            value={classInput}
-                            onFocus={() => setFocusedField('targetClass')}
-                            onChange={(e) => setClassInput(e.target.value)}
-                            onBlur={() => {
-                              setFocusedField(null);
-                              setEditItem({
-                                ...editItem,
-                                targetClass: classInput.split(',').map(s => s.trim()).filter(Boolean)
-                              });
-                            }}
-                          />
-                        </div>
+                        {!isBulkMode && (
+                          <>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Slug (ID)</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.slug || ''} onChange={(e) => setEditItem({ ...editItem, slug: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Icon Name</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.icon || ''} onChange={(e) => setEditItem({ ...editItem, icon: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Color Theme</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.color || ''} onChange={(e) => setEditItem({ ...editItem, color: e.target.value })} />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <label className="text-[10px) font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Description</label>
+                              <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-32" value={editItem?.description || ''} onChange={(e) => setEditItem({ ...editItem, description: e.target.value })} />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Image URL</label>
+                              <input type="url" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.image_url || ''} onChange={(e) => setEditItem({ ...editItem, image_url: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Tailwind Theme Class</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.theme || ''} onChange={(e) => setEditItem({ ...editItem, theme: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Tailwind Icon Color Class</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.iconColor || ''} onChange={(e) => setEditItem({ ...editItem, iconColor: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Sort Order</label>
+                              <input type="number" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.order ?? 0} onChange={(e) => setEditItem({ ...editItem, order: parseInt(e.target.value) || 0 })} />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">3D Model URL (.glb)</label>
+                              <input type="text" placeholder="e.g. /models/chemistry.glb" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.model_url || ''} onChange={(e) => setEditItem({ ...editItem, model_url: e.target.value })} />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Target Classes (comma separated)</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Class 11, Class 12"
+                                className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all"
+                                value={classInput}
+                                onFocus={() => setFocusedField('targetClass')}
+                                onChange={(e) => setClassInput(e.target.value)}
+                                onBlur={() => {
+                                  setFocusedField(null);
+                                  setEditItem({
+                                    ...editItem,
+                                    targetClass: classInput.split(',').map(s => s.trim()).filter(Boolean)
+                                  });
+                                }}
+                              />
+                            </div>
+                          </>
+                        )}
                       </>
                     )}
 
                     {activeTab === 'glossary' && (
                       <>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Term</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.term || ''} onChange={(e) => setEditItem({ ...editItem, term: e.target.value })} />
+                        <div className={`space-y-2 ${isBulkMode ? 'col-span-2' : ''}`}>
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">{isBulkMode ? 'Terms (One per line or JSON Array)' : 'Term'}</label>
+                          {isBulkMode ? (
+                            <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-6 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-64 font-mono text-sm shadow-inner" placeholder="Paste JSON array or list of terms..." value={bulkData} onChange={(e) => setBulkData(e.target.value)} />
+                          ) : (
+                            <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.term || ''} onChange={(e) => setEditItem({ ...editItem, term: e.target.value })} />
+                          )}
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Subject</label>
-                          <select className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.subject || ''} onChange={(e) => setEditItem({ ...editItem, subject: e.target.value })}>
-                            <option value="chemistry">Chemistry</option>
-                            <option value="physics">Physics</option>
-                            <option value="math">Mathematics</option>
-                            <option value="biology">Biology</option>
-                          </select>
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Definition</label>
-                          <textarea rows={4} className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all resize-none" value={editItem?.definition || ''} onChange={(e) => setEditItem({ ...editItem, definition: e.target.value })} />
-                        </div>
+                        {!isBulkMode && (
+                          <>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Subject</label>
+                              <select className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.subject || ''} onChange={(e) => setEditItem({ ...editItem, subject: e.target.value })}>
+                                <option value="chemistry">Chemistry</option>
+                                <option value="physics">Physics</option>
+                                <option value="math">Mathematics</option>
+                                <option value="biology">Biology</option>
+                              </select>
+                            </div>
+                            <div className="md:col-span-2 space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Definition</label>
+                              <textarea rows={4} className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all resize-none" value={editItem?.definition || ''} onChange={(e) => setEditItem({ ...editItem, definition: e.target.value })} />
+                            </div>
+                          </>
+                        )}
                       </>
                     )}
 
                     {activeTab === 'topics' && (
                       <>
-                        <div className="space-y-2 col-span-2">
+                        <div className={`space-y-2 ${isBulkMode ? 'col-span-2' : ''}`}>
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">{isBulkMode ? 'Topic Names (One per line or JSON Array)' : 'Topic Name'}</label>
+                          {isBulkMode ? (
+                            <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-6 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-64 font-mono text-sm shadow-inner" placeholder="Paste JSON array or list of names..." value={bulkData} onChange={(e) => setBulkData(e.target.value)} />
+                          ) : (
+                            <input
+                              type="text"
+                              className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all"
+                              value={editItem?.name || ''}
+                              onChange={(e) => {
+                                const name = e.target.value;
+                                const slug = name.toLowerCase().replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
+                                setEditItem({ ...editItem, name, slug });
+                              }}
+                            />
+                          )}
+                        </div>
+                        <div className={`space-y-2 ${isBulkMode ? 'col-span-2' : ''}`}>
                           <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Parent Subject</label>
                           <select
-                            className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all"
+                            className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all font-bold"
                             value={String(editItem?.subject || '')}
                             onChange={(e) => {
                               const val = e.target.value ? Number(e.target.value) : '';
                               setEditItem({ ...editItem, subject: val });
-                              console.log("Selected Subject ID:", val);
                             }}
                           >
                             <option value="" disabled>Select a subject...</option>
                             {subjects.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
                           </select>
+                          {isBulkMode && <p className="text-[9px] text-indigo-500 font-mono mt-1 px-2 uppercase font-bold">Important: All bulk items will be linked to this subject unless specified in JSON.</p>}
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Topic Name</label>
-                          <input
-                            type="text"
-                            className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all"
-                            value={editItem?.name || ''}
-                            onChange={(e) => {
-                              const name = e.target.value;
-                              const slug = name.toLowerCase().replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
-                              setEditItem({ ...editItem, name, slug });
-                            }}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Sort Order</label>
-                          <input type="number" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.order ?? 0} onChange={(e) => setEditItem({ ...editItem, order: parseInt(e.target.value) || 0 })} />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Slug (ID)</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all font-mono text-indigo-400" value={editItem?.slug || ''} onChange={(e) => setEditItem({ ...editItem, slug: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Simulation ID</label>
-                          <input 
-                            type="text" 
-                            placeholder="e.g. molecular_structure"
-                            className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all font-mono text-indigo-400" 
-                            value={editItem?.simulation_id || ''} 
-                            onChange={(e) => setEditItem({ ...editItem, simulation_id: e.target.value })} 
-                          />
-                        </div>
-                        <div className="space-y-2 col-span-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Description</label>
-                          <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-32" value={editItem?.description || ''} onChange={(e) => setEditItem({ ...editItem, description: e.target.value })} />
-                        </div>
-                        <div className="space-y-2 col-span-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Theory (Markdown)</label>
-                          <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-48 font-mono text-sm" value={editItem?.theory || ''} onChange={(e) => setEditItem({ ...editItem, theory: e.target.value })} />
-                        </div>
-                        <div className="space-y-2 col-span-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Target Classes (comma separated)</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Class 11, Class 12"
-                            className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all"
-                            value={classInput}
-                            onFocus={() => setFocusedField('targetClass')}
-                            onChange={(e) => setClassInput(e.target.value)}
-                            onBlur={() => {
-                              setFocusedField(null);
-                              setEditItem({
-                                ...editItem,
-                                targetClass: classInput.split(',').map(s => s.trim()).filter(Boolean)
-                              });
-                            }}
-                          />
-                        </div>
+                        {!isBulkMode && (
+                          <>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Sort Order</label>
+                              <input type="number" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.order ?? 0} onChange={(e) => setEditItem({ ...editItem, order: parseInt(e.target.value) || 0 })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Slug (ID)</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all font-mono text-indigo-400" value={editItem?.slug || ''} onChange={(e) => setEditItem({ ...editItem, slug: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Simulation ID</label>
+                              <input 
+                                type="text" 
+                                placeholder="e.g. molecular_structure"
+                                className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all font-mono text-indigo-400" 
+                                value={editItem?.simulation_id || ''} 
+                                onChange={(e) => setEditItem({ ...editItem, simulation_id: e.target.value })} 
+                              />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Description</label>
+                              <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-32" value={editItem?.description || ''} onChange={(e) => setEditItem({ ...editItem, description: e.target.value })} />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Theory (Markdown)</label>
+                              <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-48 font-mono text-sm" value={editItem?.theory || ''} onChange={(e) => setEditItem({ ...editItem, theory: e.target.value })} />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Target Classes (comma separated)</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Class 11, Class 12"
+                                className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all"
+                                value={classInput}
+                                onFocus={() => setFocusedField('targetClass')}
+                                onChange={(e) => setClassInput(e.target.value)}
+                                onBlur={() => {
+                                  setFocusedField(null);
+                                  setEditItem({
+                                    ...editItem,
+                                    targetClass: classInput.split(',').map(s => s.trim()).filter(Boolean)
+                                  });
+                                }}
+                              />
+                            </div>
+                          </>
+                        )}
                       </>
                     )}
 
@@ -1171,59 +1345,67 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
 
                     {activeTab === 'molecules' && (
                       <>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Chemical Formula</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.formula || ''} onChange={(e) => setEditItem({ ...editItem, formula: e.target.value })} />
+                        <div className={`space-y-2 ${isBulkMode ? 'col-span-2' : ''}`}>
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">{isBulkMode ? 'Formulas (One per line or JSON Array)' : 'Chemical Formula'}</label>
+                          {isBulkMode ? (
+                            <textarea className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-6 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all h-64 font-mono text-sm shadow-inner" placeholder="Paste JSON array or list of formulas..." value={bulkData} onChange={(e) => setBulkData(e.target.value)} />
+                          ) : (
+                            <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.formula || ''} onChange={(e) => setEditItem({ ...editItem, formula: e.target.value })} />
+                          )}
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Molecule Name</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.name || ''} onChange={(e) => setEditItem({ ...editItem, name: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Central Atom</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.central_atom || ''} onChange={(e) => setEditItem({ ...editItem, central_atom: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Real Angle</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.realAngle || ''} onChange={(e) => setEditItem({ ...editItem, realAngle: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Model Angle</label>
-                          <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.modelAngle || ''} onChange={(e) => setEditItem({ ...editItem, modelAngle: e.target.value })} />
-                        </div>
+                        {!isBulkMode && (
+                          <>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Molecule Name</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.name || ''} onChange={(e) => setEditItem({ ...editItem, name: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Central Atom</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.central_atom || ''} onChange={(e) => setEditItem({ ...editItem, central_atom: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Real Angle</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.realAngle || ''} onChange={(e) => setEditItem({ ...editItem, realAngle: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Model Angle</label>
+                              <input type="text" className="w-full bg-[var(--bg-panel)] border border-[var(--border-glass)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all" value={editItem?.modelAngle || ''} onChange={(e) => setEditItem({ ...editItem, modelAngle: e.target.value })} />
+                            </div>
+                          </>
+                        )}
                       </>
                     )}
 
-                    {/* Complex Data Fallback */}
-                    <div className="col-span-2 space-y-4">
-                      <div className="flex items-center justify-between px-2">
-                        <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Advanced Structure (JSON)</label>
-                        <span className="text-[10px] font-mono text-indigo-500 uppercase font-bold px-2 py-1 bg-indigo-500/10 rounded-lg">RESTRICTED DATA</span>
+                    {/* Complex Data Fallback - Hidden in Bulk Mode to prevent conflicts */}
+                    {!isBulkMode && (
+                      <div className="col-span-2 space-y-4">
+                        <div className="flex items-center justify-between px-2">
+                          <label className="text-[10px] font-mono text-[var(--text-primary)] uppercase tracking-widest font-black">Advanced Structure (JSON)</label>
+                          <span className="text-[10px] font-mono text-indigo-500 uppercase font-bold px-2 py-1 bg-indigo-500/10 rounded-lg">RESTRICTED DATA</span>
+                        </div>
+                        <textarea
+                          className="w-full bg-white/80 dark:bg-black/40 border-2 border-[var(--border-glass)] focus:border-indigo-500 rounded-[32px] p-6 font-mono text-xs text-indigo-600 dark:text-indigo-400 focus:outline-none transition-all shadow-inner leading-relaxed h-48"
+                          value={jsonValue}
+                          onFocus={() => setIsJsonFocused(true)}
+                          onChange={(e) => setJsonValue(e.target.value)}
+                          onBlur={() => {
+                            setIsJsonFocused(false);
+                            try {
+                              const parsed = JSON.parse(jsonValue);
+                              setEditItem({ ...editItem, ...parsed });
+                            } catch (err) {
+                              console.error("Invalid JSON:", err);
+                            }
+                          }}
+                        />
+                        <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-3">
+                          <AlertCircle size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+                          <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+                            Edit complex nested data here (like <span className="text-[var(--text-primary)] font-bold">atoms</span> or <span className="text-[var(--text-primary)] font-bold">electrons</span>). Changes are applied when you <span className="text-indigo-500 font-bold">click outside</span> this text box. If the JSON is invalid, changes will be discarded.
+                          </p>
+                        </div>
                       </div>
-                      <textarea
-                        className="w-full bg-white/80 dark:bg-black/40 border-2 border-[var(--border-glass)] focus:border-indigo-500 rounded-[32px] p-6 font-mono text-xs text-indigo-600 dark:text-indigo-400 focus:outline-none transition-all shadow-inner leading-relaxed h-48"
-                        value={jsonValue}
-                        onFocus={() => setIsJsonFocused(true)}
-                        onChange={(e) => setJsonValue(e.target.value)}
-                        onBlur={() => {
-                          setIsJsonFocused(false);
-                          try {
-                            const parsed = JSON.parse(jsonValue);
-                            setEditItem({ ...editItem, ...parsed });
-                          } catch (err) {
-                            console.error("Invalid JSON:", err);
-                            // No alert here to avoid annoying the user, 
-                            // the useEffect will reset it to match editItem on next render
-                          }
-                        }}
-                      />
-                      <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-3">
-                        <AlertCircle size={16} className="text-indigo-500 mt-0.5 shrink-0" />
-                        <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
-                          Edit complex nested data here (like <span className="text-[var(--text-primary)] font-bold">atoms</span> or <span className="text-[var(--text-primary)] font-bold">electrons</span>). Changes are applied when you <span className="text-indigo-500 font-bold">click outside</span> this text box. If the JSON is invalid, changes will be discarded.
-                        </p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
