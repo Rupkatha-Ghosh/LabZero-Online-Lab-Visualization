@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [
         react(),
+        mode === 'production' ? basicSsl() : [],
         VitePWA({
           registerType: 'autoUpdate',
           includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
