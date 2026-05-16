@@ -58,7 +58,7 @@ export const useWebRTC = ({ roomId, role }: UseWebRTCOptions) => {
 
     ensureConnection(stream);
     socket.connect();
-  }, [ensureConnection, localMedia, socket]);
+  }, [ensureConnection, localMedia.start, socket]);
 
   useEffect(() => {
     if (socket.status !== 'connected') return;

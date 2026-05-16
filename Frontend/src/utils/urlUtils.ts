@@ -4,8 +4,8 @@
  */
 export const getDefaultSignalingUrl = () => {
   // 1. Check for environment variable (Production)
-  if (import.meta.env.VITE_SIGNALING_URL) {
-    return import.meta.env.VITE_SIGNALING_URL;
+  if (import.meta.env.VITE_SIGNALING_SERVER_URL) {
+    return import.meta.env.VITE_SIGNALING_SERVER_URL;
   }
 
   // 2. Local Development fallback

@@ -23,10 +23,25 @@ const VideoTile: React.FC<VideoTileProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current && videoRef.current.srcObject !== stream) {
-      videoRef.current.srcObject = stream;
+    if (videoRef.current && stream) {
+      if (videoRef.current.srcObject !== stream) {
+        videoRef.current.srcObject = stream;
+      }
+      
+      // Explicitly call play() and handle potential browser blocks
+      const playVideo = async () => {
+        try {
+          if (videoRef.current) {
+            await videoRef.current.play();
+          }
+        } catch (err) {
+          console.warn("Video play interrupted or blocked:", err);
+        }
+      };
+      
+      playVideo();
     }
-  }, [stream]);
+  }, [stream, isVideoEnabled]);
 
   return (
     <div className="relative h-full min-h-[320px] w-full overflow-hidden rounded-[28px] bg-[#111214] shadow-2xl ring-1 ring-white/10">
