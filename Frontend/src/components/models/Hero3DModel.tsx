@@ -515,7 +515,7 @@ const LorenzAttractor = () => {
 
 const InteractiveScene = ({ theme }: { theme: 'dark' | 'light' }) => {
   return (
-    <group position={[0, 0, 0]}>
+    <group position={[0, -1.8, 0]}>
       <Platform theme={theme} />
       
       {/* Shifted Chemistry Setup */}

@@ -68,13 +68,13 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
         : 'bg-gradient-to-b from-white/60 via-transparent to-white/40'
         }`} />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 min-h-screen pb-40">
-        <div className="flex items-center justify-between mb-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 min-h-screen pb-40">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-12 sm:mb-20">
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             onClick={onBack}
-            className={`flex items-center gap-3 transition-all group px-5 py-2.5 rounded-full border backdrop-blur-md shadow-sm ${isDark
+            className={`flex items-center gap-3 transition-all group px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border backdrop-blur-md shadow-sm w-full sm:w-auto justify-center ${isDark
               ? 'text-slate-400 hover:text-white bg-white/5 border-white/10'
               : 'text-slate-600 hover:text-slate-900 bg-white/40 border-slate-200'
               }`}
@@ -87,15 +87,15 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className={`hidden md:flex items-center gap-4 p-2 border rounded-2xl backdrop-blur-md shadow-sm ${isDark ? 'bg-white/5 border-white/10' : 'bg-white/40 border-slate-200'
+            className={`flex flex-col sm:flex-row items-center gap-4 p-2 sm:p-2 border rounded-2xl sm:rounded-2xl backdrop-blur-md shadow-sm w-full sm:w-auto ${isDark ? 'bg-white/5 border-white/10' : 'bg-white/40 border-slate-200'
               }`}
           >
-            <div className="flex gap-1 px-2">
+            <div className="flex gap-1 px-2 w-full sm:w-auto justify-center">
               {(['basic', 'intermediate', 'difficult'] as const).map((lvl) => (
                 <button
                   key={lvl}
                   onClick={() => onLevelChange(lvl)}
-                  className={`px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest transition-all ${quizLevel === lvl
+                  className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest transition-all ${quizLevel === lvl
                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
                     : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-700'
                     }`}
@@ -106,7 +106,7 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
             </div>
             <button
               onClick={onStartQuiz}
-              className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-xl text-[10px] font-mono uppercase tracking-[0.2em] transition-all flex items-center gap-2 shadow-lg shadow-green-600/20"
+              className="w-full sm:w-auto px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-xl text-[10px] font-mono uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-600/20"
             >
               <Zap size={14} className="fill-current" />
               {t('startQuiz') || 'Start Quiz'}
@@ -114,19 +114,19 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
           </motion.div>
         </div>
 
-        <header className="mb-24">
+        <header className="mb-16 sm:mb-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-4 text-center sm:text-left"
           >
-            <h2 className={`text-7xl md:text-9xl font-display font-bold tracking-tighter uppercase leading-none transition-colors duration-500 ${isDark ? 'text-white' : 'text-slate-900'
+            <h2 className={`text-[clamp(48px,12vw,120px)] font-display font-bold tracking-tighter uppercase leading-[0.9] transition-colors duration-500 ${isDark ? 'text-white' : 'text-slate-900'
               }`}>
               {subject.name}
             </h2>
-            <div className="flex items-center gap-4 mt-6">
-              <div className="h-px w-12 bg-primary" />
-              <p className={`text-[10px] font-mono uppercase tracking-[0.6em] font-black ${isDark ? 'text-indigo-400' : 'text-indigo-600'
+            <div className="flex items-center gap-4 mt-4 sm:mt-6 justify-center sm:justify-start">
+              <div className="h-px w-8 sm:w-12 bg-primary" />
+              <p className={`text-[8px] sm:text-[10px] font-mono uppercase tracking-[0.4em] sm:tracking-[0.6em] font-black ${isDark ? 'text-indigo-400' : 'text-indigo-600'
                 }`}>
                 Laboratory Modules / {displayedTopics.length} Units
               </p>
@@ -150,7 +150,7 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => onSelectTopic(topic)}
-                className={`group relative p-8 border rounded-[40px] transition-all duration-500 text-left flex flex-col gap-8 overflow-hidden min-h-[340px] backdrop-blur-xl shadow-2xl ${isDark
+                className={`group relative p-6 sm:p-8 border rounded-[32px] sm:rounded-[40px] transition-all duration-500 text-left flex flex-col gap-6 sm:gap-8 overflow-hidden min-h-[300px] sm:min-h-[340px] backdrop-blur-xl shadow-2xl ${isDark
                   ? 'bg-white/5 hover:bg-white/[0.08] border-white/10'
                   : 'bg-white/70 hover:bg-white/90 border-slate-200'
                   }`}
