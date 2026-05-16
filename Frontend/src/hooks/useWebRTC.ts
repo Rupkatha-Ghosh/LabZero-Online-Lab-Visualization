@@ -64,14 +64,13 @@ export const useWebRTC = ({ roomId, role }: UseWebRTCOptions) => {
     if (socket.status !== 'connected') return;
     const signalRole = roleToSignalRole(role);
     socket.send({ type: `${signalRole}-ready`, roomId });
-  }, [role, roomId, socket, socket.status]);
+  }, [role, roomId, socket.send, socket.status]);
 
   useEffect(() => {
-    if (!socket.lastMessage || !localMedia.stream) return;
+    if (!localMedia.stream) return;
 
-    const handleMessage = async () => {
+    const handleMessage = async (message: any) => {
       const connection = ensureConnection(localMedia.stream!);
-      const message = socket.lastMessage;
 
       if (role === 'host' && message.type === 'receiver-ready') {
         const offer = await connection.createOffer();
@@ -102,8 +101,14 @@ export const useWebRTC = ({ roomId, role }: UseWebRTCOptions) => {
       }
     };
 
-    handleMessage().catch((error) => console.error('WebRTC signaling failed:', error));
-  }, [ensureConnection, localMedia.stream, role, sendSignal, socket.lastMessage]);
+    const unsubscribe = socket.onMessage((message: any) => {
+      handleMessage(message).catch((error) => console.error('WebRTC signaling failed:', error));
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [ensureConnection, localMedia.stream, role, sendSignal, socket.onMessage]);
 
   const startScreenShare = useCallback(async () => {
     if (!connectionRef.current) return;

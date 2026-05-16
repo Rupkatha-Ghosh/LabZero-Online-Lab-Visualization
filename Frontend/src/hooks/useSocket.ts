@@ -28,12 +28,20 @@ export const useSocket = (url?: string) => {
 
   useEffect(() => () => service.disconnect(), [service]);
 
+  const disconnect = useCallback(() => {
+    service.disconnect();
+  }, [service]);
+
+  const onMessage = useCallback((listener: any) => {
+    return service.onMessage(listener);
+  }, [service]);
+
   return {
     status,
     lastMessage,
     connect,
     send,
-    disconnect: service.disconnect.bind(service),
-    onMessage: service.onMessage.bind(service),
+    disconnect,
+    onMessage,
   };
 };
