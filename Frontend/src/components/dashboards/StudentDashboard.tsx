@@ -17,7 +17,9 @@ import {
     Search,
     Users,
     X,
-    ExternalLink
+    ExternalLink,
+    Video,
+    ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
@@ -26,9 +28,10 @@ import { classroomsService } from '../../services/classroomsService';
 interface StudentDashboardProps {
     onBack?: () => void;
     onLaunchLab?: (topicId: string | number) => void;
+    onStartMeeting?: (classroom: any) => void;
 }
 
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab, onStartMeeting }) => {
     const { user } = useAuth();
     const [classes, setClasses] = React.useState<any[]>([]);
     const [upcomingTasks, setUpcomingTasks] = React.useState<any[]>([]);
@@ -37,6 +40,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab
     const [inviteCode, setInviteCode] = React.useState('');
     const [isJoining, setIsJoining] = React.useState(false);
     const [selectedClass, setSelectedClass] = React.useState<any | null>(null);
+    const [isOnlineClassMenuOpen, setIsOnlineClassMenuOpen] = React.useState(false);
 
     React.useEffect(() => {
         fetchData();
@@ -163,12 +167,66 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab
                                 <Users size={20} className="text-[var(--color-cyan)] drop-shadow-[0_0_8px_rgba(var(--color-cyan-rgb),0.5)]" />
                                 My Classrooms
                             </h2>
-                            <button 
-                                onClick={() => setIsJoinModalOpen(true)}
-                                className="px-4 py-2 rounded-xl bg-[var(--color-cyan)]/10 border border-cyan-500/30 dark:border-[var(--color-cyan)]/20 text-cyan-600 dark:text-[var(--color-cyan)] text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--color-cyan)]/20 transition-all font-bold shadow-sm"
-                            >
-                                Join New Class
-                            </button>
+                            <div className="flex items-center gap-3">
+                                {onStartMeeting && (
+                                    <div className="relative z-[60]">
+                                        <button
+                                            onClick={() => setIsOnlineClassMenuOpen((current) => !current)}
+                                            className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 px-4 py-2 text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500 transition-all hover:bg-emerald-500/20"
+                                        >
+                                            <Video size={14} />
+                                            Online Class
+                                            <ChevronDown size={14} className={`transition-transform ${isOnlineClassMenuOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {isOnlineClassMenuOpen && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                                                    className="absolute right-0 top-12 z-[120] w-80 overflow-hidden rounded-3xl border border-[var(--border-glass)] bg-[var(--bg-deep)] shadow-2xl"
+                                                >
+                                                    <div className="border-b border-[var(--border-glass)] px-5 py-4">
+                                                        <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-emerald-400">Join online class</p>
+                                                        <p className="mt-1 text-xs text-[var(--text-muted)]">Pick one of your classrooms.</p>
+                                                    </div>
+                                                    <div className="max-h-72 overflow-y-auto p-2">
+                                                        {classes.length > 0 ? classes.map((cls) => (
+                                                            <button
+                                                                key={cls.id}
+                                                                onClick={() => {
+                                                                    setIsOnlineClassMenuOpen(false);
+                                                                    onStartMeeting(cls);
+                                                                }}
+                                                                className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition-all hover:bg-white/5"
+                                                            >
+                                                                <div className="min-w-0">
+                                                                    <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{cls.name}</p>
+                                                                    <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">
+                                                                        {cls.teacher_name ? `${cls.teacher_name}'s Lab` : 'Classroom'}
+                                                                    </p>
+                                                                </div>
+                                                                <Video size={16} className="shrink-0 text-emerald-400" />
+                                                            </button>
+                                                        )) : (
+                                                            <div className="px-4 py-8 text-center text-xs text-[var(--text-muted)]">
+                                                                Join a classroom before entering an online class.
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                )}
+                                <button 
+                                    onClick={() => setIsJoinModalOpen(true)}
+                                    className="px-4 py-2 rounded-xl bg-[var(--color-cyan)]/10 border border-cyan-500/30 dark:border-[var(--color-cyan)]/20 text-cyan-600 dark:text-[var(--color-cyan)] text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--color-cyan)]/20 transition-all font-bold shadow-sm"
+                                >
+                                    Join New Class
+                                </button>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -191,8 +249,21 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab
                                     <h3 className="text-lg font-display font-medium text-[var(--text-primary)] mb-4 tracking-tight drop-shadow-sm">{cls.teacher_name}'s Lab</h3>
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-sans text-[var(--text-muted)] italic">{cls.assignments?.length || 0} tasks</span>
-                                        <div className="w-8 h-8 rounded-full bg-[var(--bg-panel)] border border-[var(--border-glass)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--color-cyan)] group-hover:border-[var(--color-cyan)]/30 transition-all">
-                                            <ArrowRight size={14} />
+                                        <div className="flex items-center gap-2">
+                                            {onStartMeeting && (
+                                                <button
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        onStartMeeting(cls);
+                                                    }}
+                                                    className="flex h-8 w-8 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 transition-all hover:bg-emerald-500 hover:text-white"
+                                                >
+                                                    <Video size={14} />
+                                                </button>
+                                            )}
+                                            <div className="w-8 h-8 rounded-full bg-[var(--bg-panel)] border border-[var(--border-glass)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--color-cyan)] group-hover:border-[var(--color-cyan)]/30 transition-all">
+                                                <ArrowRight size={14} />
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -480,6 +551,26 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab
                             {/* Overlay Body */}
                             <div className="flex-1 overflow-y-auto p-8 relative z-10">
                                 <div className="max-w-4xl mx-auto space-y-12">
+                                    {onStartMeeting && (
+                                        <section className="rounded-[32px] border border-emerald-500/20 bg-emerald-500/10 p-6">
+                                            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                                                <div>
+                                                    <h3 className="flex items-center gap-2 text-sm font-mono uppercase tracking-[0.24em] text-emerald-400">
+                                                        <Video size={16} />
+                                                        Online Class
+                                                    </h3>
+                                                    <p className="mt-2 text-sm text-[var(--text-muted)]">Enter the live class room for this classroom.</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => onStartMeeting(selectedClass)}
+                                                    className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-white transition-all hover:bg-emerald-400"
+                                                >
+                                                    <Video size={16} />
+                                                    Join Online Class
+                                                </button>
+                                            </div>
+                                        </section>
+                                    )}
                                     {/* Assignments Section */}
                                     <section className="space-y-6">
                                         <div className="flex items-center justify-between">

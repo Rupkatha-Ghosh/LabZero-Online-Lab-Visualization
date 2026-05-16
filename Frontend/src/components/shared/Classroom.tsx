@@ -14,7 +14,8 @@ import {
   AlertCircle,
   Megaphone,
   LayoutGrid,
-  GraduationCap
+  GraduationCap,
+  Video
 } from 'lucide-react';
 import { savePost, getPostsByTopic, deletePost, saveComment, getCommentsByPost, deleteComment } from '../../services/discussionService';
 import { getResourcesByTopic } from '../../services/resourceService';
@@ -24,9 +25,10 @@ import { motion, AnimatePresence } from 'motion/react';
 interface ClassroomProps {
   topic: Topic;
   onPresent: (resource: Resource) => void;
+  onStartMeeting?: (topic: Topic) => void;
 }
 
-const Classroom: React.FC<ClassroomProps> = ({ topic, onPresent }) => {
+const Classroom: React.FC<ClassroomProps> = ({ topic, onPresent, onStartMeeting }) => {
   const { user } = useAuth();
   const [posts, setPosts] = useState<DiscussionPost[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
@@ -317,6 +319,15 @@ const Classroom: React.FC<ClassroomProps> = ({ topic, onPresent }) => {
                   <span>{user?.role === 'teacher' ? 'Your Session' : 'Instructor: Sayan Sinha'}</span>
                 </div>
               </div>
+              {onStartMeeting && (
+                <button
+                  onClick={() => onStartMeeting(topic)}
+                  className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-[10px] font-mono font-bold uppercase tracking-[0.22em] text-slate-950 transition-all hover:bg-sky-50"
+                >
+                  <Video size={16} />
+                  {user?.role === 'student' ? 'Join Online Class' : 'Start Online Class'}
+                </button>
+              )}
             </div>
           </div>
 

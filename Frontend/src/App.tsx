@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import LandingPage from './components/pages/LandingPage';
 import SubjectPage from './components/pages/SubjectPage';
 import TopicPage from './components/pages/TopicPage';
+import MeetingRoom from './pages/MeetingRoom';
 import AdminDashboard from './components/dashboards/AdminDashboard';
 import StudentDashboard from './components/dashboards/StudentDashboard';
 import TeacherDashboard from './components/dashboards/TeacherDashboard';
@@ -126,6 +127,8 @@ import { getSubjects } from './services/subjectsService';
 import { SIMULATION_REGISTRY } from './simulations/registry';
 import { Suspense } from 'react';
 import { usePWAInstall } from './hooks/usePWAInstall';
+import { MeetingConfig } from './context/MeetingContext';
+import { createRoomId } from './utils/peerUtils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -186,6 +189,7 @@ const AppContent: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [meetingConfig, setMeetingConfig] = useState<MeetingConfig | null>(null);
 
   const [showAITutor, setShowAITutor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -377,6 +381,7 @@ const AppContent: React.FC = () => {
   const handleBack = () => {
     switch (viewState) {
       case ViewState.TOPIC: setViewState(ViewState.SUBJECT); break;
+      case ViewState.MEETING: setViewState(selectedTopic ? ViewState.TOPIC : ViewState.DASHBOARD); break;
       case ViewState.SUBJECT: setViewState(ViewState.CLASS_SUBJECTS); break;
       case ViewState.CLASS_SUBJECTS: setViewState(ViewState.LANDING); break;
       case ViewState.DASHBOARD: setViewState(ViewState.LANDING); break;
@@ -393,6 +398,32 @@ const AppContent: React.FC = () => {
     setSelectedClass(null);
     setSelectedTopic(null);
   };
+
+  const handleStartTopicMeeting = useCallback((topic: Topic) => {
+    setSelectedTopic(topic);
+    setMeetingConfig({
+      roomId: createRoomId(`topic-${topic.id}`),
+      title: `${topic.name} Online Class`,
+      subtitle: 'Live classroom session for this lab topic.',
+      role: user?.role === 'student' ? 'guest' : 'host',
+    });
+    setViewState(ViewState.MEETING);
+  }, [user?.role]);
+
+  const handleStartClassMeeting = useCallback((classroom: any) => {
+    setMeetingConfig({
+      roomId: createRoomId(`class-${classroom?.id || classroom?.invite_code || classroom?.name || 'room'}`),
+      title: `${classroom?.name || 'Classroom'} Online Class`,
+      subtitle: classroom?.invite_code ? `Invite code: ${classroom.invite_code}` : 'Live classroom session.',
+      role: user?.role === 'student' ? 'guest' : 'host',
+    });
+    setViewState(ViewState.MEETING);
+  }, [user?.role]);
+
+  const handleLeaveMeeting = useCallback(() => {
+    setMeetingConfig(null);
+    setViewState(selectedTopic ? ViewState.TOPIC : ViewState.DASHBOARD);
+  }, [selectedTopic]);
 
   // ================= QUIZ =================
   const startQuiz = () => {
@@ -617,12 +648,18 @@ const AppContent: React.FC = () => {
                     visualization={renderVisualization(selectedTopic.slug, selectedTopic)}
                     language={language}
                     onStartQuiz={startQuiz}
+                    onStartMeeting={handleStartTopicMeeting}
                   />
+                </motion.div>
+              )}
+              {viewState === ViewState.MEETING && meetingConfig && (
+                <motion.div key="meeting" className="h-full w-full">
+                  <MeetingRoom config={meetingConfig} onLeave={handleLeaveMeeting} />
                 </motion.div>
               )}
               {viewState === ViewState.DASHBOARD && user && (
                 <motion.div key="dashboard" className="h-full w-full">
-                  {user.role === 'teacher' ? <TeacherDashboard onBack={handleBackToLanding} /> : user.role === 'institute' ? <InstituteDashboard onBack={handleBackToLanding} /> : <StudentDashboard onBack={handleBackToLanding} onLaunchLab={handleLaunchSimulation} />}
+                  {user.role === 'teacher' ? <TeacherDashboard onBack={handleBackToLanding} onStartMeeting={handleStartClassMeeting} /> : user.role === 'institute' ? <InstituteDashboard onBack={handleBackToLanding} /> : <StudentDashboard onBack={handleBackToLanding} onLaunchLab={handleLaunchSimulation} onStartMeeting={handleStartClassMeeting} />}
                 </motion.div>
               )}
               {viewState === ViewState.ADMIN && user && (user.is_staff || user.is_superuser) && (

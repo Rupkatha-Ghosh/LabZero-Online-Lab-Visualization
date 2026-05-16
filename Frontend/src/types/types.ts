@@ -100,6 +100,7 @@ export enum ViewState {
   CLASS_SUBJECTS = 'CLASS_SUBJECTS', 
   SUBJECT = 'subject',
   TOPIC = 'topic',
+  MEETING = 'meeting',
   DASHBOARD = 'dashboard',
   ADMIN = 'admin',
 }

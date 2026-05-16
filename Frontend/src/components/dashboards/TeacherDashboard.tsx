@@ -17,7 +17,9 @@ import {
   Trash2,
   Search,
   X,
-  FileText
+  FileText,
+  Video,
+  ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
@@ -27,10 +29,11 @@ import { getSubjects } from '../../services/subjectsService';
 
 interface TeacherDashboardProps {
   onBack?: () => void;
+  onStartMeeting?: (classroom: any) => void;
   skeletonDebug?: boolean;
 }
 
-const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
+const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeeting }) => {
   const { user } = useAuth();
   const [classes, setClasses] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -51,6 +54,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
   const [activeMenuId, setActiveMenuId] = React.useState<number | null>(null);
   const [activeTab, setActiveTab] = React.useState<'students' | 'assignments'>('students');
   const [topics, setTopics] = React.useState<any[]>([]);
+  const [isOnlineClassMenuOpen, setIsOnlineClassMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
     fetchClasses();
@@ -200,7 +204,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
     <div className="teacher-dashboard h-full overflow-y-auto bg-[#f6f8fb] p-8 space-y-12 pb-32 relative text-slate-900">
       <div className="teacher-dashboard-bg absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_30rem),radial-gradient(circle_at_top_right,_rgba(124,58,237,0.13),_transparent_28rem),linear-gradient(180deg,_#f8fbff_0%,_#eef6f4_100%)] pointer-events-none" />
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-7xl mx-auto relative z-10 w-full">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-7xl mx-auto relative z-[60] w-full">
         <div className="flex items-center gap-4">
           {onBack && (
             <button
@@ -224,6 +228,58 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {onStartMeeting && (
+            <div className="relative">
+              <button
+                onClick={() => setIsOnlineClassMenuOpen((current) => !current)}
+                className="flex items-center gap-2 rounded-2xl bg-sky-600 px-6 py-3 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(2,132,199,0.22)] transition-all hover:bg-sky-500"
+              >
+                <Video size={16} />
+                <span>Online Class</span>
+                <ChevronDown size={16} className={`transition-transform ${isOnlineClassMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {isOnlineClassMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                    className="absolute right-0 top-14 z-[120] w-80 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl"
+                  >
+                    <div className="border-b border-slate-100 px-5 py-4">
+                      <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-sky-700">Start a live class</p>
+                      <p className="mt-1 text-xs text-slate-500">Choose the classroom you want to open.</p>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto p-2">
+                      {classes.length > 0 ? classes.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setIsOnlineClassMenuOpen(false);
+                            onStartMeeting(item);
+                          }}
+                          className="flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition-all hover:bg-sky-50"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900">{item.name}</p>
+                            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+                              Invite: {item.invite_code || 'N/A'} · {item.students_count || 0} students
+                            </p>
+                          </div>
+                          <Video size={16} className="shrink-0 text-sky-600" />
+                        </button>
+                      )) : (
+                        <div className="px-4 py-8 text-center text-xs text-slate-500">
+                          Create a classroom before starting an online class.
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
           <button 
             onClick={() => setIsCreateModalOpen(true)}
             className="teacher-secondary-button px-6 py-3 rounded-2xl bg-white/90 border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 hover:text-slate-950 transition-all shadow-sm hover:border-sky-200"
@@ -305,6 +361,18 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
+                        {onStartMeeting && (
+                          <button
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onStartMeeting(item);
+                            }}
+                            className="hidden items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-[9px] font-mono uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-600/20 transition-all hover:bg-sky-500 md:flex"
+                          >
+                            <Video size={14} />
+                            Start
+                          </button>
+                        )}
                         <span className={`text-[9px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border ${item.is_live ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-inner' : 'bg-slate-100 text-slate-500 border-slate-200 shadow-inner'
                           }`}>
                           {item.is_live ? 'Live' : 'Inactive'}
@@ -405,6 +473,15 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  {onStartMeeting && (
+                    <button
+                      onClick={() => onStartMeeting(selectedClass)}
+                      className="flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-sky-600/20 transition-all hover:bg-sky-500"
+                    >
+                      <Video size={18} />
+                      Start Online Class
+                    </button>
+                  )}
                   <button 
                     onClick={() => handleDeleteClass(selectedClass.id, selectedClass.name)}
                     className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm"

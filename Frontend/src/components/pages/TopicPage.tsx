@@ -17,10 +17,11 @@ interface TopicPageProps {
   visualization: React.ReactNode;
   language: Language;
   onStartQuiz: () => void;
+  onStartMeeting?: (topic: Topic) => void;
   skeletonDebug?: boolean;
 }
 
-const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, language, onStartQuiz }) => {
+const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, language, onStartQuiz, onStartMeeting }) => {
   const { user } = useAuth();
   const [activeView, setActiveView] = useState<TopicView>(TopicView.THEORY);
   const t = (key: string) => translations[key]?.[language] || key;
@@ -282,6 +283,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
               <Classroom
                 topic={topic}
                 onPresent={(resource: any) => setViewingResource(resource)}
+                onStartMeeting={onStartMeeting}
               />
             </motion.div>
           )}
