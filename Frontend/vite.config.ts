@@ -89,3 +89,7 @@ export default defineConfig(({ mode }) => {
       }
     };
 });
+function basicSsl(): import("vite").PluginOption {
+  throw new Error('Function not implemented.');
+}
+
