@@ -190,14 +190,27 @@ export const ElectricFieldSimulation = ({ theme = 'light' }: { theme?: 'light' |
                 />
             </Canvas>
 
-            {/* Legend */}
-            <div className={`absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center z-10 p-4 backdrop-blur-md rounded-3xl border shadow-sm transition-all duration-500 ${
-                theme === 'dark' ? 'bg-slate-900/60 border-white/10' : 'bg-white/40 border-white/50'
-            }`}>
-                <span className={`text-[12px] font-bold mb-3 tracking-wide transition-colors duration-500`} style={{ color: textColor }}>|E|</span>
-                <span className={`text-[10px] mb-1 transition-colors duration-500`} style={{ color: mutedColor }}>High</span>
-                <div className="w-2.5 h-36 rounded-full bg-gradient-to-b from-[#EF4444] via-[#FDE047] to-[#3B82F6] my-1" />
-                <span className={`text-[10px] mt-1 transition-colors duration-500`} style={{ color: mutedColor }}>Low</span>
+            {/* Legend - Responsive (Vertical on Desktop, Horizontal on Mobile) */}
+            <div className={`absolute z-10 p-3 sm:p-4 backdrop-blur-md rounded-2xl sm:rounded-3xl border shadow-sm transition-all duration-500 
+                ${theme === 'dark' ? 'bg-slate-900/60 border-white/10' : 'bg-white/40 border-white/50'}
+                bottom-4 right-4 sm:right-4 sm:top-1/2 sm:bottom-auto sm:-translate-y-1/2 flex flex-row sm:flex-col items-center gap-3`}
+            >
+                <span className={`text-[11px] sm:text-[12px] font-bold sm:mb-2 tracking-wide transition-colors duration-500`} style={{ color: textColor }}>|E|</span>
+                
+                <div className="flex flex-row sm:flex-col items-center gap-2">
+                    <span className={`text-[9px] sm:mb-1 transition-colors duration-500`} style={{ color: mutedColor }}>
+                        {/* High at top on desktop, Right on mobile */}
+                        <span className="hidden sm:inline">High</span>
+                        <span className="sm:hidden">Low</span>
+                    </span>
+                    
+                    <div className="h-1.5 w-24 sm:w-2.5 sm:h-32 rounded-full bg-gradient-to-r sm:bg-gradient-to-b from-[#3B82F6] via-[#FDE047] to-[#EF4444] sm:from-[#EF4444] sm:via-[#FDE047] sm:to-[#3B82F6] my-1" />
+                    
+                    <span className={`text-[9px] sm:mt-1 transition-colors duration-500`} style={{ color: mutedColor }}>
+                        <span className="hidden sm:inline">Low</span>
+                        <span className="sm:hidden">High</span>
+                    </span>
+                </div>
             </div>
         </div>
     );
@@ -222,7 +235,7 @@ export const InverseSquareGraph = ({ theme = 'light' }: { theme?: 'light' | 'dar
     };
 
     return (
-        <svg viewBox="0 0 250 190" className="w-full h-full overflow-visible">
+        <svg viewBox="0 0 250 210" className="w-full h-full block mx-auto overflow-visible" preserveAspectRatio="xMidYMid meet">
             <line x1="35" y1="96" x2="48" y2="96" stroke={gridColor} strokeWidth="1" strokeDasharray="4 4" />
             <line x1="48" y1="160" x2="48" y2="96" stroke={gridColor} strokeWidth="1" strokeDasharray="4 4" />
             
@@ -241,7 +254,7 @@ export const InverseSquareGraph = ({ theme = 'light' }: { theme?: 'light' | 'dar
                 return (
                     <g key={val}>
                         <line x1={tickX} y1="160" x2={tickX} y2="166" stroke={axisColor} strokeWidth="1.5" />
-                        <text x={tickX} y="180" fontSize="12" fill={labelColor} textAnchor="middle" fontWeight="500">{val}</text>
+                        <text x={tickX} y="188" fontSize="13" fill={labelColor} textAnchor="middle" fontWeight="600">{val}</text>
                     </g>
                 );
             })}

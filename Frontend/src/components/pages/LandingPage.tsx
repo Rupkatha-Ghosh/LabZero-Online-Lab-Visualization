@@ -1,6 +1,6 @@
 import React from 'react';
 import { Subject } from '../../types/types';
-import { Beaker, Zap, Calculator, Dna, ArrowRight, Play, Maximize2, Move3d, RotateCcw, Rotate3D } from 'lucide-react';
+import { Beaker, Zap, Calculator, Dna, ArrowRight, Play, Maximize2, Move3d, RotateCcw, Rotate3d, Layout, Layers, Users, Star, Globe } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Language, translations } from '../../services/translations';
 import { Hero3DModel } from '../models/Hero3DModel.tsx';
@@ -57,10 +57,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-[var(--color-secondary)] opacity-10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       {/* Navbar */}
-      <header className="fixed top-0 inset-x-0 h-20 z-50 bg-[var(--bg-deep)]/80 backdrop-blur-lg border-b border-[var(--border-glass)] px-6 md:px-12 flex items-center justify-between">
+      <header className="fixed top-0 inset-x-0 h-20 z-50 bg-[var(--bg-deep)]/80 backdrop-blur-lg border-b border-[var(--border-glass)] px-4 sm:px-6 md:px-12 flex items-center justify-between">
         <Logo lightText={theme === 'dark'} />
 
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-8">
           {['Home', 'Explore', 'About', 'Simulations', 'Contact'].map((item) => (
             <a key={item} href={`#${item.toLowerCase()}`} className="text-[15px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
               {item}
@@ -86,7 +86,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               {(user.is_staff || user.is_superuser) && (
                 <button
                   onClick={onAdminClick}
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-[13px] font-bold uppercase tracking-tight transition-all shadow-md shadow-indigo-500/25 border border-indigo-400/20"
+                  className="hidden md:block px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-[13px] font-bold uppercase tracking-tight transition-all shadow-md shadow-indigo-500/25 border border-indigo-400/20"
                 >
                   Admin Panel
                 </button>
@@ -104,22 +104,22 @@ const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </header>
 
-      <main className="pt-32 pb-0 px-6 md:px-12 max-w-[1400px] mx-auto space-y-32">
+      <main className="pt-24 sm:pt-32 pb-0 px-4 sm:px-6 md:px-12 max-w-[1400px] mx-auto space-y-20 md:space-y-32">
 
         {/* HERO SECTION */}
         <Skeleton name="landing-hero" loading={false}>
           <section id="home" className="flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[75vh] scroll-mt-24">
-            <div className="lg:w-[40%] space-y-8 z-10 pt-10">
+            <div className="lg:w-[40%] space-y-8 z-10 pt-10 flex flex-col items-center lg:items-start">
               <motion.div
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
                 className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#E0F2FE] border border-[#BAE6FD]"
               >
-                <span className="text-xs font-semibold text-[#0284c7] tracking-wide">3D Educational Virtual Lab</span>
+                <span className="text-xs font-semibold text-[#0284c7] tracking-wide text-center">3D Educational Virtual Lab</span>
               </motion.div>
 
               <motion.h1
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
-                className="text-[64px] md:text-[72px] lg:text-[84px] font-display font-bold leading-[1.05] tracking-[-0.03em] text-[var(--text-primary)]"
+                className="text-[52px] md:text-[72px] lg:text-[84px] font-display font-bold leading-[1.1] tracking-[-0.03em] text-[var(--text-primary)] text-center lg:text-left"
               >
                 Visualize.<br />
                 Experiment.<br />
@@ -128,15 +128,15 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               <motion.p
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
-                className="text-lg md:text-xl text-[var(--text-muted)] max-w-md leading-relaxed font-normal"
+                className="text-base md:text-lg lg:text-xl text-[var(--text-muted)] max-w-md mx-auto lg:mx-0 leading-relaxed font-normal text-center lg:text-left"
               >
-                Interactive 3D labs for Physics, Chemistry, Math & Biology.<br className="hidden md:block" /><br className="hidden md:block" />
+                Interactive 3D labs for Physics, Chemistry, Math & Biology.<br className="hidden md:block" />
                 Turn abstract concepts into real understanding.
               </motion.p>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}
-                className="flex flex-col sm:flex-row gap-4 pt-2"
+                className="flex flex-col sm:flex-row gap-4 pt-2 justify-center lg:justify-start"
               >
                 <button 
                   onClick={() => document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' })}
@@ -154,37 +154,47 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.7 }}
-                className="flex items-center gap-4 pt-6"
+                className="flex flex-col sm:flex-row items-center gap-4 pt-6 justify-center lg:justify-start"
               >
                 <div className="flex -space-x-3">
-                  <img src="https://i.pravatar.cc/100?img=5" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[#F8FAFC] shadow-sm" />
-                  <img src="https://i.pravatar.cc/100?img=9" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[#F8FAFC] shadow-sm" />
-                  <img src="https://i.pravatar.cc/100?img=12" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[#F8FAFC] shadow-sm" />
-                  <img src="https://i.pravatar.cc/100?img=47" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[#F8FAFC] shadow-sm" />
+                  <img src="https://i.pravatar.cc/100?img=5" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[var(--bg-deep)] shadow-sm" />
+                  <img src="https://i.pravatar.cc/100?img=9" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[var(--bg-deep)] shadow-sm" />
+                  <img src="https://i.pravatar.cc/100?img=12" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[var(--bg-deep)] shadow-sm" />
+                  <img src="https://i.pravatar.cc/100?img=47" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[var(--bg-deep)] shadow-sm" />
                 </div>
-                <div className="text-sm text-[#64748B] flex flex-col justify-center">
-                  <p>Loved by <strong className="text-[#0F172A]">{stats.feedback_count || '1000+'}</strong> students</p>
-                  <div className="flex items-center gap-1 text-[#FBBF24] mt-0.5 text-xs">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <span key={s} className={s <= Math.round(stats.average_rating || 4.9) ? 'text-amber-400' : 'text-slate-300'}>★</span>
-                    ))}
-                    <span className="text-[#64748B] ml-1 font-medium">{stats.average_rating || '4.9'}/5</span>
+                <div className="text-sm text-[var(--text-muted)] flex flex-col justify-center">
+                  <p>Loved by <strong className="text-[var(--text-primary)]">{stats.feedback_count ?? '1000+'}</strong> students</p>
+                  <div className="flex items-center gap-1 text-amber-400 mt-0.5 text-xs">
+                    {[1, 2, 3, 4, 5].map((s) => {
+                      const rating = Number(stats.average_rating ?? 4.9);
+                      const isActive = s <= Math.round(rating);
+                      return (
+                        <Star 
+                          key={s} 
+                          size={14}
+                          className={isActive 
+                            ? 'fill-amber-400 text-amber-400' 
+                            : 'text-[var(--text-muted)]/20'}
+                        />
+                      );
+                    })}
+                    <span className="text-[var(--text-muted)] ml-1 font-medium">{stats.average_rating ?? '4.9'}/5</span>
                   </div>
                 </div>
               </motion.div>
             </div>
 
-            <div className="lg:w-[60%] h-[650px] w-full relative">
-              <div className="absolute inset-0 max-w-[800px] mx-auto w-full h-full">
+            <div className="lg:w-[60%] h-[400px] sm:h-[500px] lg:h-[650px] w-full relative">
+              <div className="absolute inset-0 max-w-[950px] mx-auto w-full h-full">
                 <Hero3DModel theme={theme} />
               </div>
 
               {/* Interaction Hint Bar */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[var(--bg-panel)] backdrop-blur-md border border-[var(--border-glass)] px-6 py-2.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.1)] flex items-center gap-6 z-20">
-                <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--text-muted)]"><Move3d size={16} strokeWidth={2} /> Drag</div>
-                <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--text-muted)]"><Rotate3D size={16} strokeWidth={2} /> Rotate</div>
-                <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--text-muted)]"><Maximize2 size={16} strokeWidth={2} /> Zoom</div>
-                <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--text-muted)]"><RotateCcw size={16} strokeWidth={2} /> Reset</div>
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[var(--bg-panel)] backdrop-blur-md border border-[var(--border-glass)] px-4 sm:px-6 py-2.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.1)] flex items-center gap-4 sm:gap-6 z-20 whitespace-nowrap overflow-x-auto max-w-[90vw] scrollbar-hide">
+                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Move3d size={16} strokeWidth={2} /> Drag</div>
+                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Rotate3d size={16} strokeWidth={2} /> Rotate</div>
+                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Maximize2 size={16} strokeWidth={2} /> Zoom</div>
+                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><RotateCcw size={16} strokeWidth={2} /> Reset</div>
               </div>
 
               {/* Floating Subject Buttons Overlay */}
@@ -225,7 +235,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {displayedSubjects.length === 0 ? (
               // Empty placeholders so the section has height for the Boneyard Skeleton to show
               Array.from({ length: Number(localStorage.getItem('labzero_last_subject_count')) || 4 }).map((_, i) => (
@@ -249,7 +259,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
                     onClick={() => onSelectSubject(subject)}
-                    className="bg-[var(--bg-panel)] rounded-[32px] p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1 h-[440px]"
+                    className="bg-[var(--bg-panel)] rounded-[32px] p-5 sm:p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1 h-auto sm:h-[440px]"
                   >
                     <div className={`w-full h-48 rounded-[24px] bg-white/[0.03] mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-white/[0.08] transition-all duration-500`}>
                       <img
@@ -278,7 +288,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Theory to Visual */}
         <Skeleton name="landing-theory" loading={false}>
-          <section id="about" className={`rounded-[32px] p-8 md:p-12 border transition-all duration-500 flex flex-col xl:flex-row items-stretch gap-8 w-full max-w-[1400px] mx-auto overflow-hidden relative scroll-mt-24 ${
+          <section id="about" className={`rounded-[32px] p-6 sm:p-8 md:p-12 border transition-all duration-500 flex flex-col xl:flex-row items-stretch gap-8 sm:gap-12 w-full max-w-[1400px] mx-auto overflow-hidden relative scroll-mt-24 ${
             theme === 'dark' 
               ? 'bg-slate-900/40 border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)]' 
               : 'bg-[#FAFBFD] border-[#E2E8F0] shadow-[0_4px_20px_rgba(0,0,0,0.02)]'
@@ -287,12 +297,12 @@ const LandingPage: React.FC<LandingPageProps> = ({
             {/* Left Text */}
             <div className="w-full xl:w-[30%] flex flex-col justify-center min-w-[280px]">
               <span className={`text-[11px] font-bold uppercase tracking-widest mb-4 block ${theme === 'dark' ? 'text-slate-500' : 'text-[#64748b]'}`}>ABSTRACT TO VISUAL</span>
-              <h2 className={`text-4xl md:text-[52px] font-display font-semibold mb-8 leading-[1.1] tracking-tight ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
+              <h2 className={`text-3xl sm:text-4xl md:text-[48px] lg:text-[52px] font-display font-semibold mb-6 sm:mb-8 leading-tight lg:leading-[1.2] tracking-tight ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
                 From Theory<br />
                 to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">Reality</span>
               </h2>
-              <p className={`text-[15px] leading-relaxed mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>
-                We bridge the gap between abstract theory and real-world understanding through immersive 3D visualizations.
+              <p className={`text-sm sm:text-[15px] leading-relaxed mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>
+                We bridge the gap between abstract theory and <br className="hidden sm:block" /> real-world understanding through immersive 3D visualizations.
               </p>
               <button className="text-[#f43f5e] font-medium flex items-center gap-2 hover:gap-3 transition-all text-sm">
                 Learn More <ArrowRight size={16} strokeWidth={2.5} />
@@ -302,41 +312,74 @@ const LandingPage: React.FC<LandingPageProps> = ({
             <div className="flex-1 flex flex-col lg:flex-row items-center justify-end gap-6 lg:gap-8 w-full">
 
               {/* LEFT CARD: Abstract Theory */}
-              <div className={`w-full lg:w-[320px] rounded-[20px] p-6 border flex flex-col isolate relative h-[450px] transition-colors duration-500 ${
+              <div className={`w-full lg:w-[320px] lg:min-w-[320px] rounded-[20px] p-6 border flex flex-col sm:flex-row lg:flex-col isolate relative h-[450px] sm:h-[380px] lg:h-[450px] overflow-hidden transition-colors duration-500 gap-6 sm:gap-4 lg:gap-0 mx-auto lg:mx-0 ${
                 theme === 'dark' 
                   ? 'bg-slate-900/80 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]' 
                   : 'bg-white border-[#F1F5F9] shadow-[0_8px_30px_rgba(0,0,0,0.03)]'
               }`}>
-                <h3 className={`text-[17px] font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>Abstract Theory</h3>
-                <span className="text-[13px] font-medium text-[#f43f5e] mb-8 block">Electric Field</span>
-
-                <div className="flex-1 flex flex-col opacity-95">
-                  <div className={`flex justify-center items-center gap-4 font-serif text-[1.75rem] leading-none mb-6 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
-                    <div className="flex flex-col items-center">
-                      <span className="relative">
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[1rem]">→</span>
-                        E
-                      </span>
-                    </div>
-                    <span>=</span>
-                    <div className="flex flex-col items-center justify-center">
-                      <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>1</span>
-                      <span className="pt-1">4π<span className="italic font-sans">ε</span><sub className="text-[1rem]">0</sub></span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center">
-                      <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>q</span>
-                      <span className="pt-1">r<sup className="text-[1rem]">2</sup></span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <span className="relative">
-                        <span className="absolute -top-[1.1rem] left-1/2 -translate-x-1/2 text-[1.2rem]">^</span>
-                        r
-                      </span>
+                <div className="flex flex-col sm:w-[45%] lg:w-full justify-between sm:pb-2 lg:pb-0">
+                  <div>
+                    <h3 className={`text-[17px] font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>Abstract Theory</h3>
+                    <span className="text-[13px] font-medium text-[#f43f5e] mb-4 sm:mb-2 lg:mb-6 block">Electric Field</span>
+                  </div>
+                  
+                  {/* Equation moved to left on Tablet */}
+                  <div className="hidden sm:flex lg:hidden flex-col items-center py-4 bg-slate-400/5 rounded-2xl border border-slate-400/10">
+                    <div className={`flex items-center gap-2 font-serif text-[1.2rem] leading-none ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
+                      <span className="relative"><span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[0.7rem]">→</span>E</span>
+                      <span>=</span>
+                      <div className="flex flex-col items-center text-[0.9rem]">
+                        <span className="border-b px-1">1</span>
+                        <span>4π<span className="italic font-sans">ε</span><sub>0</sub></span>
+                      </div>
+                      <div className="flex flex-col items-center text-[0.9rem]">
+                        <span className="border-b px-1">q</span>
+                        <span>r<sup>2</sup></span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className="relative">
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[0.8rem]">^</span>
+                          r
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <p className={`text-[13px] text-center mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric field due to a point charge.</p>
 
-                  <div className="w-full flex-1 relative -mt-5">
+                  <p className={`text-[12px] lg:text-[13px] leading-relaxed hidden sm:block lg:hidden ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Inverse-square law relationship.
+                  </p>
+                </div>
+
+                <div className="flex-1 flex flex-col opacity-95 sm:w-[55%] lg:w-full justify-center lg:justify-start">
+                  {/* Equation only shown here on Mobile & Desktop */}
+                  <div className="sm:hidden lg:flex flex-col items-center">
+                    <div className={`flex justify-center items-center gap-4 font-serif text-[1.5rem] sm:text-[1.75rem] leading-none mb-4 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
+                      <div className="flex flex-col items-center">
+                        <span className="relative">
+                          <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[1rem]">→</span>
+                          E
+                        </span>
+                      </div>
+                      <span>=</span>
+                      <div className="flex flex-col items-center justify-center">
+                        <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>1</span>
+                        <span className="pt-1">4π<span className="italic font-sans">ε</span><sub className="text-[1rem]">0</sub></span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center">
+                        <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>q</span>
+                        <span className="pt-1">r<sup className="text-[1rem]">2</sup></span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className="relative">
+                          <span className="absolute -top-[1.1rem] left-1/2 -translate-x-1/2 text-[1.2rem]">^</span>
+                          r
+                        </span>
+                      </div>
+                    </div>
+                    <p className={`text-[13px] text-center mb-4 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric field due to a point charge.</p>
+                  </div>
+
+                  <div className="w-full flex-1 relative min-h-0 max-w-[240px] sm:max-w-[380px] lg:max-w-[280px] mx-auto">
                     <InverseSquareGraph theme={theme} />
                   </div>
                 </div>
@@ -352,7 +395,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               {/* RIGHT CARD: 3D Visualization */}
-              <div className={`w-full lg:flex-1 rounded-[20px] p-6 border h-[450px] relative isolate flex flex-col transition-colors duration-500 ${
+              <div className={`w-full lg:flex-1 mx-auto lg:mx-0 rounded-[20px] p-6 border h-[450px] sm:h-[380px] lg:h-[450px] relative isolate flex flex-col transition-colors duration-500 ${
                 theme === 'dark' 
                   ? 'bg-slate-900/80 border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.5)]' 
                   : 'bg-white border-[#F1F5F9] shadow-[0_12px_40px_rgba(0,0,0,0.04)]'
@@ -391,7 +434,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {[
                 { id: 'electromagnetism', title: 'Electromagnetism', tag: 'Physics', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20', hoverBorder: 'hover:border-indigo-500/40', text: 'text-indigo-500', iconUrl: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&q=80&w=400' },
                 { id: 'genetics', title: 'Genetic Probability', tag: 'Biology', bg: 'bg-rose-500/10', border: 'border-rose-500/20', hoverBorder: 'hover:border-rose-500/40', text: 'text-rose-500', iconUrl: 'https://images.unsplash.com/photo-1629904853716-f0bc54eea481?auto=format&fit=crop&q=80&w=400' },
@@ -422,42 +465,46 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Stats Row */}
         <Skeleton name="landing-stats" loading={false}>
-          <section className="bg-[var(--bg-panel)] rounded-[40px] md:rounded-full py-4 px-4 md:px-8 border border-[var(--border-glass)] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-8 text-center max-w-5xl mx-auto mb-5">
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <div className="w-12 h-12 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 flex items-center justify-center text-[var(--color-primary)] shrink-0"><Maximize2 size={20} /></div>
-              <div className="text-left">
-                <h4 className="font-display font-bold text-2xl text-[var(--text-primary)]">{stats.students}</h4>
-                <p className="text-xs text-[var(--text-muted)]">Active Students</p>
+          <section className="bg-[var(--bg-panel)] rounded-[32px] md:rounded-full py-8 md:py-4 px-6 md:px-10 border border-[var(--border-glass)] shadow-sm grid grid-cols-2 place-items-center md:flex md:flex-row justify-between items-center gap-y-10 gap-x-4 md:gap-4 lg:gap-8 max-w-5xl mx-auto mb-10 overflow-hidden sm:overflow-visible">
+            {/* Stat 1 */}
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
+              <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 flex items-center justify-center text-[var(--color-primary)] shrink-0"><Maximize2 className="w-5 h-5 lg:w-6 lg:h-6" /></div>
+              <div className="flex flex-col">
+                <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.subjects}</h4>
+                <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Domains</p>
               </div>
             </div>
 
-            <div className="w-full h-px md:w-px md:h-12 bg-[var(--border-glass)]"></div>
+            <div className="hidden lg:block w-px h-8 bg-[var(--border-glass)]" />
 
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <div className="w-12 h-12 rounded-full border border-[var(--color-secondary)]/30 bg-[var(--color-secondary)]/5 flex items-center justify-center text-[var(--color-secondary)] shrink-0"><Beaker size={20} /></div>
-              <div className="text-left">
-                <h4 className="font-display font-bold text-2xl text-[var(--text-primary)]">{stats.topics}+</h4>
-                <p className="text-xs text-[var(--text-muted)]">Interactive Simulations</p>
+            {/* Stat 2 */}
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
+              <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-green-500/30 bg-green-500/5 flex items-center justify-center text-green-500 shrink-0"><Layers className="w-5 h-5 lg:w-6 lg:h-6" /></div>
+              <div className="flex flex-col">
+                <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.topics}</h4>
+                <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Modules</p>
               </div>
             </div>
 
-            <div className="w-full h-px md:w-px md:h-12 bg-[var(--border-glass)]"></div>
+            <div className="hidden lg:block w-px h-8 bg-[var(--border-glass)]" />
 
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <div className="w-12 h-12 rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/5 flex items-center justify-center text-[var(--color-accent)] shrink-0"><Zap size={20} /></div>
-              <div className="text-left">
-                <h4 className="font-display font-bold text-2xl text-[var(--text-primary)]">{stats.subjects}+</h4>
-                <p className="text-xs text-[var(--text-muted)]">Domains</p>
+            {/* Stat 3 */}
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
+              <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-amber-500/30 bg-amber-500/5 flex items-center justify-center text-amber-500 shrink-0"><Users className="w-5 h-5 lg:w-6 lg:h-6" /></div>
+              <div className="flex flex-col">
+                <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.students}+</h4>
+                <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Active Learners</p>
               </div>
             </div>
 
-            <div className="w-full h-px md:w-px md:h-12 bg-[var(--border-glass)]"></div>
+            <div className="hidden lg:block w-px h-8 bg-[var(--border-glass)]" />
 
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <div className="w-12 h-12 rounded-full border border-slate-500/30 bg-slate-500/5 flex items-center justify-center text-slate-400 shrink-0"><Play size={20} /></div>
-              <div className="text-left">
-                <h4 className="font-display font-bold text-2xl text-[var(--text-primary)]">24/7</h4>
-                <p className="text-xs text-[var(--text-muted)]">Access Anywhere</p>
+            {/* Stat 4 */}
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
+              <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-rose-500/30 bg-rose-500/5 flex items-center justify-center text-rose-500 shrink-0"><Star className="w-5 h-5 lg:w-6 lg:h-6" /></div>
+              <div className="flex flex-col">
+                <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.average_rating}</h4>
+                <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Satisfaction</p>
               </div>
             </div>
           </section>

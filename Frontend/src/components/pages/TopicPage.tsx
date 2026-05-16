@@ -79,33 +79,43 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
   return (
     <div className="flex flex-col h-full bg-[var(--bg-deep)] grainy">
       {/* Topic Header */}
-      <header className="sticky top-0 z-50 bg-[var(--bg-panel)]/90 backdrop-blur-2xl border-b border-[var(--border-glass)] px-8 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-        <div className="max-w-[1800px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <button
-              onClick={onBack}
-              className="group flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em]">{t('back')}</span>
-            </button>
+      <header className="sticky top-0 z-50 bg-[var(--bg-panel)]/90 backdrop-blur-2xl border-b border-[var(--border-glass)] px-4 sm:px-8 py-3 sm:py-4 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+        <div className="max-w-[1800px] mx-auto flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 lg:gap-8">
+          <div className="flex items-center justify-between lg:justify-start gap-4 sm:gap-8">
+            <div className="flex items-center gap-3 sm:gap-8">
+              <button
+                onClick={onBack}
+                className="group flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors shrink-0"
+              >
+                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                <span className="hidden sm:inline text-[10px] font-mono uppercase tracking-[0.2em]">{t('back')}</span>
+              </button>
 
-            <div className="h-8 w-px bg-[var(--border-glass)]" />
+              <div className="h-8 w-px bg-[var(--border-glass)]" />
 
-            <div>
-              <h1 className="text-xl font-display font-bold tracking-tight text-[var(--text-primary)] uppercase">
-                {topic.name}
-              </h1>
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-[0.3em]">
-                  Module ID: {String(topic.id).split('_').join('-')}
-                </span>
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg lg:text-xl font-display font-bold tracking-tight text-[var(--text-primary)] uppercase truncate">
+                  {topic.name}
+                </h1>
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                  <span className="text-[8px] sm:text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-[0.2em] sm:tracking-[0.3em] truncate">
+                    ID: {String(topic.id).split('_').join('-')}
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* Mobile-only quiz button if space allows, or handle in nav */}
+            <button
+              onClick={onStartQuiz}
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all shrink-0"
+            >
+              <Zap size={16} />
+            </button>
           </div>
 
-          <nav className="flex items-center gap-1 p-1 bg-[var(--bg-deep)]/70 rounded-full border border-[var(--border-glass)] shadow-inner">
+          <nav className="flex items-center gap-1 p-1 bg-[var(--bg-deep)]/70 rounded-full border border-[var(--border-glass)] shadow-inner overflow-x-auto scrollbar-hide max-w-full">
             {[
               { id: TopicView.THEORY, label: t('theory'), icon: BookOpen },
               { id: TopicView.VISUALIZATION, label: t('visualization'), icon: Play },
@@ -114,7 +124,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
               <button
                 key={view.id}
                 onClick={() => setActiveView(view.id)}
-                className={`relative flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] transition-all duration-300 ${activeView === view.id
+                className={`relative flex items-center gap-2 px-4 sm:px-6 py-2 rounded-full text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300 shrink-0 ${activeView === view.id
                   ? 'text-[#fff]'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                   }`}
@@ -131,11 +141,11 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
               </button>
             ))}
 
-            <div className="w-px h-6 bg-[var(--border-glass)] mx-2" />
+            <div className="hidden sm:block w-px h-6 bg-[var(--border-glass)] mx-2" />
 
             <button
               onClick={onStartQuiz}
-              className="flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300"
+              className="hidden lg:flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300 shrink-0"
             >
               <Zap size={14} />
               <span>Take Quiz</span>
@@ -153,19 +163,19 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="h-full overflow-y-auto px-8 py-16"
+              className="h-full overflow-y-auto px-4 sm:px-8 py-8 sm:py-16"
             >
               <div className="max-w-7xl mx-auto space-y-20">
                 {/* Theory Content */}
-                <div className="space-y-12">
-                  <div className="flex items-center justify-between mb-8">
+                 <div className="space-y-8 sm:space-y-12">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-3">
                       <div className="h-px w-12 bg-primary" />
                       <h2 className="text-[10px] font-mono text-primary uppercase tracking-[0.4em]">{t('theoreticalFoundation')}</h2>
                     </div>
                     <button
                       onClick={toggleReadAloud}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${isReading
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 w-full sm:w-auto justify-center ${isReading
                         ? 'bg-rose-500/10 border-rose-500/50 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
                         : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
                         }`}
@@ -176,9 +186,9 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
                       </span>
                     </button>
                   </div>
-                  <div className="relative pl-8">
+                  <div className="relative pl-4 sm:pl-8">
                     <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/10 to-transparent" />
-                    <div className="prose prose-invert max-w-none prose-headings:uppercase prose-headings:tracking-tighter prose-headings:font-display">
+                    <div className="prose prose-sm sm:prose-invert max-w-none prose-headings:uppercase prose-headings:tracking-tighter prose-headings:font-display">
                       <ReactMarkdown>{topic.theory}</ReactMarkdown>
                     </div>
                   </div>
@@ -254,7 +264,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
                       <h2 className="text-xl font-display font-bold text-white uppercase tracking-tight">{t('ingestModule')}</h2>
                     </div>
                     {(user?.role === 'teacher' || user?.role === 'institute') && (
-                      <div className="glass-panel p-8 rounded-[40px] border border-white/5 bg-white/[0.02]">
+                      <div className="glass-panel p-6 sm:p-8 rounded-[32px] sm:rounded-[40px] border border-white/5 bg-white/[0.02]">
                         <ResourceUpload topicId={topic.id} onUploadComplete={fetchResources} />
                       </div>
                     )}
