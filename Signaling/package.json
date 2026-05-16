@@ -1,7 +1,7 @@
 {
   "name": "labzero-signaling-server",
   "version": "1.0.0",
-  "description": "Signaling server for LabZero remote camera",
+  "description": "Signaling server for LabZero WebRTC (Gestures & Meetings)",
   "main": "server.js",
   "type": "module",
   "scripts": {

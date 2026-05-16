@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "signal": "node server/server.js",
+    "signal": "node ../Signaling/server.js",
     "build": "vite build",
     "lint": "tsc --noEmit",
     "preview": "vite preview"

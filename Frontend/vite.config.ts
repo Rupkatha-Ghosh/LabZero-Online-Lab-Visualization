@@ -12,9 +12,13 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
         proxy: {
           '/signal': {
-            target: 'ws://localhost:5000',
+            target: env.VITE_SIGNALING_SERVER_URL || 'ws://localhost:5000',
             ws: true,
             rewrite: (path) => path.replace(/^\/signal/, '')
+          },
+          '/api': {
+            target: env.VITE_BACKEND_URL || 'http://localhost:8000',
+            changeOrigin: true,
           }
         }
       },
@@ -24,7 +28,7 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [
         react(),
-        mode === 'production' ? basicSsl() : [],
+        basicSsl(),
         VitePWA({
           registerType: 'autoUpdate',
           includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],

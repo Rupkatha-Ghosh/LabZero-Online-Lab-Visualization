@@ -7,14 +7,10 @@ type ReceiverProps = {
   onConnected?: () => void;
   onConnectionStateChange?: (state: RTCPeerConnectionState) => void;
   signalingUrl?: string;
+  roomId: string;
 };
 
-// ✅ Automatically use PC IP instead of localhost
-const getDefaultSignalingUrl = () => {
-  const host = window.location.hostname;
-  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-  return `${protocol}://${host}:5000`;
-};
+import { getDefaultSignalingUrl } from "../../utils/urlUtils";
 
 export default function Receiver({
   isActive,
@@ -23,6 +19,7 @@ export default function Receiver({
   onConnected,
   onConnectionStateChange,
   signalingUrl = getDefaultSignalingUrl(),
+  roomId,
 }: ReceiverProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const pc = useRef<RTCPeerConnection | null>(null);
@@ -53,7 +50,7 @@ export default function Receiver({
       console.log("✅ Connected to signaling server");
       setStatus("Connected to signaling");
 
-      socket.send(JSON.stringify({ type: "receiver-ready" }));
+      socket.send(JSON.stringify({ type: "receiver-ready", roomId }));
     };
 
     socket.onerror = (err) => {

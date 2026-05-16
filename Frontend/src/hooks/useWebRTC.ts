@@ -4,6 +4,7 @@ import { useMediaStream } from './useMediaStream';
 import { useSocket } from './useSocket';
 import { getDisplayMediaStream, stopMediaStream } from '../utils/mediaUtils';
 import { MeetingRole, roleToSignalRole } from '../utils/peerUtils';
+import { getDefaultSignalingUrl } from '../utils/urlUtils';
 
 interface UseWebRTCOptions {
   roomId: string;
@@ -12,7 +13,7 @@ interface UseWebRTCOptions {
 
 export const useWebRTC = ({ roomId, role }: UseWebRTCOptions) => {
   const localMedia = useMediaStream();
-  const socket = useSocket();
+  const socket = useSocket(getDefaultSignalingUrl());
   const connectionRef = useRef<RTCPeerConnection | null>(null);
   const originalVideoTrackRef = useRef<MediaStreamTrack | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
