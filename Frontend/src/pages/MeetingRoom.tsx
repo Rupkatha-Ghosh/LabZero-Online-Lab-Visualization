@@ -47,8 +47,16 @@ const MeetingRoomContent: React.FC<MeetingRoomProps> = ({ config, onLeave }) => 
     return list;
   }, [config.role, localName, meeting.isAudioEnabled, meeting.isVideoEnabled, meeting.remoteStream]);
 
-  const join = async () => {
-    await meeting.startMeeting();
+  // Pre-warm the camera for the waiting room
+  const hasStartedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (!hasJoined && !hasStartedRef.current) {
+      hasStartedRef.current = true;
+      meeting.startMeeting();
+    }
+  }, [hasJoined, meeting.startMeeting]);
+
+  const join = () => {
     setHasJoined(true);
   };
 
@@ -70,10 +78,15 @@ const MeetingRoomContent: React.FC<MeetingRoomProps> = ({ config, onLeave }) => 
       <WaitingRoom
         title={config.title}
         subtitle={config.subtitle}
+        stream={meeting.localStream}
+        isAudioEnabled={meeting.isAudioEnabled}
+        isVideoEnabled={meeting.isVideoEnabled}
         isLoading={meeting.isMediaLoading}
         error={meeting.mediaError}
         onJoin={join}
         onBack={onLeave}
+        onToggleAudio={meeting.toggleAudio}
+        onToggleVideo={meeting.toggleVideo}
       />
     );
   }
