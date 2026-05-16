@@ -3,14 +3,17 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { GestureRecognizer } from '@mediapipe/tasks-vision';
 import { getGestureRecognizer } from "../../services/gestureService";
 
-const getDefaultSignalingUrl = () => {
-  const params = new URLSearchParams(window.location.search);
-  const url = params.get("signal");
-  if (url) return url;
+import { getDefaultSignalingUrl } from "../../utils/urlUtils";
 
-  const host = window.location.host;
-  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-  return `${protocol}://${host}/signal`;
+const getSignalingConfig = () => {
+  const params = new URLSearchParams(window.location.search);
+  const signalUrl = params.get("signal");
+  const roomId = params.get("room");
+  
+  return {
+    url: signalUrl || getDefaultSignalingUrl(),
+    roomId: roomId || "gestures-default"
+  };
 };
 
 export default function Sender() {
@@ -73,7 +76,8 @@ export default function Sender() {
   useEffect(() => {
     console.log("📡 Sender starting...");
 
-    const socket = new WebSocket(getDefaultSignalingUrl());
+    const { url, roomId } = getSignalingConfig();
+    const socket = new WebSocket(url);
 
     const peer = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -108,7 +112,8 @@ export default function Sender() {
       console.log("✅ Connected to signaling server");
       setStatus("Connected. Waiting for LabZero...");
 
-      socket.send(JSON.stringify({ type: "sender-ready" }));
+      const { roomId } = getSignalingConfig();
+      socket.send(JSON.stringify({ type: "sender-ready", roomId }));
     };
 
     socket.onerror = (err) => {

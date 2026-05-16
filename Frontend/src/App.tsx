@@ -129,6 +129,7 @@ import { Suspense } from 'react';
 import { usePWAInstall } from './hooks/usePWAInstall';
 import { MeetingConfig } from './context/MeetingContext';
 import { createRoomId } from './utils/peerUtils';
+import { getDefaultSignalingUrl } from './utils/urlUtils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -226,12 +227,7 @@ const AppContent: React.FC = () => {
   const [quizLevel, setQuizLevel] = useState<'basic' | 'intermediate' | 'difficult'>('basic');
 
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
-  const signalingUrl = (() => {
-    if (import.meta.env.VITE_SIGNALING_URL) return import.meta.env.VITE_SIGNALING_URL;
-    const host = window.location.hostname || "localhost";
-    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    return `${protocol}://${host}/signal`;
-  })();
+  const signalingUrl = getDefaultSignalingUrl();
 
   const phoneSenderUrl = (() => {
     const url = new URL(window.location.href);

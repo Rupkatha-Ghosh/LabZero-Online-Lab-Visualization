@@ -415,12 +415,13 @@ const getDefaultSignalingUrl = () => {
   return `${protocol}://${host}/signal`;
 };
 
-const getPhoneSenderUrl = (signalingUrl: string) => {
+const getPhoneSenderUrl = (signalingUrl: string, roomId: string) => {
   const url = new URL(window.location.href);
   url.search = "";
   url.hash = "";
   url.searchParams.set("camera", "sender");
   url.searchParams.set("signal", signalingUrl);
+  url.searchParams.set("room", roomId);
   return url.toString();
 };
 
@@ -526,7 +527,8 @@ const GestureController: React.FC<GestureControllerProps> = ({
   
   const [cameraMode, setCameraMode] = useState<'webcam' | 'phone' | 'none'>('none');
   const signalingUrl = getDefaultSignalingUrl();
-  const phoneSenderUrl = getPhoneSenderUrl(signalingUrl);
+  const gestureRoomId = useRef(`gestures-${Math.random().toString(36).slice(2, 9)}`).current;
+  const phoneSenderUrl = getPhoneSenderUrl(signalingUrl, gestureRoomId);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
   const [remoteConnected, setRemoteConnected] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -1254,6 +1256,7 @@ const GestureController: React.FC<GestureControllerProps> = ({
 
       <Receiver
         isActive={isActive && cameraSource === 'remote'}
+        roomId={gestureRoomId}
         onStream={handleRemoteStream}
         onConnected={() => setRemoteConnected(true)}
         onConnectionStateChange={(state) => {
