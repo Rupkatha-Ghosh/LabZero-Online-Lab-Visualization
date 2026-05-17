@@ -1,7 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { X, Brain, ChevronRight, ArrowLeft, Lightbulb, Link as LinkIcon, Sparkles, BookOpen, Layers, Target } from 'lucide-react';
-import { SUBJECTS } from '../../utils/constants';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Brain, ChevronRight, ArrowLeft, Sparkles, Layers, Target } from 'lucide-react';
 import { Subject, Topic } from '../../types/types';
 
 interface MemoryMapOverlayProps {
@@ -64,8 +63,8 @@ const MemoryMapOverlay: React.FC<MemoryMapOverlayProps> = ({ onClose, initialSub
         nodes[0].children?.push(currentMain);
       } else if (trimmed.startsWith('- **') && currentMain) {
         const parts = trimmed.replace('- **', '').split('**:');
-        const label = parts[0];
-        const description = parts[1]?.trim();
+        const label = parts[0].replace(/\*\*:?$/, '').trim();
+        const description = parts.slice(1).join('**:').trim();
         currentMain.children?.push({ id: `sub-${index}`, label, type: 'sub', description });
       } else if (trimmed.startsWith('### ') && currentMain) {
         const label = trimmed.replace('### ', '');
@@ -86,7 +85,7 @@ const MemoryMapOverlay: React.FC<MemoryMapOverlayProps> = ({ onClose, initialSub
   }, [selectedTopic]);
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 md:p-8 overflow-hidden">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-2 sm:p-4 md:p-8 overflow-hidden">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -99,7 +98,7 @@ const MemoryMapOverlay: React.FC<MemoryMapOverlayProps> = ({ onClose, initialSub
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative w-full h-full bg-white/[0.01] border border-white/5 rounded-[48px] flex flex-col overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)]"
+        className="relative w-full h-full bg-white/[0.01] border border-white/5 rounded-[28px] md:rounded-[40px] flex flex-col overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)]"
       >
         {/* Background Particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
@@ -127,31 +126,31 @@ const MemoryMapOverlay: React.FC<MemoryMapOverlayProps> = ({ onClose, initialSub
         </div>
 
         {/* Header */}
-        <div className="p-8 md:p-10 flex items-center justify-between border-b border-white/5 bg-white/[0.02] z-20">
-          <div className="flex items-center gap-6">
+        <div className="p-4 md:p-8 lg:p-10 flex items-center justify-between gap-4 border-b border-white/5 bg-white/[0.02] z-20">
+          <div className="flex min-w-0 items-center gap-3 md:gap-6">
             {step !== 'subject' && (
               <button
                 onClick={handleBack}
-                className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all group"
+                className="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all group"
               >
                 <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
               </button>
             )}
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+            <div className="min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="w-10 h-10 shrink-0 rounded-xl bg-purple-500/20 flex items-center justify-center">
                   <Brain className="text-purple-400" size={24} />
                 </div>
-                <h2 className="text-3xl font-display font-bold text-white tracking-tight">
+                <h2 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight">
                   Mind Map
                 </h2>
-                <div className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-mono text-indigo-400 uppercase tracking-widest ml-2">
+                <div className="hidden sm:block px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-mono text-indigo-400 uppercase tracking-widest ml-2">
                   v2.0 Professional
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-2">
-                <div className="h-px w-6 bg-slate-700" />
-                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.4em]">
+                <div className="hidden sm:block h-px w-6 bg-slate-700" />
+                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.18em] md:tracking-[0.4em] truncate">
                   {step === 'subject' && 'Explore Diverse Fields'}
                   {step === 'chapter' && `${selectedSubject?.name} Modules`}
                   {step === 'map' && `Visual Architecture: ${selectedTopic?.name}`}
@@ -160,7 +159,7 @@ const MemoryMapOverlay: React.FC<MemoryMapOverlayProps> = ({ onClose, initialSub
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 items-center gap-2 md:gap-4">
             {step === 'map' && (
               <div className="hidden lg:flex items-center gap-6 mr-8 px-6 py-2 rounded-2xl bg-white/5 border border-white/5">
                 <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400">
@@ -179,15 +178,15 @@ const MemoryMapOverlay: React.FC<MemoryMapOverlayProps> = ({ onClose, initialSub
             )}
             <button
               onClick={onClose}
-              className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all"
+              className="w-11 h-11 md:w-14 md:h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all"
             >
-              <X size={28} />
+              <X size={24} />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-8 md:p-12 custom-scrollbar relative z-10">
+        <div className="flex-1 min-h-0 overflow-auto p-4 md:p-8 lg:p-12 custom-scrollbar relative z-10">
           <AnimatePresence mode="wait">
             {step === 'subject' && (
               <motion.div
@@ -260,7 +259,7 @@ const MemoryMapOverlay: React.FC<MemoryMapOverlayProps> = ({ onClose, initialSub
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="h-full w-full min-h-[600px] flex items-center justify-center"
+                className="min-h-full w-full flex items-center justify-center"
               >
                 <VisualMap node={mapData} />
               </motion.div>
@@ -273,117 +272,25 @@ const MemoryMapOverlay: React.FC<MemoryMapOverlayProps> = ({ onClose, initialSub
 };
 
 const VisualMap: React.FC<{ node: MapNode }> = ({ node }) => {
-  const childCount = node.children?.length || 1;
-  const radius = childCount > 5 ? 360 : 300;
+  const children = node.children ?? [];
+  const childCount = Math.max(children.length, 1);
+  const radius = childCount > 5 ? 390 : 330;
+  const mapSize = radius * 2 + 640;
+  const center = mapSize / 2;
+  const branchPositions = children.map((child, idx) => {
+    const angle = (idx / childCount) * Math.PI * 2 - Math.PI / 2;
+    return {
+      child,
+      x: Math.cos(angle) * radius,
+      y: Math.sin(angle) * radius,
+    };
+  });
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center p-20 overflow-visible scale-90 md:scale-100">
-      {/* Root Node */}
-      <motion.div
-        layoutId="root-node"
-        className="relative z-30 p-8 md:p-12 rounded-[48px] bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 shadow-[0_0_80px_rgba(139,92,246,0.5)] border border-white/20 text-center group cursor-pointer"
-        whileHover={{ scale: 1.05 }}
-      >
-        <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6 backdrop-blur-xl border border-white/30 shadow-inner group-hover:animate-pulse">
-          <Brain size={44} className="text-white" />
-        </div>
-        <h4 className="text-3xl md:text-4xl font-display font-black text-white tracking-tighter uppercase leading-none">{node.label}</h4>
-        <div className="mt-4 flex items-center justify-center gap-2">
-          <div className="h-px w-4 bg-white/40" />
-          <div className="text-[10px] font-mono text-white/80 tracking-[0.4em] uppercase font-bold">Scientific Core</div>
-          <div className="h-px w-4 bg-white/40" />
-        </div>
-      </motion.div>
-
-      {/* Connection Lines & Child Nodes */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        {node.children?.map((child, idx) => {
-          const angle = (idx / childCount) * Math.PI * 2 - Math.PI / 2;
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
-
-          return (
-            <React.Fragment key={child.id}>
-              {/* Line with animated dash */}
-              <svg className="absolute inset-0 w-full h-full overflow-visible z-10">
-                <motion.line
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 0.4 }}
-                  transition={{ duration: 1.5, delay: idx * 0.15 }}
-                  x1="50%"
-                  y1="50%"
-                  x2={`${50 + (x / 1000) * 100}%`}
-                  y2={`${50 + (y / 1000) * 100}%`}
-                  stroke="url(#lineGrad)"
-                  strokeWidth="3"
-                  strokeDasharray="12 6"
-                />
-                <defs>
-                  <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#a855f7" />
-                    <stop offset="100%" stopColor="#6366f1" />
-                  </linearGradient>
-                </defs>
-              </svg>
-
-              {/* Concept Node */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                animate={{ opacity: 1, scale: 1, x, y }}
-                transition={{
-                  delay: idx * 0.15 + 0.5,
-                  type: 'spring',
-                  stiffness: 70,
-                  damping: 12
-                }}
-                whileHover={{ scale: 1.1, zIndex: 40 }}
-                className="absolute pointer-events-auto group/node"
-              >
-                <div className="p-7 rounded-[32px] bg-[#0f172a]/95 border border-white/10 backdrop-blur-3xl hover:border-purple-500/60 transition-all cursor-pointer min-w-[240px] shadow-2xl relative overflow-hidden">
-                  {/* Glowing background */}
-                  <div className="absolute -top-10 -left-10 w-24 h-24 bg-purple-600/20 rounded-full blur-3xl opacity-0 group-hover/node:opacity-100 transition-opacity" />
-
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover/node:bg-purple-500 group-hover/node:text-white transition-all duration-500">
-                      <Target size={20} />
-                    </div>
-                    <h5 className="text-lg font-bold text-white group-hover/node:text-purple-400 transition-colors uppercase tracking-tight">{child.label}</h5>
-                  </div>
-
-                  {/* Technical Sub-points */}
-                  <div className="space-y-2 relative z-10">
-                    {child.children?.map((sub, sIdx) => (
-                      <motion.div
-                        key={sub.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.15 + sIdx * 0.1 + 0.8 }}
-                        className="group/sub relative"
-                      >
-                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-indigo-500/40 transition-all">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                            <span className="text-[11px] font-bold text-slate-200 group-hover/sub:text-indigo-300 transition-colors uppercase">{sub.label}</span>
-                          </div>
-                          {sub.description && (
-                            <p className="text-[9px] text-slate-500 leading-normal pl-3.5 group-hover/sub:text-slate-400 transition-colors">{sub.description}</p>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Decorative corner */}
-                  <div className="absolute bottom-2 right-2 text-white/5 group-hover/node:text-purple-500/20 transition-colors">
-                    <Layers size={32} />
-                  </div>
-                </div>
-              </motion.div>
-            </React.Fragment>
-          );
-        })}
-      </div>
-
+    <div
+      className="relative shrink-0 overflow-visible"
+      style={{ width: mapSize, height: mapSize }}
+    >
       {/* Global Background Glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -392,10 +299,113 @@ const VisualMap: React.FC<{ node: MapNode }> = ({ node }) => {
             opacity: [0.1, 0.2, 0.1],
           }}
           transition={{ duration: 12, repeat: Infinity }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-blue-600/10 rounded-full blur-[150px]"
+          className="absolute left-1/2 top-1/2 w-[900px] h-[900px] -translate-x-1/2 -translate-y-1/2 bg-blue-600/10 rounded-full blur-[150px]"
         />
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-[#020617]/80" />
       </div>
+
+      <svg
+        className="absolute inset-0 z-10 pointer-events-none"
+        viewBox={`0 0 ${mapSize} ${mapSize}`}
+        width={mapSize}
+        height={mapSize}
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="mindmap-line-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#a855f7" />
+            <stop offset="100%" stopColor="#6366f1" />
+          </linearGradient>
+        </defs>
+        {branchPositions.map(({ child, x, y }, idx) => (
+          <motion.line
+            key={`${child.id}-line`}
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 0.46 }}
+            transition={{ duration: 1.2, delay: idx * 0.12 }}
+            x1={center}
+            y1={center}
+            x2={center + x}
+            y2={center + y}
+            stroke="url(#mindmap-line-grad)"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray="12 8"
+          />
+        ))}
+      </svg>
+
+      {/* Root Node */}
+      <motion.div
+        layoutId="root-node"
+        className="absolute z-30 w-[300px] -translate-x-1/2 -translate-y-1/2 p-8 rounded-[36px] bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 shadow-[0_0_80px_rgba(139,92,246,0.5)] border border-white/20 text-center group cursor-pointer"
+        style={{ left: center, top: center }}
+        whileHover={{ scale: 1.05 }}
+      >
+        <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-5 backdrop-blur-xl border border-white/30 shadow-inner group-hover:animate-pulse">
+          <Brain size={38} className="text-white" />
+        </div>
+        <h4 className="text-2xl font-display font-black text-white uppercase leading-tight break-words">{node.label}</h4>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="h-px w-4 bg-white/40" />
+          <div className="text-[10px] font-mono text-white/80 tracking-[0.22em] uppercase font-bold">Scientific Core</div>
+          <div className="h-px w-4 bg-white/40" />
+        </div>
+      </motion.div>
+
+      {/* Connection Lines & Child Nodes */}
+      {branchPositions.map(({ child, x, y }, idx) => (
+        <motion.div
+          key={child.id}
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            delay: idx * 0.12 + 0.35,
+            type: 'spring',
+            stiffness: 80,
+            damping: 14
+          }}
+          whileHover={{ scale: 1.04, zIndex: 40 }}
+          className="absolute z-20 w-[280px] -translate-x-1/2 -translate-y-1/2 pointer-events-auto group/node"
+          style={{ left: center + x, top: center + y }}
+        >
+          <div className="p-5 rounded-[28px] bg-[#0f172a]/95 border border-white/10 backdrop-blur-3xl hover:border-purple-500/60 transition-all cursor-pointer shadow-2xl relative overflow-hidden">
+            <div className="absolute -top-10 -left-10 w-24 h-24 bg-purple-600/20 rounded-full blur-3xl opacity-0 group-hover/node:opacity-100 transition-opacity" />
+
+            <div className="flex items-start gap-3 mb-4 relative z-10">
+              <div className="w-10 h-10 shrink-0 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover/node:bg-purple-500 group-hover/node:text-white transition-all duration-500">
+                <Target size={20} />
+              </div>
+              <h5 className="text-base font-bold text-white group-hover/node:text-purple-400 transition-colors uppercase leading-tight break-words">{child.label}</h5>
+            </div>
+
+            <div className="space-y-2 relative z-10">
+              {child.children?.map((sub, sIdx) => (
+                <motion.div
+                  key={sub.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.12 + sIdx * 0.08 + 0.55 }}
+                  className="group/sub relative"
+                >
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-indigo-500/40 transition-all">
+                    <div className="flex items-start gap-2 mb-1">
+                      <div className="mt-1.5 w-1.5 h-1.5 shrink-0 rounded-full bg-indigo-500" />
+                      <span className="text-[11px] font-bold text-slate-200 group-hover/sub:text-indigo-300 transition-colors uppercase leading-snug break-words">{sub.label}</span>
+                    </div>
+                    {sub.description && (
+                      <p className="text-[10px] text-slate-500 leading-normal pl-3.5 group-hover/sub:text-slate-400 transition-colors">{sub.description}</p>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="absolute bottom-2 right-2 text-white/5 group-hover/node:text-purple-500/20 transition-colors">
+              <Layers size={32} />
+            </div>
+          </div>
+        </motion.div>
+      ))}
     </div>
   );
 };
