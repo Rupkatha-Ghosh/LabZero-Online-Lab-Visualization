@@ -273,23 +273,38 @@ const MemoryMapOverlay: React.FC<MemoryMapOverlayProps> = ({ onClose, initialSub
 
 const VisualMap: React.FC<{ node: MapNode }> = ({ node }) => {
   const children = node.children ?? [];
-  const childCount = Math.max(children.length, 1);
-  const radius = childCount > 5 ? 390 : 330;
-  const mapSize = radius * 2 + 640;
-  const center = mapSize / 2;
-  const branchPositions = children.map((child, idx) => {
-    const angle = (idx / childCount) * Math.PI * 2 - Math.PI / 2;
+  const rootWidth = 300;
+  const branchWidth = 430;
+  const rootCenterX = 210;
+  const branchLeft = 470;
+  const branchCenterX = branchLeft + branchWidth / 2;
+  const topPadding = 48;
+  const branchGap = 28;
+  const branchSlots = children.map((child) => {
+    const detailsCount = child.children?.length || 0;
+    return Math.max(188, 124 + detailsCount * 58);
+  });
+  const contentHeight = branchSlots.reduce((sum, height) => sum + height, 0) + Math.max(children.length - 1, 0) * branchGap;
+  const mapHeight = Math.max(640, contentHeight + topPadding * 2);
+  const mapWidth = 980;
+  const rootCenterY = mapHeight / 2;
+  let currentTop = topPadding + Math.max(0, (mapHeight - topPadding * 2 - contentHeight) / 2);
+  const branches = children.map((child, idx) => {
+    const height = branchSlots[idx];
+    const top = currentTop;
+    currentTop += height + branchGap;
     return {
       child,
-      x: Math.cos(angle) * radius,
-      y: Math.sin(angle) * radius,
+      height,
+      top,
+      centerY: top + height / 2,
     };
   });
 
   return (
     <div
       className="relative shrink-0 overflow-visible"
-      style={{ width: mapSize, height: mapSize }}
+      style={{ width: mapWidth, height: mapHeight }}
     >
       {/* Global Background Glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -305,9 +320,9 @@ const VisualMap: React.FC<{ node: MapNode }> = ({ node }) => {
 
       <svg
         className="absolute inset-0 z-10 pointer-events-none"
-        viewBox={`0 0 ${mapSize} ${mapSize}`}
-        width={mapSize}
-        height={mapSize}
+        viewBox={`0 0 ${mapWidth} ${mapHeight}`}
+        width={mapWidth}
+        height={mapHeight}
         aria-hidden="true"
       >
         <defs>
@@ -316,18 +331,16 @@ const VisualMap: React.FC<{ node: MapNode }> = ({ node }) => {
             <stop offset="100%" stopColor="#6366f1" />
           </linearGradient>
         </defs>
-        {branchPositions.map(({ child, x, y }, idx) => (
-          <motion.line
+        {branches.map(({ child, centerY }, idx) => (
+          <motion.path
             key={`${child.id}-line`}
             initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 0.46 }}
+            animate={{ pathLength: 1, opacity: 0.5 }}
             transition={{ duration: 1.2, delay: idx * 0.12 }}
-            x1={center}
-            y1={center}
-            x2={center + x}
-            y2={center + y}
+            d={`M ${rootCenterX + rootWidth / 2} ${rootCenterY} C ${rootCenterX + rootWidth / 2 + 70} ${rootCenterY}, ${branchLeft - 70} ${centerY}, ${branchLeft} ${centerY}`}
             stroke="url(#mindmap-line-grad)"
             strokeWidth="3"
+            fill="none"
             strokeLinecap="round"
             strokeDasharray="12 8"
           />
@@ -338,7 +351,7 @@ const VisualMap: React.FC<{ node: MapNode }> = ({ node }) => {
       <motion.div
         layoutId="root-node"
         className="absolute z-30 w-[300px] -translate-x-1/2 -translate-y-1/2 p-8 rounded-[36px] bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 shadow-[0_0_80px_rgba(139,92,246,0.5)] border border-white/20 text-center group cursor-pointer"
-        style={{ left: center, top: center }}
+        style={{ left: rootCenterX, top: rootCenterY }}
         whileHover={{ scale: 1.05 }}
       >
         <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-5 backdrop-blur-xl border border-white/30 shadow-inner group-hover:animate-pulse">
@@ -353,32 +366,39 @@ const VisualMap: React.FC<{ node: MapNode }> = ({ node }) => {
       </motion.div>
 
       {/* Connection Lines & Child Nodes */}
-      {branchPositions.map(({ child, x, y }, idx) => (
+      {branches.map(({ child, height, top, centerY }, idx) => (
         <motion.div
           key={child.id}
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, x: -18 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
           transition={{
             delay: idx * 0.12 + 0.35,
             type: 'spring',
             stiffness: 80,
             damping: 14
           }}
-          whileHover={{ scale: 1.04, zIndex: 40 }}
-          className="absolute z-20 w-[280px] -translate-x-1/2 -translate-y-1/2 pointer-events-auto group/node"
-          style={{ left: center + x, top: center + y }}
+          whileHover={{ scale: 1.02, zIndex: 40 }}
+          className="absolute z-20 pointer-events-auto group/node"
+          style={{ left: branchLeft, top, width: branchWidth, minHeight: height }}
         >
-          <div className="p-5 rounded-[28px] bg-[#0f172a]/95 border border-white/10 backdrop-blur-3xl hover:border-purple-500/60 transition-all cursor-pointer shadow-2xl relative overflow-hidden">
+          <div className="relative h-full p-5 rounded-[28px] bg-[#0f172a]/95 border border-white/10 backdrop-blur-3xl hover:border-purple-500/60 transition-all cursor-pointer shadow-2xl overflow-hidden">
             <div className="absolute -top-10 -left-10 w-24 h-24 bg-purple-600/20 rounded-full blur-3xl opacity-0 group-hover/node:opacity-100 transition-opacity" />
+            <div
+              className="absolute left-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-400 ring-4 ring-purple-500/20"
+              style={{ top: centerY - top }}
+            />
 
             <div className="flex items-start gap-3 mb-4 relative z-10">
               <div className="w-10 h-10 shrink-0 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover/node:bg-purple-500 group-hover/node:text-white transition-all duration-500">
                 <Target size={20} />
               </div>
-              <h5 className="text-base font-bold text-white group-hover/node:text-purple-400 transition-colors uppercase leading-tight break-words">{child.label}</h5>
+              <div className="min-w-0">
+                <div className="text-[10px] font-mono text-purple-300/70 uppercase tracking-[0.24em] mb-1">Branch {String(idx + 1).padStart(2, '0')}</div>
+                <h5 className="text-lg font-bold text-white group-hover/node:text-purple-400 transition-colors uppercase leading-tight break-words">{child.label}</h5>
+              </div>
             </div>
 
-            <div className="space-y-2 relative z-10">
+            <div className="grid gap-2 relative z-10">
               {child.children?.map((sub, sIdx) => (
                 <motion.div
                   key={sub.id}
