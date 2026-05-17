@@ -44,7 +44,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
   }, [stream, isVideoEnabled]);
 
   return (
-    <div className="relative h-full min-h-[320px] w-full overflow-hidden rounded-[28px] bg-[#111214] shadow-2xl ring-1 ring-white/10">
+    <div className="relative h-full w-full min-h-[150px] overflow-hidden rounded-[28px] bg-[#111214] shadow-2xl ring-1 ring-white/10">
       {stream && isVideoEnabled ? (
         <video
           ref={videoRef}
@@ -54,11 +54,11 @@ const VideoTile: React.FC<VideoTileProps> = ({
           className={`h-full w-full object-cover ${isLocal ? 'scale-x-[-1]' : ''}`}
         />
       ) : (
-        <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-4 bg-[#2b2c30] text-slate-400">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#3c4043]">
-            <User size={42} />
+        <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#2b2c30] text-slate-400 p-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#3c4043] md:h-24 md:w-24">
+            <User className="h-8 w-8 md:h-12 md:w-12" />
           </div>
-          <span className="text-sm font-medium">Camera is off</span>
+          <span className="text-xs font-medium md:text-sm">Camera is off</span>
         </div>
       )}
 

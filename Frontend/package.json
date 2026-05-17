@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@google/genai": "^1.38.0",
+    "@livekit/components-react": "^2.9.21",
+    "@livekit/components-styles": "^1.2.0",
     "@mediapipe/tasks-vision": "^0.10.33",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.0",
@@ -21,6 +23,7 @@
     "d3": "^7.9.0",
     "framer-motion": "^12.38.0",
     "katex": "^0.16.45",
+    "livekit-client": "^2.19.0",
     "lucide-react": "^0.577.0",
     "motion": "^12.38.0",
     "qrcode.react": "^4.2.0",

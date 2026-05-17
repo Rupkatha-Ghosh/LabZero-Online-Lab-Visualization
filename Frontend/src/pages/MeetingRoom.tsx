@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ArrowLeft, MessageSquare, Users, Wifi, WifiOff, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { MeetingConfig, MeetingProvider } from '../context/MeetingContext';
-import { useWebRTC } from '../hooks/useWebRTC';
+import { useMediaStream } from '../hooks/useMediaStream';
+import { useLiveKit } from '../hooks/useLiveKit';
 import { createParticipantId, MeetingParticipant } from '../utils/peerUtils';
 import VideoGrid from '../components/meeting/VideoGrid';
 import Controls from '../components/meeting/Controls';
@@ -20,57 +21,58 @@ const MeetingRoomContent: React.FC<MeetingRoomProps> = ({ config, onLeave }) => 
   const [hasJoined, setHasJoined] = useState(false);
   const [sidePanel, setSidePanel] = useState<'participants' | 'chat' | null>('participants');
   const localName = [user?.first_name, user?.last_name].filter(Boolean).join(' ') || user?.username || 'LabZero User';
-  const meeting = useWebRTC({ roomId: config.roomId, role: config.role });
+  
+  // Local preview for the Waiting Room
+  const localMedia = useMediaStream();
+  
+  // Initialize LiveKit for scalable multi-user video/audio
+  const livekit = useLiveKit({
+    roomId: config.roomId,
+    tokenEndpoint: `${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'}/classrooms/livekit/token/`,
+    serverUrl: import.meta.env.VITE_LIVEKIT_URL || 'wss://your-project.livekit.cloud'
+  });
 
   const participants = useMemo(() => {
-    const list: MeetingParticipant[] = [
-      {
-        id: createParticipantId('local'),
-        name: localName,
-        role: config.role,
-        isLocal: true,
-        isMuted: !meeting.isAudioEnabled,
-        isCameraOff: !meeting.isVideoEnabled,
-      },
-    ];
-
-    if (meeting.remoteStream) {
-      list.push({
-        id: 'remote-participant',
-        name: config.role === 'host' ? 'Student' : 'Teacher',
-        role: config.role === 'host' ? 'guest' : 'host',
-        isMuted: false,
-        isCameraOff: false,
-      });
+    if (livekit.room) {
+      return livekit.participants.map(p => ({
+        id: p.id,
+        name: p.name,
+        role: p.isLocal ? config.role : (config.role === 'host' ? 'guest' : 'host'),
+        isLocal: p.isLocal,
+        isMuted: !p.isAudioEnabled,
+        isCameraOff: !p.isVideoEnabled,
+      }));
     }
-
-    return list;
-  }, [config.role, localName, meeting.isAudioEnabled, meeting.isVideoEnabled, meeting.remoteStream]);
+    return [];
+  }, [config.role, livekit.room, livekit.participants]);
 
   // Pre-warm the camera for the waiting room
   const hasStartedRef = React.useRef(false);
-  React.useEffect(() => {
+  useEffect(() => {
     if (!hasJoined && !hasStartedRef.current) {
       hasStartedRef.current = true;
-      meeting.startMeeting();
+      localMedia.start();
     }
-  }, [hasJoined, meeting.startMeeting]);
+  }, [hasJoined, localMedia]);
 
-  const join = () => {
+  const join = async () => {
     setHasJoined(true);
+    localMedia.stop(); // Stop preview before joining LiveKit
+    const token = localStorage.getItem('labzero_token');
+    if (token) {
+      await livekit.connect(token);
+    }
   };
 
   const leave = () => {
-    meeting.leaveMeeting();
+    livekit.disconnect();
+    localMedia.stop();
     onLeave();
   };
 
   const toggleScreenShare = () => {
-    if (meeting.isScreenSharing) {
-      meeting.stopScreenShare();
-    } else {
-      meeting.startScreenShare().catch((error) => console.error('Screen share failed:', error));
-    }
+    // Screen share logic can be implemented later using LiveKit
+    console.log("Screen share via LiveKit coming soon");
   };
 
   if (!hasJoined) {
@@ -78,20 +80,20 @@ const MeetingRoomContent: React.FC<MeetingRoomProps> = ({ config, onLeave }) => 
       <WaitingRoom
         title={config.title}
         subtitle={config.subtitle}
-        stream={meeting.localStream}
-        isAudioEnabled={meeting.isAudioEnabled}
-        isVideoEnabled={meeting.isVideoEnabled}
-        isLoading={meeting.isMediaLoading}
-        error={meeting.mediaError}
+        stream={localMedia.stream}
+        isAudioEnabled={localMedia.isAudioEnabled}
+        isVideoEnabled={localMedia.isVideoEnabled}
+        isLoading={localMedia.isLoading}
+        error={localMedia.error}
         onJoin={join}
         onBack={onLeave}
-        onToggleAudio={meeting.toggleAudio}
-        onToggleVideo={meeting.toggleVideo}
+        onToggleAudio={localMedia.toggleAudio}
+        onToggleVideo={localMedia.toggleVideo}
       />
     );
   }
 
-  const isConnected = meeting.socketStatus === 'connected' || meeting.connectionState === 'connected';
+  const isConnected = !!livekit.room;
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#202124] text-white">
@@ -105,9 +107,9 @@ const MeetingRoomContent: React.FC<MeetingRoomProps> = ({ config, onLeave }) => 
             <p className="truncate text-xs text-slate-400">Room {config.roomId}</p>
           </div>
         </div>
-        <div className={`hidden w-fit items-center gap-2 rounded-full border px-4 py-2 text-sm md:flex ${isConnected ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-100' : 'border-amber-400/30 bg-amber-400/10 text-amber-100'}`}>
-          {isConnected ? <Wifi size={15} /> : <WifiOff size={15} />}
-          <span>{isConnected ? 'Connected' : 'Waiting for signaling'}</span>
+        <div className={`hidden w-fit items-center gap-2 rounded-full border px-4 py-2 text-sm md:flex ${livekit.error ? 'border-red-400/30 bg-red-400/10 text-red-100' : isConnected ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-100' : 'border-amber-400/30 bg-amber-400/10 text-amber-100'}`}>
+          {livekit.error ? <WifiOff size={15} /> : isConnected ? <Wifi size={15} /> : <WifiOff size={15} />}
+          <span>{livekit.error ? `Error: ${livekit.error.message}` : isConnected ? 'Connected' : 'Connecting to LiveKit...'}</span>
         </div>
       </header>
 
@@ -115,11 +117,7 @@ const MeetingRoomContent: React.FC<MeetingRoomProps> = ({ config, onLeave }) => 
         <section className="relative flex min-h-0 flex-col overflow-hidden">
           <div className="min-h-0 flex-1 p-4 pb-28 md:p-6 md:pb-28">
             <VideoGrid
-              localStream={meeting.localStream}
-              remoteStream={meeting.remoteStream}
-              localName={localName}
-              isAudioEnabled={meeting.isAudioEnabled}
-              isVideoEnabled={meeting.isVideoEnabled}
+              participants={livekit.room ? livekit.participants : []}
             />
           </div>
 
@@ -130,19 +128,14 @@ const MeetingRoomContent: React.FC<MeetingRoomProps> = ({ config, onLeave }) => 
                   {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
                   <span>{isConnected ? 'Connected' : 'Waiting for another participant'}</span>
                 </div>
-                {meeting.isScreenSharing && (
-                  <div className="rounded-full bg-sky-500/15 px-3 py-2 text-xs text-sky-100">
-                    Screen sharing
-                  </div>
-                )}
               </div>
 
             <Controls
-              isAudioEnabled={meeting.isAudioEnabled}
-              isVideoEnabled={meeting.isVideoEnabled}
-              isScreenSharing={meeting.isScreenSharing}
-              onToggleAudio={meeting.toggleAudio}
-              onToggleVideo={meeting.toggleVideo}
+              isAudioEnabled={livekit.room ? livekit.room.localParticipant.isMicrophoneEnabled : false}
+              isVideoEnabled={livekit.room ? livekit.room.localParticipant.isCameraEnabled : false}
+              isScreenSharing={false}
+              onToggleAudio={livekit.toggleAudio}
+              onToggleVideo={livekit.toggleVideo}
               onToggleScreenShare={toggleScreenShare}
               onLeave={leave}
             />

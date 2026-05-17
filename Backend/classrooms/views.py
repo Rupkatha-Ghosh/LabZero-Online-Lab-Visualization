@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Classroom, Assignment
 from .serializers import ClassroomSerializer, AssignmentSerializer
+from livekit import api
+import os
 
 class ClassroomViewSet(viewsets.ModelViewSet):
     serializer_class = ClassroomSerializer
@@ -58,3 +60,29 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         elif user.role == 'student':
             return Assignment.objects.filter(classroom__students=user)
         return Assignment.objects.none()
+
+class LiveKitTokenView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        room_name = request.data.get('room_name')
+        if not room_name:
+            return Response({"error": "room_name is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # In production, these should be in your .env file
+        api_key = os.getenv('LIVEKIT_API_KEY', 'devkey')
+        api_secret = os.getenv('LIVEKIT_API_SECRET', 'secret')
+        
+        # Identity is usually the user's username or ID
+        identity = request.user.username
+        name = f"{request.user.first_name} {request.user.last_name}".strip() or identity
+
+        token = api.AccessToken(api_key, api_secret) \
+            .with_identity(identity) \
+            .with_name(name) \
+            .with_grants(api.VideoGrants(
+                room_join=True,
+                room=room_name,
+            ))
+
+        return Response({'token': token.to_jwt()})
