@@ -35,7 +35,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ participants }) => {
     if (participants.length === 2) {
       // Guaranteed vertical stack on mobile (1 col, 2 rows), side-by-side only on large screens (lg)
       return (
-        <div className="mx-auto grid h-full w-full max-w-[1440px] grid-cols-1 grid-rows-2 gap-2 lg:grid-cols-2 lg:grid-rows-1 lg:gap-4">
+        <div className="mx-auto grid h-full w-full max-w-[1440px] grid-cols-1 grid-rows-2 gap-2 sm:gap-3 lg:grid-cols-2 lg:grid-rows-1 lg:gap-4">
           {participants.map((p) => (
             <div key={p.id} className="min-h-0 min-w-0 h-full w-full">
               <VideoTile
@@ -54,11 +54,11 @@ const VideoGrid: React.FC<VideoGridProps> = ({ participants }) => {
 
     // Grid for 3+ participants
     let gridLayout = participants.length <= 4 
-      ? 'grid-cols-2 grid-rows-2' 
+      ? 'grid-cols-1 sm:grid-cols-2 sm:grid-rows-2 auto-rows-fr' 
       : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 auto-rows-fr';
     
     return (
-      <div className={`mx-auto grid h-full w-full max-w-[1440px] place-items-center gap-2 md:gap-4 ${gridLayout}`}>
+      <div className={`mx-auto grid h-full w-full max-w-[1440px] place-items-stretch gap-2 sm:gap-3 md:gap-4 ${gridLayout}`}>
         {participants.map((p) => (
           <VideoTile
             key={p.id}
@@ -76,8 +76,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({ participants }) => {
 
   return (
     <div className="mx-auto flex h-full w-full max-w-[1440px] items-center justify-center gap-2 md:gap-4">
-      <div className="flex h-full min-h-[260px] w-full max-w-3xl flex-col items-center justify-center gap-3 rounded-[28px] border border-dashed border-white/10 bg-[#2b2c30] p-8 text-center col-span-full">
-        <p className="text-base font-medium text-slate-200">Waiting for participants...</p>
+      <div className="col-span-full flex h-full min-h-[220px] w-full max-w-3xl flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/10 bg-[#2b2c30] p-6 text-center sm:min-h-[260px] sm:rounded-[28px] sm:p-8">
+        <p className="text-sm font-medium text-slate-200 sm:text-base">Waiting for participants...</p>
       </div>
     </div>
   );

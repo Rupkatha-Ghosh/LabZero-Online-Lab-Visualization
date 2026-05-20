@@ -44,7 +44,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
   }, [stream, isVideoEnabled]);
 
   return (
-    <div className="relative h-full w-full min-h-[150px] overflow-hidden rounded-[28px] bg-[#111214] shadow-2xl ring-1 ring-white/10">
+    <div className="relative h-full w-full min-h-[120px] overflow-hidden rounded-2xl bg-[#111214] shadow-2xl ring-1 ring-white/10 sm:min-h-[150px] sm:rounded-[28px]">
       {stream && isVideoEnabled ? (
         <video
           ref={videoRef}
@@ -54,28 +54,28 @@ const VideoTile: React.FC<VideoTileProps> = ({
           className={`h-full w-full object-cover ${isLocal ? 'scale-x-[-1]' : ''}`}
         />
       ) : (
-        <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#2b2c30] text-slate-400 p-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#3c4043] md:h-24 md:w-24">
-            <User className="h-8 w-8 md:h-12 md:w-12" />
+        <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#2b2c30] p-4 text-slate-400">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#3c4043] sm:h-16 sm:w-16 md:h-24 md:w-24">
+            <User className="h-7 w-7 sm:h-8 sm:w-8 md:h-12 md:w-12" />
           </div>
-          <span className="text-xs font-medium md:text-sm">Camera is off</span>
+          <span className="text-[11px] font-medium sm:text-xs md:text-sm">Camera is off</span>
         </div>
       )}
 
-      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3">
-        <div className="min-w-0 rounded-full bg-black/55 px-4 py-2 text-white backdrop-blur-xl">
-          <p className="truncate text-sm font-semibold">{name}</p>
+      <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2 sm:bottom-4 sm:left-4 sm:right-4 sm:gap-3">
+        <div className="min-w-0 rounded-full bg-black/55 px-3 py-1.5 text-white backdrop-blur-xl sm:px-4 sm:py-2">
+          <p className="truncate text-xs font-semibold sm:text-sm">{name}</p>
           {label && <p className="text-[10px] text-slate-300">{label}</p>}
         </div>
         <div className="flex gap-2">
           {!isAudioEnabled && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500 text-white">
-              <MicOff size={16} />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white sm:h-10 sm:w-10">
+              <MicOff size={15} />
             </div>
           )}
           {!isVideoEnabled && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500 text-slate-950">
-              <VideoOff size={16} />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-slate-950 sm:h-10 sm:w-10">
+              <VideoOff size={15} />
             </div>
           )}
         </div>
