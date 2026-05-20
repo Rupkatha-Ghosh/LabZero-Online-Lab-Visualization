@@ -725,6 +725,7 @@ const AppContent: React.FC = () => {
                 showAuth={showAuth}
                 language={language}
                 user={user}
+                theme={theme}
               />
             )}
 

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, OrbitControls, Environment, Sphere, Cylinder, MeshTransmissionMaterial, ContactShadows, Tube, RoundedBox, Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -562,13 +562,31 @@ const CameraLogger = () => {
 };
 
 
+const useCoarsePointer = () => {
+  const [isCoarsePointer, setIsCoarsePointer] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia('(pointer: coarse), (max-width: 767px)');
+    const update = () => setIsCoarsePointer(query.matches);
+
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  return isCoarsePointer;
+};
+
 export const Hero3DModel = ({ theme = 'light' }: { theme?: 'dark' | 'light' }) => {
+  const isCoarsePointer = useCoarsePointer();
+
   return (
-    <div className="w-full h-full relative">
+    <div className={`w-full h-full relative ${isCoarsePointer ? 'pointer-events-none' : ''}`}>
       <Canvas 
         camera={{ position: [16.93, 3.37, -11.34], fov: 40 }} 
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         dpr={[1, 2]}
+        style={{ touchAction: isCoarsePointer ? 'pan-y' : 'none' }}
       >
         <CameraLogger />
         <ambientLight intensity={theme === 'dark' ? 0.4 : 0.8} color="#ffffff" />
@@ -580,7 +598,15 @@ export const Hero3DModel = ({ theme = 'light' }: { theme?: 'dark' | 'light' }) =
           <InteractiveScene theme={theme} />
           <Environment preset={theme === 'dark' ? "night" : "city"} />
         </React.Suspense>
-        <OrbitControls enableZoom={true} enablePan={false} autoRotate autoRotateSpeed={0.3} maxPolarAngle={Math.PI/2 - 0.1} minPolarAngle={Math.PI/4} />
+        <OrbitControls
+          enableZoom={!isCoarsePointer}
+          enableRotate={!isCoarsePointer}
+          enablePan={false}
+          autoRotate
+          autoRotateSpeed={0.3}
+          maxPolarAngle={Math.PI/2 - 0.1}
+          minPolarAngle={Math.PI/4}
+        />
       </Canvas>
     </div>
   );

@@ -57,7 +57,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-[var(--color-secondary)] opacity-10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       {/* Navbar */}
-      <header className="fixed top-0 inset-x-0 h-20 z-50 bg-[var(--bg-deep)]/80 backdrop-blur-lg border-b border-[var(--border-glass)] px-4 sm:px-6 md:px-12 flex items-center justify-between">
+      <header className="fixed top-0 inset-x-0 h-16 sm:h-20 z-50 bg-[var(--bg-deep)]/80 backdrop-blur-lg border-b border-[var(--border-glass)] px-4 sm:px-6 md:px-12 flex items-center justify-between">
         <Logo lightText={theme === 'dark'} />
 
         <nav className="hidden lg:flex items-center gap-8">
@@ -68,7 +68,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
           {!user ? (
             <>
               <button onClick={onLoginClick} className="hidden md:block px-5 py-2 text-[15px] font-medium text-[var(--text-primary)] border border-[var(--border-glass)] hover:bg-[var(--bg-panel)] rounded-full transition-all bg-white/5 shadow-sm">
@@ -76,13 +76,13 @@ const LandingPage: React.FC<LandingPageProps> = ({
               </button>
               <button
                 onClick={onLoginClick}
-                className="px-6 py-2 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/90 text-white rounded-full text-[15px] font-medium transition-all shadow-md shadow-[var(--color-secondary)]/20"
+                className="px-4 sm:px-6 py-2 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/90 text-white rounded-full text-sm sm:text-[15px] font-medium transition-all shadow-md shadow-[var(--color-secondary)]/20 whitespace-nowrap"
               >
                 Get Started
               </button>
             </>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               {(user.is_staff || user.is_superuser) && (
                 <button
                   onClick={onAdminClick}
@@ -96,7 +96,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   {user.role === 'teacher' ? 'Teacher Dashboard' : user.role === 'student' ? 'My Dashboard' : 'Institute Dashboard'}
                 </button>
               )}
-              <button onClick={onProfileClick} className="px-4 py-2 border border-[var(--border-glass)] bg-white/5 hover:bg-[var(--bg-panel)] rounded-full text-[15px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all">
+              <button onClick={onProfileClick} className="max-w-[44vw] truncate px-3 sm:px-4 py-2 border border-[var(--border-glass)] bg-white/5 hover:bg-[var(--bg-panel)] rounded-full text-sm sm:text-[15px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all">
                 Hello, {user.first_name || user.username}
               </button>
             </div>
@@ -104,12 +104,12 @@ const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </header>
 
-      <main className="pt-24 sm:pt-32 pb-0 px-4 sm:px-6 md:px-12 max-w-[1400px] mx-auto space-y-20 md:space-y-32">
+      <main className="pt-20 sm:pt-32 pb-32 md:pb-0 px-4 sm:px-6 md:px-12 max-w-[1400px] mx-auto space-y-16 sm:space-y-20 md:space-y-32">
 
         {/* HERO SECTION */}
         <Skeleton name="landing-hero" loading={false}>
-          <section id="home" className="flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[75vh] scroll-mt-24">
-            <div className="lg:w-[40%] space-y-8 z-10 pt-10 flex flex-col items-center lg:items-start">
+          <section id="home" className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 min-h-[calc(100svh-5rem)] lg:min-h-[75vh] scroll-mt-24">
+            <div className="lg:w-[40%] space-y-5 sm:space-y-8 z-10 pt-4 sm:pt-10 flex flex-col items-center lg:items-start">
               <motion.div
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
                 className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#E0F2FE] border border-[#BAE6FD]"
@@ -119,7 +119,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               <motion.h1
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
-                className="text-[52px] md:text-[72px] lg:text-[84px] font-display font-bold leading-[1.1] tracking-[-0.03em] text-[var(--text-primary)] text-center lg:text-left"
+                className="text-[42px] sm:text-[56px] md:text-[72px] lg:text-[84px] font-display font-bold leading-[1.06] sm:leading-[1.1] text-[var(--text-primary)] text-center lg:text-left"
               >
                 Visualize.<br />
                 Experiment.<br />
@@ -128,7 +128,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               <motion.p
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
-                className="text-base md:text-lg lg:text-xl text-[var(--text-muted)] max-w-md mx-auto lg:mx-0 leading-relaxed font-normal text-center lg:text-left"
+                className="text-sm sm:text-base md:text-lg lg:text-xl text-[var(--text-muted)] max-w-md mx-auto lg:mx-0 leading-relaxed font-normal text-center lg:text-left"
               >
                 Interactive 3D labs for Physics, Chemistry, Math & Biology.<br className="hidden md:block" />
                 Turn abstract concepts into real understanding.
@@ -136,17 +136,17 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}
-                className="flex flex-col sm:flex-row gap-4 pt-2 justify-center lg:justify-start"
+                className="flex w-full flex-col sm:w-auto sm:flex-row gap-3 sm:gap-4 pt-1 sm:pt-2 justify-center lg:justify-start"
               >
                 <button 
                   onClick={() => document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-[#14b8a6] hover:bg-[#0f766e] text-white rounded-full text-base font-semibold transition-all shadow-lg shadow-[#14b8a6]/25 flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-[#14b8a6] hover:bg-[#0f766e] text-white rounded-full text-sm sm:text-base font-semibold transition-all shadow-lg shadow-[#14b8a6]/25 flex items-center justify-center gap-2"
                 >
                   Start Exploring <ArrowRight size={18} />
                 </button>
                 <button 
                   onClick={() => document.getElementById('simulations')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-white border-2 border-[#E2E8F0] hover:border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#0F172A] rounded-full text-base font-semibold transition-all flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white border-2 border-[#E2E8F0] hover:border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#0F172A] rounded-full text-sm sm:text-base font-semibold transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
                   Watch Demo <Play size={18} fill="currentColor" className="text-[#0F172A]" />
                 </button>
@@ -154,7 +154,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.7 }}
-                className="flex flex-col sm:flex-row items-center gap-4 pt-6 justify-center lg:justify-start"
+                className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-2 sm:pt-6 justify-center lg:justify-start"
               >
                 <div className="flex -space-x-3">
                   <img src="https://i.pravatar.cc/100?img=5" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[var(--bg-deep)] shadow-sm" />
@@ -184,13 +184,13 @@ const LandingPage: React.FC<LandingPageProps> = ({
               </motion.div>
             </div>
 
-            <div className="lg:w-[60%] h-[400px] sm:h-[500px] lg:h-[650px] w-full relative">
+            <div className="lg:w-[60%] h-[280px] min-h-[280px] sm:h-[500px] lg:h-[650px] w-full relative touch-pan-y">
               <div className="absolute inset-0 max-w-[950px] mx-auto w-full h-full">
                 <Hero3DModel theme={theme} />
               </div>
 
               {/* Interaction Hint Bar */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[var(--bg-panel)] backdrop-blur-md border border-[var(--border-glass)] px-4 sm:px-6 py-2.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.1)] flex items-center gap-4 sm:gap-6 z-20 whitespace-nowrap overflow-x-auto max-w-[90vw] scrollbar-hide">
+              <div className="hidden sm:flex absolute bottom-4 left-1/2 -translate-x-1/2 bg-[var(--bg-panel)] backdrop-blur-md border border-[var(--border-glass)] px-4 sm:px-6 py-2.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.1)] items-center gap-4 sm:gap-6 z-20 whitespace-nowrap overflow-x-auto max-w-[90vw] scrollbar-hide">
                 <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Move3d size={16} strokeWidth={2} /> Drag</div>
                 <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Rotate3d size={16} strokeWidth={2} /> Rotate</div>
                 <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Maximize2 size={16} strokeWidth={2} /> Zoom</div>
@@ -215,7 +215,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               {onSelectClass && (
-                <div className="relative min-w-[200px]">
+                <div className="relative w-full sm:min-w-[200px]">
                   <select
                     value={selectedClass || ''}
                     onChange={(e) => onSelectClass(e.target.value || null)}
@@ -259,9 +259,9 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
                     onClick={() => onSelectSubject(subject)}
-                    className="bg-[var(--bg-panel)] rounded-[32px] p-5 sm:p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1 h-auto sm:h-[440px]"
+                    className="bg-[var(--bg-panel)] rounded-3xl sm:rounded-[32px] p-5 sm:p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1 h-auto sm:h-[440px]"
                   >
-                    <div className={`w-full h-48 rounded-[24px] bg-white/[0.03] mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-white/[0.08] transition-all duration-500`}>
+                    <div className={`w-full h-40 sm:h-48 rounded-2xl sm:rounded-[24px] bg-white/[0.03] mb-5 sm:mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-white/[0.08] transition-all duration-500`}>
                       <img
                         src={subjectMeta.img}
                         alt={subjectMeta.name}
@@ -272,7 +272,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
                     <div className="flex flex-col flex-1">
                       <h3 className="text-xl font-display font-semibold mb-3 text-[var(--text-primary)]">{subjectMeta.name}</h3>
-                      <p className="text-[var(--text-muted)] text-[15px] leading-relaxed mb-8 flex-1">{subjectMeta.desc}</p>
+                      <p className="text-[var(--text-muted)] text-sm sm:text-[15px] leading-relaxed mb-6 sm:mb-8 flex-1">{subjectMeta.desc}</p>
                       <div className={`flex items-center text-sm font-semibold ${subjectMeta.iconColor} p-0 m-0 uppercase tracking-wide gap-2 group-hover:gap-3 transition-all`}>
                         Explore <ArrowRight size={16} strokeWidth={2.5} />
                       </div>
