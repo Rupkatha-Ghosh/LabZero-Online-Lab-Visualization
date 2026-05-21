@@ -1,13 +1,320 @@
 import React from 'react';
 import { Subject } from '../../types/types';
+import { safeLocalStorage } from '../../utils/safeStorage';
 import { Beaker, Zap, Calculator, Dna, ArrowRight, Play, Maximize2, Move3d, RotateCcw, Rotate3d, Layout, Layers, Users, Star, Globe } from 'lucide-react';
-import { motion } from 'motion/react';
 import { Language, translations } from '../../services/translations';
-import { Hero3DModel } from '../models/Hero3DModel.tsx';
 import { Logo } from '../common/Logo';
 import Footer from '../common/Footer';
-import { Skeleton } from 'boneyard-js/react';
-import { ElectricFieldSimulation, InverseSquareGraph } from '../models/ElectricField';
+// Inline skeleton components (replaces missing '../common/Skeleton')
+const Hero3DModelFallback = ({ theme }: { theme: 'dark' | 'light' }) => {
+  const isDark = theme === 'dark';
+  return (
+    <div className="w-full h-full min-h-[280px] flex items-center justify-center relative overflow-hidden select-none rounded-[32px]">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes orbit-1 {
+          0% { transform: rotate3d(1, 1, 1, 0deg); }
+          100% { transform: rotate3d(1, 1, 1, 360deg); }
+        }
+        @keyframes orbit-2 {
+          0% { transform: rotate3d(-1, 1, 0.5, 0deg); }
+          100% { transform: rotate3d(-1, 1, 0.5, 360deg); }
+        }
+        @keyframes orbit-3 {
+          0% { transform: rotate3d(0.5, -1, 1, 0deg); }
+          100% { transform: rotate3d(0.5, -1, 1, 360deg); }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { transform: scale(1); opacity: 0.45; filter: drop-shadow(0 0 10px var(--glow-color)); }
+          50% { transform: scale(1.15); opacity: 0.8; filter: drop-shadow(0 0 20px var(--glow-color)); }
+        }
+        @keyframes bubble-rise {
+          0% { transform: translateY(45px) scale(0.3); opacity: 0; }
+          20% { opacity: 0.8; }
+          80% { opacity: 0.6; }
+          100% { transform: translateY(-75px) scale(1.1); opacity: 0; }
+        }
+        @keyframes float-gentle {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-12px) rotate(1.5deg); }
+        }
+        .css-3d-scene {
+          --glow-color: ${isDark ? 'rgba(14, 165, 233, 0.55)' : 'rgba(99, 102, 241, 0.5)'};
+          perspective: 1000px;
+          transform-style: preserve-3d;
+          transform: scale(0.75);
+          transition: transform 0.3s ease;
+        }
+        @media (min-width: 640px) {
+          .css-3d-scene { transform: scale(0.95); }
+        }
+        @media (min-width: 1024px) {
+          .css-3d-scene { transform: scale(1.2); }
+        }
+        .css-flask-container {
+          animation: float-gentle 5s ease-in-out infinite;
+          transform-style: preserve-3d;
+        }
+        .css-flask-body {
+          position: relative;
+          width: 110px;
+          height: 110px;
+          border: 3.5px solid ${isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(15, 23, 42, 0.16)'};
+          border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+          background: ${isDark ? 'rgba(15, 23, 42, 0.35)' : 'rgba(255, 255, 255, 0.45)'};
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05), 0 8px 32px rgba(0, 0, 0, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .css-flask-body::before {
+          content: '';
+          position: absolute;
+          bottom: 8px;
+          width: 82px;
+          height: 40px;
+          background: linear-gradient(180deg, ${isDark ? '#0EA5E9' : '#6366f1'} 0%, ${isDark ? '#10B981' : '#f43f5e'} 100%);
+          border-radius: 0 0 41px 41px / 0 0 30px 30px;
+          opacity: 0.6;
+          filter: blur(0.5px);
+        }
+        .css-flask-neck {
+          width: 28px;
+          height: 44px;
+          border-left: 3.5px solid ${isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(15, 23, 42, 0.16)'};
+          border-right: 3.5px solid ${isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(15, 23, 42, 0.16)'};
+          border-top: 3.5px solid ${isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(15, 23, 42, 0.16)'};
+          border-radius: 5px 5px 0 0;
+          margin: 0 auto -4px auto;
+          background: ${isDark ? 'rgba(15, 23, 42, 0.25)' : 'rgba(255, 255, 255, 0.35)'};
+        }
+        .css-flask-bubble {
+          position: absolute;
+          bottom: 20px;
+          background: ${isDark ? 'rgba(255, 255, 255, 0.75)' : 'rgba(99, 102, 241, 0.75)'};
+          border-radius: 50%;
+          pointer-events: none;
+        }
+        .css-flask-bubble-1 { width: 7px; height: 7px; left: 40px; animation: bubble-rise 2.8s infinite ease-in; animation-delay: 0.2s; }
+        .css-flask-bubble-2 { width: 10px; height: 10px; left: 54px; animation: bubble-rise 3.5s infinite ease-in; animation-delay: 1.0s; }
+        .css-flask-bubble-3 { width: 5px; height: 5px; left: 66px; animation: bubble-rise 3.0s infinite ease-in; animation-delay: 1.8s; }
+        
+        .css-orbit {
+          position: absolute;
+          border: 1.5px dashed ${isDark ? 'rgba(56, 189, 248, 0.3)' : 'rgba(99, 102, 241, 0.25)'};
+          border-radius: 50%;
+          transform-style: preserve-3d;
+        }
+        .css-orbit-1 {
+          width: 220px;
+          height: 220px;
+          animation: orbit-1 10s linear infinite;
+        }
+        .css-orbit-2 {
+          width: 260px;
+          height: 260px;
+          animation: orbit-2 13s linear infinite;
+        }
+        .css-orbit-3 {
+          width: 300px;
+          height: 300px;
+          animation: orbit-3 16s linear infinite;
+        }
+        .css-electron {
+          position: absolute;
+          top: 50%;
+          left: 0;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          margin-top: -5px;
+          margin-left: -5px;
+          background: ${isDark ? '#38bdf8' : '#6366f1'};
+          box-shadow: 0 0 8px ${isDark ? '#0EA5E9' : '#6366f1'}, 0 0 16px ${isDark ? '#0EA5E9' : '#6366f1'};
+        }
+        .css-electron-2 {
+          background: ${isDark ? '#34d399' : '#f43f5e'};
+          box-shadow: 0 0 8px ${isDark ? '#10B981' : '#f43f5e'}, 0 0 16px ${isDark ? '#10B981' : '#f43f5e'};
+        }
+        .css-electron-3 {
+          background: ${isDark ? '#fb923c' : '#10b981'};
+          box-shadow: 0 0 8px ${isDark ? '#F97316' : '#10b981'}, 0 0 16px ${isDark ? '#F97316' : '#10b981'};
+        }
+        .css-nucleus {
+          position: absolute;
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: radial-gradient(circle, ${isDark ? '#38bdf8' : '#a78bfa'} 0%, ${isDark ? '#0284c7' : '#6366f1'} 100%);
+          animation: pulse-glow 2.5s ease-in-out infinite;
+          z-index: 1;
+        }
+      `}} />
+
+      {/* 3D Scene Wrapper */}
+      <div className="css-3d-scene flex items-center justify-center w-[360px] h-[360px] relative">
+        {/* Orbiting rings */}
+        <div className="css-orbit css-orbit-1">
+          <div className="css-electron css-electron-1"></div>
+        </div>
+        <div className="css-orbit css-orbit-2">
+          <div className="css-electron css-electron-2"></div>
+        </div>
+        <div className="css-orbit css-orbit-3">
+          <div className="css-electron css-electron-3"></div>
+        </div>
+
+        {/* Glowing Beaker / Flask */}
+        <div className="css-flask-container flex flex-col items-center justify-center relative">
+          <div className="css-flask-neck"></div>
+          <div className="css-flask-body">
+            {/* Rising Bubbles */}
+            <div className="css-flask-bubble css-flask-bubble-1"></div>
+            <div className="css-flask-bubble css-flask-bubble-2"></div>
+            <div className="css-flask-bubble css-flask-bubble-3"></div>
+            
+            {/* Center pulsing nucleus */}
+            <div className="css-nucleus"></div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Subtle loading hint text */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 pointer-events-none">
+        <span className="text-[10px] font-mono tracking-[0.25em] uppercase text-[var(--text-muted)] opacity-50">Loading 3D Visualizer...</span>
+      </div>
+    </div>
+  );
+};
+
+const HeroSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
+  return (
+    <div className="flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[75vh] scroll-mt-24 w-full">
+      {/* Left-side Text skeleton */}
+      <div className="lg:w-[40%] space-y-8 z-10 pt-10 flex flex-col items-center lg:items-start w-full">
+        {/* Badge Skeleton */}
+        <div className="h-7 w-48 bg-[#E0F2FE]/40 dark:bg-sky-950/30 border border-[#BAE6FD]/20 rounded-full animate-pulse" />
+        
+        {/* Title Skeleton */}
+        <div className="space-y-4 w-full flex flex-col items-center lg:items-start">
+          <div className="h-16 w-3/4 bg-gray-200/80 dark:bg-gray-800/80 rounded-2xl animate-pulse" />
+          <div className="h-16 w-2/3 bg-gray-200/80 dark:bg-gray-800/80 rounded-2xl animate-pulse" />
+          <div className="h-16 w-1/2 bg-gray-200/80 dark:bg-gray-800/80 rounded-2xl animate-pulse" />
+        </div>
+
+        {/* Description Skeleton */}
+        <div className="space-y-3 w-full flex flex-col items-center lg:items-start">
+          <div className="h-5 w-5/6 bg-gray-200/50 dark:bg-gray-800/50 rounded-lg animate-pulse" />
+          <div className="h-5 w-4/5 bg-gray-200/50 dark:bg-gray-800/50 rounded-lg animate-pulse" />
+        </div>
+
+        {/* Buttons Skeleton */}
+        <div className="flex gap-4 w-full justify-center lg:justify-start">
+          <div className="h-12 w-36 bg-gray-200/80 dark:bg-gray-800/80 rounded-full animate-pulse" />
+          <div className="h-12 w-32 bg-gray-200/80 dark:bg-gray-800/80 rounded-full animate-pulse" />
+        </div>
+
+        {/* Stats Skeleton */}
+        <div className="flex items-center gap-4 w-full justify-center lg:justify-start">
+          <div className="flex -space-x-3">
+            <div className="h-10 w-10 bg-gray-200/70 dark:bg-gray-800/70 rounded-full border-2 border-[var(--bg-deep)] animate-pulse" />
+            <div className="h-10 w-10 bg-gray-200/70 dark:bg-gray-800/70 rounded-full border-2 border-[var(--bg-deep)] animate-pulse" />
+            <div className="h-10 w-10 bg-gray-200/70 dark:bg-gray-800/70 rounded-full border-2 border-[var(--bg-deep)] animate-pulse" />
+          </div>
+          <div className="h-5 w-32 bg-gray-200/80 dark:bg-gray-800/80 rounded-lg animate-pulse" />
+        </div>
+      </div>
+
+      {/* Right-side 3D Model Fallback / Placeholder */}
+      <div className="lg:w-[60%] h-[280px] min-h-[280px] sm:h-[500px] lg:h-[650px] w-full relative flex items-center justify-center">
+        <Hero3DModelFallback theme={theme} />
+      </div>
+    </div>
+  );
+};
+
+const CardGridSkeleton: React.FC<{ count?: number; theme: 'dark' | 'light' }> = ({ count = 4 }) => (
+  <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}>
+    {Array.from({ length: count }).map((_, i) => (
+      <div key={i} className="h-40 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+    ))}
+  </div>
+);
+
+import { InverseSquareGraph } from '../models/InverseSquareGraph';
+
+const LazyElectricFieldSimulation = React.lazy(() => import('../models/ElectricField').then(module => ({ default: module.ElectricFieldSimulation })));
+
+const ElectricFieldSimulationFallback = () => (
+  <div className="w-full h-full flex flex-col items-center justify-center bg-transparent min-h-[300px] select-none">
+    <div className="w-8 h-8 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
+    <div className="mt-4 text-[10px] font-mono tracking-widest text-teal-500/50 uppercase">Loading field grid...</div>
+  </div>
+);
+
+const SuspendedElectricFieldSimulation = ({ theme }: { theme: 'dark' | 'light' }) => (
+  <React.Suspense fallback={<ElectricFieldSimulationFallback />}>
+    <div className="w-full h-full">
+      <LazyElectricFieldSimulation theme={theme} />
+    </div>
+  </React.Suspense>
+);
+
+const LazyHero3DModel = React.lazy(() => import('../models/Hero3DModelCache.tsx'));
+
+const SuspendedHero3DModel = ({ theme }: { theme: 'dark' | 'light' }) => (
+  <React.Suspense fallback={<Hero3DModelFallback theme={theme} />}>
+    <div className="w-full h-full">
+      <LazyHero3DModel theme={theme} />
+    </div>
+  </React.Suspense>
+);
+
+const useDeferredHeroWidgets = () => {
+  // If we already loaded the hero widgets in this session, skip delay
+  if (typeof window !== 'undefined' && safeLocalStorage.getItem('heroWidgetsLoaded') === 'true') {
+    return true;
+  }
+
+  const [shouldLoad, setShouldLoad] = React.useState(false);
+
+  React.useEffect(() => {
+    let idleId: number | null = null;
+    let timeoutId: any = null;
+
+    const triggerLoad = () => {
+      setShouldLoad(true);
+      // Persist flag so subsequent mounts skip loading animation
+      if (typeof window !== 'undefined') {
+        safeLocalStorage.setItem('heroWidgetsLoaded', 'true');
+      }
+    };
+    const onInteraction = () => triggerLoad();
+
+    if ('requestIdleCallback' in window) {
+      idleId = (window as any).requestIdleCallback(triggerLoad, { timeout: 2000 });
+    } else {
+      timeoutId = setTimeout(triggerLoad, 1500);
+    }
+
+    window.addEventListener('pointerdown', onInteraction, { once: true });
+    window.addEventListener('keydown', onInteraction, { once: true });
+
+    return () => {
+      if (idleId !== null && 'cancelIdleCallback' in window) {
+        (window as any).cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+      window.removeEventListener('pointerdown', onInteraction);
+      window.removeEventListener('keydown', onInteraction);
+    };
+  }, []);
+
+  return shouldLoad;
+};
 
 interface LandingPageProps {
   onSelectSubject: (subject: Subject) => void;
@@ -15,13 +322,13 @@ interface LandingPageProps {
   theme: 'dark' | 'light';
   user?: any;
 
-onLoginClick?: () => void;
-onLogoutClick?: () => void;
-onProfileClick?: () => void;
-onOpenGlossary?: () => void;
-onDashboardClick?: () => void;
-onAdminClick?: () => void;
-subjects: Subject[];
+  onLoginClick?: () => void;
+  onLogoutClick?: () => void;
+  onProfileClick?: () => void;
+  onOpenGlossary?: () => void;
+  onDashboardClick?: () => void;
+  onAdminClick?: () => void;
+  subjects: Subject[];
   selectedClass?: string | null;
   onSelectClass?: (cls: string | null) => void;
   onLaunchSimulation?: (topicId: string) => void;
@@ -41,9 +348,21 @@ const LandingPage: React.FC<LandingPageProps> = ({
   selectedClass,
   onSelectClass,
   onLaunchSimulation,
-  stats = { subjects: 0, topics: 0, students: 0, average_rating: 4.9, feedback_count: 1000 }
+  stats = { subjects: 0, topics: 0, students: 0, average_rating: 0.0, feedback_count: 0 }
 }) => {
+  const shouldLoadHeroWidgets = useDeferredHeroWidgets();
   const t = (key: string) => translations[key]?.[language] || key;
+
+  const [isModelReady, setIsModelReady] = React.useState(() => {
+    return typeof window !== 'undefined' && (window as any).hero3DModelLoaded === true;
+  });
+
+  React.useEffect(() => {
+    if (isModelReady) return;
+    const handleLoaded = () => setIsModelReady(true);
+    window.addEventListener('hero-3d-model-loaded', handleLoaded);
+    return () => window.removeEventListener('hero-3d-model-loaded', handleLoaded);
+  }, [isModelReady]);
 
   // Dynamically filter subjects based on active dropdown selection
   const displayedSubjects = selectedClass
@@ -107,55 +426,40 @@ const LandingPage: React.FC<LandingPageProps> = ({
       <main className="pt-20 sm:pt-32 pb-32 md:pb-0 px-4 sm:px-6 md:px-12 max-w-[1400px] mx-auto space-y-16 sm:space-y-20 md:space-y-32">
 
         {/* HERO SECTION */}
-        <Skeleton name="landing-hero" loading={false}>
-          <section id="home" className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 min-h-[calc(100svh-5rem)] lg:min-h-[75vh] scroll-mt-24">
-            <div className="lg:w-[40%] space-y-5 sm:space-y-8 z-10 pt-4 sm:pt-10 flex flex-col items-center lg:items-start">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-                className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#E0F2FE] border border-[#BAE6FD]"
-              >
+        {shouldLoadHeroWidgets ? (
+          <section id="home" className="flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[75vh] scroll-mt-24">
+            <div className="lg:w-[40%] space-y-8 z-10 pt-10 flex flex-col items-center lg:items-start">
+              <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#E0F2FE] border border-[#BAE6FD]">
                 <span className="text-xs font-semibold text-[#0284c7] tracking-wide text-center">3D Educational Virtual Lab</span>
-              </motion.div>
+              </div>
 
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
-                className="text-[42px] sm:text-[56px] md:text-[72px] lg:text-[84px] font-display font-bold leading-[1.06] sm:leading-[1.1] text-[var(--text-primary)] text-center lg:text-left"
-              >
+              <h1 className="text-[52px] md:text-[72px] lg:text-[84px] font-display font-bold leading-[1.1] tracking-[-0.03em] text-[var(--text-primary)] text-center lg:text-left">
                 Visualize.<br />
                 Experiment.<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">Understand.</span>
-              </motion.h1>
+              </h1>
 
-              <motion.p
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
-                className="text-sm sm:text-base md:text-lg lg:text-xl text-[var(--text-muted)] max-w-md mx-auto lg:mx-0 leading-relaxed font-normal text-center lg:text-left"
-              >
+              <p className="text-base md:text-lg lg:text-xl text-[var(--text-muted)] max-w-md mx-auto lg:mx-0 leading-relaxed font-normal text-center lg:text-left">
                 Interactive 3D labs for Physics, Chemistry, Math & Biology.<br className="hidden md:block" />
                 Turn abstract concepts into real understanding.
-              </motion.p>
+              </p>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}
-                className="flex w-full flex-col sm:w-auto sm:flex-row gap-3 sm:gap-4 pt-1 sm:pt-2 justify-center lg:justify-start"
-              >
-                <button 
+              <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-center lg:justify-start">
+                <button
                   onClick={() => document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' })}
                   className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-[#14b8a6] hover:bg-[#0f766e] text-white rounded-full text-sm sm:text-base font-semibold transition-all shadow-lg shadow-[#14b8a6]/25 flex items-center justify-center gap-2"
                 >
                   Start Exploring <ArrowRight size={18} />
                 </button>
-                <button 
+                <button
                   onClick={() => document.getElementById('simulations')?.scrollIntoView({ behavior: 'smooth' })}
                   className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white border-2 border-[#E2E8F0] hover:border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#0F172A] rounded-full text-sm sm:text-base font-semibold transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
                   Watch Demo <Play size={18} fill="currentColor" className="text-[#0F172A]" />
                 </button>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.7 }}
-                className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-2 sm:pt-6 justify-center lg:justify-start"
-              >
+              <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 justify-center lg:justify-start">
                 <div className="flex -space-x-3">
                   <img src="https://i.pravatar.cc/100?img=5" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[var(--bg-deep)] shadow-sm" />
                   <img src="https://i.pravatar.cc/100?img=9" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[var(--bg-deep)] shadow-sm" />
@@ -169,11 +473,11 @@ const LandingPage: React.FC<LandingPageProps> = ({
                       const rating = Number(stats.average_rating ?? 4.9);
                       const isActive = s <= Math.round(rating);
                       return (
-                        <Star 
-                          key={s} 
+                        <Star
+                          key={s}
                           size={14}
-                          className={isActive 
-                            ? 'fill-amber-400 text-amber-400' 
+                          className={isActive
+                            ? 'fill-amber-400 text-amber-400'
                             : 'text-[var(--text-muted)]/20'}
                         />
                       );
@@ -181,12 +485,23 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     <span className="text-[var(--text-muted)] ml-1 font-medium">{stats.average_rating ?? '4.9'}/5</span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
 
             <div className="lg:w-[60%] h-[280px] min-h-[280px] sm:h-[500px] lg:h-[650px] w-full relative touch-pan-y">
               <div className="absolute inset-0 max-w-[950px] mx-auto w-full h-full">
-                <Hero3DModel theme={theme} />
+                {/* 3D model mounts and loads in the background */}
+                <SuspendedHero3DModel theme={theme} />
+                
+                {/* Smooth overlay that fades out once 3D canvas is ready to render */}
+                <div 
+                  className={`absolute inset-0 z-30 transition-all duration-700 ease-out ${
+                    isModelReady ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'
+                  }`}
+                  style={{ background: 'var(--bg-deep)' }}
+                >
+                  <Hero3DModelFallback theme={theme} />
+                </div>
               </div>
 
               {/* Interaction Hint Bar */}
@@ -200,10 +515,14 @@ const LandingPage: React.FC<LandingPageProps> = ({
               {/* Floating Subject Buttons Overlay */}
             </div>
           </section>
-        </Skeleton>
+        ) : (
+          <HeroSkeleton theme={theme} />
+        )}
 
         {/* Subject Cards Grid */}
-        <Skeleton name="landing-cards" loading={subjects.length === 0}>
+        {displayedSubjects.length === 0 ? (
+          <CardGridSkeleton count={Number(safeLocalStorage.getItem('labzero_last_subject_count')) || 4} theme={theme} />
+        ) : (
           <section id="explore" className="min-h-[440px] scroll-mt-24">
             {/* CLASS SELECTION DROPDOWN BAR */}
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -215,20 +534,20 @@ const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               {onSelectClass && (
-                <div className="relative w-full sm:min-w-[200px]">
+                <div className="relative w-full sm:w-[180px]">
                   <select
                     value={selectedClass || ''}
                     onChange={(e) => onSelectClass(e.target.value || null)}
-                    className="w-full appearance-none rounded-xl border border-[var(--border-glass)] bg-[var(--bg-panel)] px-4 py-3 pr-10 text-sm font-medium tracking-wide text-[var(--text-primary)] outline-none transition-all hover:border-sky-500/50 focus:border-sky-500 backdrop-blur-md cursor-pointer shadow-sm"
+                    className="w-full appearance-none rounded-xl border border-[var(--border-glass)] bg-[var(--bg-panel)] px-3.5 py-2.5 pr-9 text-sm font-medium tracking-wide text-[var(--text-primary)] outline-none transition-all hover:border-sky-500/50 focus:border-sky-500 backdrop-blur-md cursor-pointer shadow-sm"
                   >
-                    <option value="" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>All Standards (Combined)</option>
+                    <option value="" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>All Standards</option>
                     <option value="Class 9" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 9</option>
                     <option value="Class 10" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 10</option>
                     <option value="Class 11" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 11</option>
                     <option value="Class 12" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 12</option>
                   </select>
                   {/* Custom absolute dropdown arrow for clean styling */}
-                  <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <div className={`absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[10px] ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>
                     ▼
                   </div>
                 </div>
@@ -236,279 +555,284 @@ const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {displayedSubjects.length === 0 ? (
-              // Empty placeholders so the section has height for the Boneyard Skeleton to show
-              Array.from({ length: Number(localStorage.getItem('labzero_last_subject_count')) || 4 }).map((_, i) => (
-                <div key={`ghost-${i}`} className="h-[440px] invisible" />
-              ))
-            ) : (
-              displayedSubjects.map((subject, i) => {
-                const subjectMeta = {
-                  name: subject.name,
-                  desc: subject.description || `Explore interactive 3D visualizations and virtual experiments for ${subject.name}.`,
-                  img: subject.image_url || 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=400',
-                  theme: subject.theme || 'border-[var(--border-glass)]',
-                  iconColor: subject.iconColor || 'text-indigo-500'
-                };
+              {displayedSubjects.length === 0 ? (
+                // Empty placeholders so the section has height for the Boneyard Skeleton to show
+                Array.from({ length: Number(safeLocalStorage.getItem('labzero_last_subject_count')) || 4 }).map((_, i) => (
+                  <div key={`ghost-${i}`} className="h-[440px] invisible" />
+                ))
+              ) : (
+                displayedSubjects.map((subject, i) => {
+                  // Normalize icon color: prefer backend `iconColor`, but support
+                  // arbitrary CSS values like `text-[#8b5cf6]` or `text-[var(--color-accent)]`.
+                  let iconClass = subject.iconColor || (subject.color ? `text-${subject.color}-500` : 'text-indigo-500');
+                  let iconStyle: React.CSSProperties | undefined = undefined;
 
-                return (
-                  <motion.div
-                    key={subject.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    onClick={() => onSelectSubject(subject)}
-                    className="bg-[var(--bg-panel)] rounded-3xl sm:rounded-[32px] p-5 sm:p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1 h-auto sm:h-[440px]"
-                  >
-                    <div className={`w-full h-40 sm:h-48 rounded-2xl sm:rounded-[24px] bg-white/[0.03] mb-5 sm:mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-white/[0.08] transition-all duration-500`}>
-                      <img
-                        src={subjectMeta.img}
-                        alt={subjectMeta.name}
-                        className="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-500 saturate-100 brightness-[1.1]"
-                      />
-                      <div className="absolute inset-0 bg-white/5 group-hover:opacity-0 transition-opacity"></div>
-                    </div>
+                  // If iconClass uses Tailwind arbitrary value syntax `text[...]`, extract and apply inline style
+                  const arbitraryMatch = typeof iconClass === 'string' && iconClass.match(/^text-\[(.+)\]$/);
+                  if (arbitraryMatch) {
+                    iconStyle = { color: arbitraryMatch[1] };
+                    // keep a sensible fallback class so sizing/weight remain predictable
+                    iconClass = '';
+                  }
 
-                    <div className="flex flex-col flex-1">
-                      <h3 className="text-xl font-display font-semibold mb-3 text-[var(--text-primary)]">{subjectMeta.name}</h3>
-                      <p className="text-[var(--text-muted)] text-sm sm:text-[15px] leading-relaxed mb-6 sm:mb-8 flex-1">{subjectMeta.desc}</p>
-                      <div className={`flex items-center text-sm font-semibold ${subjectMeta.iconColor} p-0 m-0 uppercase tracking-wide gap-2 group-hover:gap-3 transition-all`}>
-                        Explore <ArrowRight size={16} strokeWidth={2.5} />
+                  const subjectMeta = {
+                    name: subject.name,
+                    desc: subject.description || `Explore interactive 3D visualizations and virtual experiments for ${subject.name}.`,
+                    img: subject.image_url || 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=400',
+                    theme: subject.theme || 'border-[var(--border-glass)]',
+                    iconClass,
+                    iconStyle,
+                  };
+
+                  return (
+                    <div
+                      key={subject.id}
+                      onClick={() => onSelectSubject(subject)}
+                      className="bg-[var(--bg-panel)] rounded-[32px] p-5 sm:p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1 h-auto sm:h-[440px]"
+                    >
+                      <div className={`w-full h-48 rounded-[24px] bg-white/[0.03] mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-white/[0.08] transition-all duration-500`}>
+                        <img
+                          src={subjectMeta.img}
+                          alt={subjectMeta.name}
+                          className="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-500 saturate-100 brightness-[1.1]"
+                        />
+                        <div className="absolute inset-0 bg-white/5 group-hover:opacity-0 transition-opacity"></div>
+                      </div>
+
+                      <div className="flex flex-col flex-1">
+                        <h3 className="text-xl font-display font-semibold mb-3 text-[var(--text-primary)]">{subjectMeta.name}</h3>
+                        <p className="text-[var(--text-muted)] text-[15px] leading-relaxed mb-8 flex-1">{subjectMeta.desc}</p>
+                        <div
+                          className={`flex items-center text-sm font-semibold ${subjectMeta.iconClass || ''} p-0 m-0 uppercase tracking-wide gap-2 group-hover:gap-3 transition-all`}
+                          style={subjectMeta.iconStyle}
+                        >
+                          Explore <ArrowRight size={16} strokeWidth={2.5} />
+                        </div>
                       </div>
                     </div>
-                  </motion.div>
-                );
-              })
-            )}
+                  );
+                })
+              )}
             </div>
           </section>
-        </Skeleton>
-
+        )}
 
         {/* Theory to Visual */}
-        <Skeleton name="landing-theory" loading={false}>
-          <section id="about" className={`rounded-[32px] p-6 sm:p-8 md:p-12 border transition-all duration-500 flex flex-col xl:flex-row items-stretch gap-8 sm:gap-12 w-full max-w-[1400px] mx-auto overflow-hidden relative scroll-mt-24 ${
-            theme === 'dark' 
-              ? 'bg-slate-900/40 border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)]' 
-              : 'bg-[#FAFBFD] border-[#E2E8F0] shadow-[0_4px_20px_rgba(0,0,0,0.02)]'
+        <section id="about" className={`rounded-[32px] p-6 sm:p-8 md:p-12 border transition-all duration-500 flex flex-col xl:flex-row items-stretch gap-8 sm:gap-12 w-full max-w-[1400px] mx-auto overflow-hidden relative scroll-mt-24 ${theme === 'dark'
+          ? 'bg-slate-900/40 border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)]'
+          : 'bg-[#FAFBFD] border-[#E2E8F0] shadow-[0_4px_20px_rgba(0,0,0,0.02)]'
           }`}>
 
-            {/* Left Text */}
-            <div className="w-full xl:w-[30%] flex flex-col justify-center min-w-[280px]">
-              <span className={`text-[11px] font-bold uppercase tracking-widest mb-4 block ${theme === 'dark' ? 'text-slate-500' : 'text-[#64748b]'}`}>ABSTRACT TO VISUAL</span>
-              <h2 className={`text-3xl sm:text-4xl md:text-[48px] lg:text-[52px] font-display font-semibold mb-6 sm:mb-8 leading-tight lg:leading-[1.2] tracking-tight ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
-                From Theory<br />
-                to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">Reality</span>
-              </h2>
-              <p className={`text-sm sm:text-[15px] leading-relaxed mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>
-                We bridge the gap between abstract theory and <br className="hidden sm:block" /> real-world understanding through immersive 3D visualizations.
-              </p>
-              <button className="text-[#f43f5e] font-medium flex items-center gap-2 hover:gap-3 transition-all text-sm">
-                Learn More <ArrowRight size={16} strokeWidth={2.5} />
-              </button>
+          {/* Left Text */}
+          <div className="w-full xl:w-[30%] flex flex-col justify-center min-w-[280px]">
+            <span className={`text-[11px] font-bold uppercase tracking-widest mb-4 block ${theme === 'dark' ? 'text-slate-500' : 'text-[#64748b]'}`}>ABSTRACT TO VISUAL</span>
+            <h2 className={`text-3xl sm:text-4xl md:text-[48px] lg:text-[52px] font-display font-semibold mb-6 sm:mb-8 leading-tight lg:leading-[1.2] tracking-tight ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
+              From Theory<br />
+              to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">Reality</span>
+            </h2>
+            <p className={`text-sm sm:text-[15px] leading-relaxed mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>
+              We bridge the gap between abstract theory and <br className="hidden sm:block" /> real-world understanding through immersive 3D visualizations.
+            </p>
+            <button className="text-[#f43f5e] font-medium flex items-center gap-2 hover:gap-3 transition-all text-sm">
+              Learn More <ArrowRight size={16} strokeWidth={2.5} />
+            </button>
+          </div>
+
+          <div className="flex-1 flex flex-col lg:flex-row items-center justify-end gap-6 lg:gap-8 w-full">
+
+            {/* LEFT CARD: Abstract Theory */}
+            <div className={`w-full lg:w-[320px] lg:min-w-[320px] rounded-[20px] p-6 border flex flex-col sm:flex-row lg:flex-col isolate relative h-[450px] sm:h-[380px] lg:h-[450px] overflow-hidden transition-colors duration-500 gap-6 sm:gap-4 lg:gap-0 mx-auto lg:mx-0 ${theme === 'dark'
+              ? 'bg-slate-900/80 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
+              : 'bg-white border-[#F1F5F9] shadow-[0_8px_30px_rgba(0,0,0,0.03)]'
+              }`}>
+              <div className="flex flex-col sm:w-[45%] lg:w-full justify-between sm:pb-2 lg:pb-0">
+                <div>
+                  <h3 className={`text-[17px] font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>Abstract Theory</h3>
+                  <span className="text-[13px] font-medium text-[#f43f5e] mb-4 sm:mb-2 lg:mb-6 block">Electric Field</span>
+                </div>
+
+                {/* Equation moved to left on Tablet */}
+                <div className="hidden sm:flex lg:hidden flex-col items-center py-4 bg-slate-400/5 rounded-2xl border border-slate-400/10">
+                  <div className={`flex items-center gap-2 font-serif text-[1.2rem] leading-none ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
+                    <span className="relative"><span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[0.7rem]">→</span>E</span>
+                    <span>=</span>
+                    <div className="flex flex-col items-center text-[0.9rem]">
+                      <span className="border-b px-1">1</span>
+                      <span>4π<span className="italic font-sans">ε</span><sub>0</sub></span>
+                    </div>
+                    <div className="flex flex-col items-center text-[0.9rem]">
+                      <span className="border-b px-1">q</span>
+                      <span>r<sup>2</sup></span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="relative">
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[0.8rem]">^</span>
+                        r
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className={`text-[12px] lg:text-[13px] leading-relaxed hidden sm:block lg:hidden ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Inverse-square law relationship.
+                </p>
+              </div>
+
+              <div className="flex-1 flex flex-col opacity-95 sm:w-[55%] lg:w-full justify-center lg:justify-start">
+                {/* Equation only shown here on Mobile & Desktop */}
+                <div className="sm:hidden lg:flex flex-col items-center">
+                  <div className={`flex justify-center items-center gap-4 font-serif text-[1.5rem] sm:text-[1.75rem] leading-none mb-4 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
+                    <div className="flex flex-col items-center">
+                      <span className="relative">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[1rem]">→</span>
+                        E
+                      </span>
+                    </div>
+                    <span>=</span>
+                    <div className="flex flex-col items-center justify-center">
+                      <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>1</span>
+                      <span className="pt-1">4π<span className="italic font-sans">ε</span><sub className="text-[1rem]">0</sub></span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center">
+                      <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>q</span>
+                      <span className="pt-1">r<sup className="text-[1rem]">2</sup></span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="relative">
+                        <span className="absolute -top-[1.1rem] left-1/2 -translate-x-1/2 text-[1.2rem]">^</span>
+                        r
+                      </span>
+                    </div>
+                  </div>
+                  <p className={`text-[13px] text-center mb-4 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric field due to a point charge.</p>
+                </div>
+
+                <div className="w-full flex-1 relative min-h-0 max-w-[240px] sm:max-w-[380px] lg:max-w-[280px] mx-auto">
+                  <InverseSquareGraph theme={theme} />
+                </div>
+              </div>
             </div>
 
-            <div className="flex-1 flex flex-col lg:flex-row items-center justify-end gap-6 lg:gap-8 w-full">
-
-              {/* LEFT CARD: Abstract Theory */}
-              <div className={`w-full lg:w-[320px] lg:min-w-[320px] rounded-[20px] p-6 border flex flex-col sm:flex-row lg:flex-col isolate relative h-[450px] sm:h-[380px] lg:h-[450px] overflow-hidden transition-colors duration-500 gap-6 sm:gap-4 lg:gap-0 mx-auto lg:mx-0 ${
-                theme === 'dark' 
-                  ? 'bg-slate-900/80 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]' 
-                  : 'bg-white border-[#F1F5F9] shadow-[0_8px_30px_rgba(0,0,0,0.03)]'
+            {/* CONNECTOR ELEMENT */}
+            <div className={`w-12 h-12 rounded-full border flex items-center justify-center shrink-0 z-10 -my-4 lg:my-0 lg:-mx-12 rotate-90 lg:rotate-0 transition-all ${theme === 'dark'
+              ? 'bg-slate-900 border-white/20 shadow-[0_4px_15px_rgba(0,0,0,0.4)]'
+              : 'bg-white border-[#E2E8F0] shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
               }`}>
-                <div className="flex flex-col sm:w-[45%] lg:w-full justify-between sm:pb-2 lg:pb-0">
-                  <div>
-                    <h3 className={`text-[17px] font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>Abstract Theory</h3>
-                    <span className="text-[13px] font-medium text-[#f43f5e] mb-4 sm:mb-2 lg:mb-6 block">Electric Field</span>
-                  </div>
-                  
-                  {/* Equation moved to left on Tablet */}
-                  <div className="hidden sm:flex lg:hidden flex-col items-center py-4 bg-slate-400/5 rounded-2xl border border-slate-400/10">
-                    <div className={`flex items-center gap-2 font-serif text-[1.2rem] leading-none ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
-                      <span className="relative"><span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[0.7rem]">→</span>E</span>
-                      <span>=</span>
-                      <div className="flex flex-col items-center text-[0.9rem]">
-                        <span className="border-b px-1">1</span>
-                        <span>4π<span className="italic font-sans">ε</span><sub>0</sub></span>
-                      </div>
-                      <div className="flex flex-col items-center text-[0.9rem]">
-                        <span className="border-b px-1">q</span>
-                        <span>r<sup>2</sup></span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span className="relative">
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[0.8rem]">^</span>
-                          r
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+              <ArrowRight strokeWidth={2.5} className="w-5 h-5 text-[#f43f5e]" />
+            </div>
 
-                  <p className={`text-[12px] lg:text-[13px] leading-relaxed hidden sm:block lg:hidden ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
-                    Inverse-square law relationship.
-                  </p>
+            {/* RIGHT CARD: 3D Visualization */}
+            <div className={`w-full lg:flex-1 mx-auto lg:mx-0 rounded-[20px] p-6 border h-[450px] sm:h-[380px] lg:h-[450px] relative isolate flex flex-col transition-colors duration-500 ${theme === 'dark'
+              ? 'bg-slate-900/80 border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.5)]'
+              : 'bg-white border-[#F1F5F9] shadow-[0_12px_40px_rgba(0,0,0,0.04)]'
+              }`}>
+              <div className="flex justify-between items-start mb-2 relative z-20">
+                <div>
+                  <h3 className="text-[17px] font-semibold text-[#f43f5e] mb-1">3D Visualization</h3>
+                  <span className={`text-[13px] block ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric Dipole Field</span>
                 </div>
-
-                <div className="flex-1 flex flex-col opacity-95 sm:w-[55%] lg:w-full justify-center lg:justify-start">
-                  {/* Equation only shown here on Mobile & Desktop */}
-                  <div className="sm:hidden lg:flex flex-col items-center">
-                    <div className={`flex justify-center items-center gap-4 font-serif text-[1.5rem] sm:text-[1.75rem] leading-none mb-4 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
-                      <div className="flex flex-col items-center">
-                        <span className="relative">
-                          <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[1rem]">→</span>
-                          E
-                        </span>
-                      </div>
-                      <span>=</span>
-                      <div className="flex flex-col items-center justify-center">
-                        <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>1</span>
-                        <span className="pt-1">4π<span className="italic font-sans">ε</span><sub className="text-[1rem]">0</sub></span>
-                      </div>
-                      <div className="flex flex-col items-center justify-center">
-                        <span className={`border-b px-1 pb-1 ${theme === 'dark' ? 'border-white' : 'border-[#0F172A]'}`}>q</span>
-                        <span className="pt-1">r<sup className="text-[1rem]">2</sup></span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span className="relative">
-                          <span className="absolute -top-[1.1rem] left-1/2 -translate-x-1/2 text-[1.2rem]">^</span>
-                          r
-                        </span>
-                      </div>
-                    </div>
-                    <p className={`text-[13px] text-center mb-4 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric field due to a point charge.</p>
-                  </div>
-
-                  <div className="w-full flex-1 relative min-h-0 max-w-[240px] sm:max-w-[380px] lg:max-w-[280px] mx-auto">
-                    <InverseSquareGraph theme={theme} />
-                  </div>
-                </div>
-              </div>
-
-              {/* CONNECTOR ELEMENT */}
-              <div className={`w-12 h-12 rounded-full border flex items-center justify-center shrink-0 z-10 -my-4 lg:my-0 lg:-mx-12 rotate-90 lg:rotate-0 transition-all ${
-                theme === 'dark' 
-                  ? 'bg-slate-900 border-white/20 shadow-[0_4px_15px_rgba(0,0,0,0.4)]' 
-                  : 'bg-white border-[#E2E8F0] shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
-              }`}>
-                <ArrowRight strokeWidth={2.5} className="w-5 h-5 text-[#f43f5e]" />
-              </div>
-
-              {/* RIGHT CARD: 3D Visualization */}
-              <div className={`w-full lg:flex-1 mx-auto lg:mx-0 rounded-[20px] p-6 border h-[450px] sm:h-[380px] lg:h-[450px] relative isolate flex flex-col transition-colors duration-500 ${
-                theme === 'dark' 
-                  ? 'bg-slate-900/80 border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.5)]' 
-                  : 'bg-white border-[#F1F5F9] shadow-[0_12px_40px_rgba(0,0,0,0.04)]'
-              }`}>
-                <div className="flex justify-between items-start mb-2 relative z-20">
-                  <div>
-                    <h3 className="text-[17px] font-semibold text-[#f43f5e] mb-1">3D Visualization</h3>
-                    <span className={`text-[13px] block ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric Dipole Field</span>
-                  </div>
-                  <button className={`w-9 h-9 rounded-xl border flex items-center justify-center text-[#14B8A6] transition-colors ${
-                    theme === 'dark' ? 'border-white/10 hover:bg-white/5' : 'border-[#E2E8F0] hover:bg-slate-50'
+                <button className={`w-9 h-9 rounded-xl border flex items-center justify-center text-[#14B8A6] transition-colors ${theme === 'dark' ? 'border-white/10 hover:bg-white/5' : 'border-[#E2E8F0] hover:bg-slate-50'
                   }`}>
-                    <Maximize2 size={16} strokeWidth={2.5} />
-                  </button>
-                </div>
-
-                <div className="absolute inset-0 pt-20 px-4 pb-4">
-                  <ElectricFieldSimulation theme={theme} />
-                </div>
+                  <Maximize2 size={16} strokeWidth={2.5} />
+                </button>
               </div>
 
+              <div className="absolute inset-0 pt-20 px-4 pb-4">
+                {useDeferredHeroWidgets() ? (
+                  <SuspendedElectricFieldSimulation theme={theme} />
+                ) : (
+                  <ElectricFieldSimulationFallback />
+                )}
+              </div>
             </div>
-          </section>
-        </Skeleton>
+
+          </div>
+        </section>
 
         {/* Live Simulations Row */}
-        <Skeleton name="landing-simulations" loading={false}>
-          <section id="simulations" className="space-y-8 scroll-mt-24">
-            <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
-              <div>
-                <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Try it yourself</span>
-                <h2 className="text-3xl font-display font-bold mt-2 text-[var(--text-primary)]">Try Live Simulations</h2>
-              </div>
-              <button className="text-[var(--color-secondary)] font-medium flex items-center gap-2 text-sm hover:underline">
-                View All Simulations <ArrowRight size={14} />
-              </button>
+        <section id="simulations" className="space-y-8 scroll-mt-24">
+          <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
+            <div>
+              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Try it yourself</span>
+              <h2 className="text-3xl font-display font-bold mt-2 text-[var(--text-primary)]">Try Live Simulations</h2>
             </div>
+            <button className="text-[var(--color-secondary)] font-medium flex items-center gap-2 text-sm hover:underline">
+              View All Simulations <ArrowRight size={14} />
+            </button>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {[
-                { id: 'electromagnetism', title: 'Electromagnetism', tag: 'Physics', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20', hoverBorder: 'hover:border-indigo-500/40', text: 'text-indigo-500', iconUrl: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&q=80&w=400' },
-                { id: 'genetics', title: 'Genetic Probability', tag: 'Biology', bg: 'bg-rose-500/10', border: 'border-rose-500/20', hoverBorder: 'hover:border-rose-500/40', text: 'text-rose-500', iconUrl: 'https://images.unsplash.com/photo-1629904853716-f0bc54eea481?auto=format&fit=crop&q=80&w=400' },
-                { id: 'linear_algebra', title: 'Linear Transformations', tag: 'Math', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', hoverBorder: 'hover:border-emerald-500/40', text: 'text-emerald-500', iconUrl: 'https://images.unsplash.com/photo-1614850715649-1d0106293cb1?auto=format&fit=crop&q=80&w=400' },
-              ].map((sim, i) => (
-                <div 
-                  key={i} 
-                  onClick={() => onLaunchSimulation?.(sim.id)}
-                  className={`rounded-[32px] p-8 border ${sim.border} ${sim.bg} backdrop-blur-md relative overflow-hidden flex flex-col h-64 cursor-pointer group shadow-sm transition-all duration-300 hover:shadow-lg ${sim.hoverBorder}`}
-                >
-                  <div className="relative z-10">
-                    <h4 className="font-display font-semibold text-lg text-[var(--text-primary)]">{sim.title}</h4>
-                    <span className="text-xs font-medium text-[var(--text-muted)] mt-1 block">{sim.tag}</span>
-                  </div>
-                  <div className="mt-auto relative z-10">
-                    <div className={`w-12 h-12 bg-white/10 dark:bg-[var(--bg-deep)]/20 border border-white/20 dark:border-[var(--border-glass)] backdrop-blur-md rounded-full flex items-center justify-center shadow-md ${sim.text} group-hover:scale-110 transition-transform`}>
-                      <Play size={16} fill="currentColor" className="ml-1" />
-                    </div>
-                  </div>
-                  <div className="absolute right-0 bottom-0 w-48 h-48 rounded-tl-full overflow-hidden opacity-80 flex items-end justify-end group-hover:opacity-100 transition-opacity">
-                    <img src={sim.iconUrl} className="w-full h-full object-cover rounded-tl-full brightness-[1.1] saturate-[1.2]" alt="sim graphic" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {[
+              { id: 'electromagnetism', title: 'Electromagnetism', tag: 'Physics', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20', hoverBorder: 'hover:border-indigo-500/40', text: 'text-indigo-500', iconUrl: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&q=80&w=400' },
+              { id: 'genetics', title: 'Genetic Probability', tag: 'Biology', bg: 'bg-rose-500/10', border: 'border-rose-500/20', hoverBorder: 'hover:border-rose-500/40', text: 'text-rose-500', iconUrl: 'https://images.unsplash.com/photo-1629904853716-f0bc54eea481?auto=format&fit=crop&q=80&w=400' },
+              { id: 'linear_algebra', title: 'Linear Transformations', tag: 'Math', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', hoverBorder: 'hover:border-emerald-500/40', text: 'text-emerald-500', iconUrl: 'https://images.unsplash.com/photo-1614850715649-1d0106293cb1?auto=format&fit=crop&q=80&w=400' },
+            ].map((sim, i) => (
+              <div
+                key={i}
+                onClick={() => onLaunchSimulation?.(sim.id)}
+                className={`rounded-[32px] p-8 border ${sim.border} ${sim.bg} backdrop-blur-md relative overflow-hidden flex flex-col h-64 cursor-pointer group shadow-sm transition-all duration-300 hover:shadow-lg ${sim.hoverBorder}`}
+              >
+                <div className="relative z-10">
+                  <h4 className="font-display font-semibold text-lg text-[var(--text-primary)]">{sim.title}</h4>
+                  <span className="text-xs font-medium text-[var(--text-muted)] mt-1 block">{sim.tag}</span>
+                </div>
+                <div className="mt-auto relative z-10">
+                  <div className={`w-12 h-12 bg-white/10 dark:bg-[var(--bg-deep)]/20 border border-white/20 dark:border-[var(--border-glass)] backdrop-blur-md rounded-full flex items-center justify-center shadow-md ${sim.text} group-hover:scale-110 transition-transform`}>
+                    <Play size={16} fill="currentColor" className="ml-1" />
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
-        </Skeleton>
+                <div className="absolute right-0 bottom-0 w-48 h-48 rounded-tl-full overflow-hidden opacity-80 flex items-end justify-end group-hover:opacity-100 transition-opacity">
+                  <img src={sim.iconUrl} className="w-full h-full object-cover rounded-tl-full brightness-[1.1] saturate-[1.2]" alt="sim graphic" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* Stats Row */}
-        <Skeleton name="landing-stats" loading={false}>
-          <section className="bg-[var(--bg-panel)] rounded-[32px] md:rounded-full py-8 md:py-4 px-6 md:px-10 border border-[var(--border-glass)] shadow-sm grid grid-cols-2 place-items-center md:flex md:flex-row justify-between items-center gap-y-10 gap-x-4 md:gap-4 lg:gap-8 max-w-5xl mx-auto mb-10 overflow-hidden sm:overflow-visible">
-            {/* Stat 1 */}
-            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
-              <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 flex items-center justify-center text-[var(--color-primary)] shrink-0"><Maximize2 className="w-5 h-5 lg:w-6 lg:h-6" /></div>
-              <div className="flex flex-col">
-                <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.subjects}</h4>
-                <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Domains</p>
-              </div>
+        <section className="bg-[var(--bg-panel)] rounded-[32px] md:rounded-full py-8 md:py-4 px-6 md:px-10 border border-[var(--border-glass)] shadow-sm grid grid-cols-2 place-items-center md:flex md:flex-row justify-between items-center gap-y-10 gap-x-4 md:gap-4 lg:gap-8 max-w-5xl mx-auto mb-10 overflow-hidden sm:overflow-visible">
+          {/* Stat 1 */}
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
+            <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 flex items-center justify-center text-[var(--color-primary)] shrink-0"><Maximize2 className="w-5 h-5 lg:w-6 lg:h-6" /></div>
+            <div className="flex flex-col">
+              <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.subjects}</h4>
+              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Domains</p>
             </div>
+          </div>
 
-            <div className="hidden lg:block w-px h-8 bg-[var(--border-glass)]" />
+          <div className="hidden lg:block w-px h-8 bg-[var(--border-glass)]" />
 
-            {/* Stat 2 */}
-            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
-              <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-green-500/30 bg-green-500/5 flex items-center justify-center text-green-500 shrink-0"><Layers className="w-5 h-5 lg:w-6 lg:h-6" /></div>
-              <div className="flex flex-col">
-                <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.topics}</h4>
-                <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Modules</p>
-              </div>
+          {/* Stat 2 */}
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
+            <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-green-500/30 bg-green-500/5 flex items-center justify-center text-green-500 shrink-0"><Layers className="w-5 h-5 lg:w-6 lg:h-6" /></div>
+            <div className="flex flex-col">
+              <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.topics}</h4>
+              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Modules</p>
             </div>
+          </div>
 
-            <div className="hidden lg:block w-px h-8 bg-[var(--border-glass)]" />
+          <div className="hidden lg:block w-px h-8 bg-[var(--border-glass)]" />
 
-            {/* Stat 3 */}
-            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
-              <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-amber-500/30 bg-amber-500/5 flex items-center justify-center text-amber-500 shrink-0"><Users className="w-5 h-5 lg:w-6 lg:h-6" /></div>
-              <div className="flex flex-col">
-                <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.students}+</h4>
-                <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Active Learners</p>
-              </div>
+          {/* Stat 3 */}
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
+            <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-amber-500/30 bg-amber-500/5 flex items-center justify-center text-amber-500 shrink-0"><Users className="w-5 h-5 lg:w-6 lg:h-6" /></div>
+            <div className="flex flex-col">
+              <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.students}+</h4>
+              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Active Learners</p>
             </div>
+          </div>
 
-            <div className="hidden lg:block w-px h-8 bg-[var(--border-glass)]" />
+          <div className="hidden lg:block w-px h-8 bg-[var(--border-glass)]" />
 
-            {/* Stat 4 */}
-            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
-              <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-rose-500/30 bg-rose-500/5 flex items-center justify-center text-rose-500 shrink-0"><Star className="w-5 h-5 lg:w-6 lg:h-6" /></div>
-              <div className="flex flex-col">
-                <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.average_rating}</h4>
-                <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Satisfaction</p>
-              </div>
+          {/* Stat 4 */}
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 lg:gap-4 w-full md:w-auto text-center md:text-left">
+            <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-rose-500/30 bg-rose-500/5 flex items-center justify-center text-rose-500 shrink-0"><Star className="w-5 h-5 lg:w-6 lg:h-6" /></div>
+            <div className="flex flex-col">
+              <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.average_rating}</h4>
+              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Satisfaction</p>
             </div>
-          </section>
-        </Skeleton>
+          </div>
+        </section>
 
       </main>
       <div id="contact">

@@ -3,7 +3,7 @@ import { Subject, Topic, SubjectId } from '../../types/types';
 import { ArrowLeft, ArrowRight, Beaker, Zap, Calculator, Dna } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Language, translations } from '../../services/translations';
-import { Skeleton } from 'boneyard-js/react';
+import { Skeleton } from '../common/Skeleton';
 import { Subject3DCardModel } from './Subject3DModel.tsx';
 import DailyChallenges from '../shared/DailyChallenges';
 
@@ -156,8 +156,8 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
                   }`}
               >
                 <div className="flex items-start justify-between">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shrink-0 shadow-lg ${isDark 
-                    ? 'bg-white/10 text-[var(--color-primary)] shadow-[var(--color-primary)]/10' 
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shrink-0 shadow-lg ${isDark
+                    ? 'bg-white/10 text-[var(--color-primary)] shadow-[var(--color-primary)]/10'
                     : 'bg-slate-100 text-slate-400'
                     } group-hover:bg-primary group-hover:text-white group-hover:shadow-primary/40`}>
                     <Icon size={32} strokeWidth={2} className="brightness-[1.2]" />

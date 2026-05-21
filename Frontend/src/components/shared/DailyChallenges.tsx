@@ -19,6 +19,7 @@ import {
 import { motion } from 'motion/react';
 import { SubjectId } from '../../types/types';
 import { DailyChallenge, getChallengeBankSize, getDailyChallenges } from '../../data/dailyChallenges';
+import { safeLocalStorage } from '../../utils/safeStorage';
 
 interface DailyChallengesProps {
   subjectId: SubjectId;
@@ -47,7 +48,7 @@ const getPreviousDateKey = (dateKey: string) => {
 
 const loadProgress = (storageKey: string): ChallengeProgress => {
   try {
-    const saved = localStorage.getItem(storageKey);
+    const saved = safeLocalStorage.getItem(storageKey);
     return saved ? JSON.parse(saved) : { selected: {}, completed: {} };
   } catch {
     return { selected: {}, completed: {} };
@@ -55,12 +56,12 @@ const loadProgress = (storageKey: string): ChallengeProgress => {
 };
 
 const saveProgress = (storageKey: string, progress: ChallengeProgress) => {
-  localStorage.setItem(storageKey, JSON.stringify(progress));
+  safeLocalStorage.setItem(storageKey, JSON.stringify(progress));
 };
 
 const loadStreak = (storageKey: string): StreakProgress => {
   try {
-    const saved = localStorage.getItem(storageKey);
+    const saved = safeLocalStorage.getItem(storageKey);
     return saved ? JSON.parse(saved) : { count: 0, lastClaimedDate: null };
   } catch {
     return { count: 0, lastClaimedDate: null };
@@ -68,7 +69,7 @@ const loadStreak = (storageKey: string): StreakProgress => {
 };
 
 const saveStreak = (storageKey: string, streak: StreakProgress) => {
-  localStorage.setItem(storageKey, JSON.stringify(streak));
+  safeLocalStorage.setItem(storageKey, JSON.stringify(streak));
 };
 
 const getChallengeXp = (challenge: DailyChallenge, wasCorrect: boolean) => {

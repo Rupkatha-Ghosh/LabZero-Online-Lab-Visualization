@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { MousePointer } from 'lucide-react';
 import { ElementData } from '../../../types/types';
 
 type Property = 'radius' | 'ionization' | 'electronegativity';
@@ -164,7 +165,7 @@ const TrendsVisualizer: React.FC<TrendsVisualizerProps> = ({ elements }) => {
           </div>
           
           <div className="flex items-center gap-3 text-[10px] font-black text-[var(--text-muted)]/60 uppercase tracking-widest bg-[var(--bg-deep)] px-4 py-2 rounded-xl border border-[var(--border-glass)]">
-            <i className="fas fa-mouse-pointer text-[var(--color-primary)]"></i>
+            <MousePointer className="h-4 w-4 text-[var(--color-primary)]" />
             Hover elements for detail
           </div>
         </div>

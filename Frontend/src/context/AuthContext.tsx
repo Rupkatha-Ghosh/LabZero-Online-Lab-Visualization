@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { User, UserRole } from '../types/types';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
@@ -25,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('labzero_token');
+      const token = safeLocalStorage.getItem('labzero_token');
       if (token) {
         try {
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -51,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password
       });
       const { access } = response.data;
-      localStorage.setItem('labzero_token', access);
+      safeLocalStorage.setItem('labzero_token', access);
       axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
       
       const userResponse = await axios.get(`${API_URL}/auth/me/`);
@@ -110,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.history.replaceState({}, document.title, window.location.pathname);
 
     // Store token and fetch user — same as normal login
-    localStorage.setItem('labzero_token', token);
+    safeLocalStorage.setItem('labzero_token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
     try {
@@ -119,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (err: any) {
       console.error("Google auth token verification failed:", err);
-      localStorage.removeItem('labzero_token');
+      safeLocalStorage.removeItem('labzero_token');
       delete axios.defaults.headers.common['Authorization'];
       setError("Session verification failed.");
       return false;
@@ -129,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     setError(null);
-    localStorage.removeItem('labzero_token');
+    safeLocalStorage.removeItem('labzero_token');
     delete axios.defaults.headers.common['Authorization'];
   };
 

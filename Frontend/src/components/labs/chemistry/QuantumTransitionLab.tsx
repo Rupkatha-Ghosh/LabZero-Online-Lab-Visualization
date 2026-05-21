@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { Zap, Loader } from 'lucide-react';
 import { ElementData } from '../../../types/types';
 
 interface QuantumTransitionLabProps {
@@ -37,7 +38,7 @@ const QuantumTransitionLab: React.FC<QuantumTransitionLabProps> = ({ element }) 
   return (
     <div className="glass-panel rounded-[40px] p-10 border border-white/10 relative overflow-hidden bg-slate-950/40">
       <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
-        <i className="fas fa-bolt text-9xl text-yellow-400"></i>
+        <Zap className="text-[9rem] text-yellow-400" />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-12">
@@ -89,7 +90,7 @@ const QuantumTransitionLab: React.FC<QuantumTransitionLabProps> = ({ element }) 
               : 'bg-indigo-600 hover:bg-indigo-500 border-indigo-400 text-white shadow-xl shadow-indigo-600/20'
             }`}
           >
-            <i className={`fas ${isExcited ? 'fa-spinner fa-spin' : 'fa-bolt'}`}></i>
+            {isExcited ? <Loader className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
             {isExcited ? 'Atom Excited...' : 'Inject Photon (Energy)'}
           </button>
         </div>

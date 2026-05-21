@@ -12,6 +12,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { SubjectId } from '../../types/types';
+import { safeLocalStorage } from '../../utils/safeStorage';
 
 type LeaderboardTheme = 'dark' | 'light';
 type LeaderboardMode = 'student' | 'teacher' | 'institute';
@@ -71,7 +72,7 @@ const getName = (student: any, index: number) => {
 
 const readJson = <T,>(key: string, fallback: T): T => {
   try {
-    const value = localStorage.getItem(key);
+    const value = safeLocalStorage.getItem(key);
     return value ? JSON.parse(value) : fallback;
   } catch {
     return fallback;
@@ -79,17 +80,13 @@ const readJson = <T,>(key: string, fallback: T): T => {
 };
 
 const getLocalChallengeStats = () => {
-  if (typeof localStorage === 'undefined') {
-    return { bestStreak: 0, xp: 0, attempted: 0, cleared: 0 };
-  }
-
   let bestStreak = 0;
   let xp = 0;
   let attempted = 0;
   let cleared = 0;
 
-  for (let index = 0; index < localStorage.length; index += 1) {
-    const key = localStorage.key(index) || '';
+  for (let index = 0; index < safeLocalStorage.length; index += 1) {
+    const key = safeLocalStorage.key(index) || '';
 
     if (key.startsWith('labzero_daily_streak_')) {
       const streak = readJson<{ count?: number }>(key, {});
@@ -110,16 +107,12 @@ const getLocalChallengeStats = () => {
 };
 
 const getSubjectStats = (subjectId: SubjectId) => {
-  if (typeof localStorage === 'undefined') {
-    return { streak: 0, xp: 0, cleared: 0 };
-  }
-
   let streak = 0;
   let xp = 0;
   let cleared = 0;
 
-  for (let index = 0; index < localStorage.length; index += 1) {
-    const key = localStorage.key(index) || '';
+  for (let index = 0; index < safeLocalStorage.length; index += 1) {
+    const key = safeLocalStorage.key(index) || '';
 
     if (key.startsWith(`labzero_daily_streak_${subjectId}_`)) {
       const value = readJson<{ count?: number }>(key, {});

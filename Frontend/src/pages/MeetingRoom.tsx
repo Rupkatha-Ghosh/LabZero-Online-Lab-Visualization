@@ -11,6 +11,8 @@ import ChatPanel from '../components/meeting/ChatPanel';
 import ParticipantList from '../components/meeting/ParticipantList';
 import WaitingRoom from '../components/meeting/WaitingRoom';
 
+import { safeLocalStorage } from '../utils/safeStorage';
+
 interface MeetingRoomProps {
   config: MeetingConfig;
   onLeave: () => void;
@@ -75,7 +77,7 @@ const MeetingRoomContent: React.FC<MeetingRoomProps> = ({ config, onLeave }) => 
   const join = async () => {
     setHasJoined(true);
     localMedia.stop(); // Stop preview before joining LiveKit
-    const token = localStorage.getItem('labzero_token');
+    const token = safeLocalStorage.getItem('labzero_token');
     if (token) {
       await livekit.connect(token);
     }

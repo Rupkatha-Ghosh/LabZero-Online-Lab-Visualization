@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import { Box, LayoutGrid } from 'lucide-react';
 import { ElementData } from '../../../types/types';
 
 interface AtomVisualizerProps {
@@ -14,6 +15,7 @@ const AtomVisualizer: React.FC<AtomVisualizerProps> = ({ element, rotation, zoom
   const [is3D, setIs3D] = useState(false);
   const [manualRotation, setManualRotation] = useState({ x: 0, y: 0 });
   const shellLabels = ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
+  const ModeIcon = is3D ? Box : LayoutGrid;
 
   useEffect(() => {
     if (rotation) {
@@ -174,7 +176,7 @@ const AtomVisualizer: React.FC<AtomVisualizerProps> = ({ element, rotation, zoom
              onClick={() => setIs3D(!is3D)}
              className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border ${is3D ? 'bg-indigo-600 border-indigo-500 shadow-2xl shadow-indigo-600/40 text-white' : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'}`}
            >
-             <i className={`fas ${is3D ? 'fa-cube' : 'fa-th-large'}`}></i> {is3D ? '3D Mode' : '2D Mode'}
+             <ModeIcon className="h-4 w-4" /> {is3D ? '3D Mode' : '2D Mode'}
            </button>
         </div>
       </div>
