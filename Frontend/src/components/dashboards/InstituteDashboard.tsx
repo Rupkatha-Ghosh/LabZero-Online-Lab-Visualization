@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
-import { Skeleton } from 'boneyard-js/react';
+import { Skeleton } from '../common/Skeleton';
 import AttendancePortal from '../shared/AttendancePortal';
 import DashboardLeaderboard from '../shared/DashboardLeaderboard';
 
@@ -423,15 +423,14 @@ const InstituteDashboard: React.FC<InstituteDashboardProps> = ({ onBack }) => {
                         className="group"
                       >
                         <td className="rounded-l-3xl bg-slate-950/60 border-y border-l border-slate-700 px-4 py-4">
-                          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border font-display text-sm shadow-inner ${
-                            student.rank === 1
+                          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border font-display text-sm shadow-inner ${student.rank === 1
                               ? 'bg-amber-500/15 border-amber-400/30 text-amber-300'
                               : student.rank === 2
                                 ? 'bg-cyan-500/10 border-cyan-400/25 text-cyan-300'
                                 : student.rank === 3
                                   ? 'bg-violet-500/10 border-violet-400/25 text-violet-300'
                                   : 'bg-slate-800 border-slate-600 text-slate-200'
-                          }`}>
+                            }`}>
                             {student.rank}
                           </div>
                         </td>

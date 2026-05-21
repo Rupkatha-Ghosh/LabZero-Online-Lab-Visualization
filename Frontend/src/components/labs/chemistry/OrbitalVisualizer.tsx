@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import * as d3 from 'd3';
+import { ChartLine, Magnet } from 'lucide-react';
 import { Vector3 } from '../../../types/types';
 
 type ShellType = 's' | 'p' | 'd' | 'f';
@@ -242,7 +243,7 @@ const OrbitalVisualizer: React.FC = () => {
                 </div>
               </div>
               <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)]/20 flex items-center justify-center border border-[var(--color-primary)]/30">
-                 <i className="fas fa-magnet text-[var(--color-primary)] text-xl"></i>
+                 <Magnet className="h-6 w-6 text-[var(--color-primary)]" />
               </div>
            </div>
         </div>
@@ -326,7 +327,7 @@ const OrbitalVisualizer: React.FC = () => {
       {/* Footer Insight Card */}
       <div className="mt-12 p-8 bg-[var(--bg-panel)] rounded-[40px] border border-[var(--border-glass)] flex gap-8 items-center group hover:bg-[var(--bg-panel)]/80 transition-all shadow-md">
          <div className="w-16 h-16 rounded-[24px] bg-[var(--color-primary)]/20 flex items-center justify-center text-[var(--color-primary)] shadow-xl group-hover:scale-110 group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
-           <i className="fas fa-chart-line text-2xl"></i>
+           <ChartLine className="h-6 w-6" />
          </div>
          <p className="text-xs text-[var(--text-muted)] leading-relaxed font-bold uppercase tracking-widest max-w-3xl">
            These visual states represent <span className="text-[var(--text-primary)]">90% probability regions</span>. The <span className="text-[var(--color-primary)] font-black">Z-Axis</span> is the primary quantization axis for magnetic moments, defining how these orbitals align in external fields.

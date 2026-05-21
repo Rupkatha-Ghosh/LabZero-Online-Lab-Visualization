@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
@@ -7,7 +8,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('labzero_token');
+  const token = safeLocalStorage.getItem('labzero_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

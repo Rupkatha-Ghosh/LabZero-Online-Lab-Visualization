@@ -853,6 +853,9 @@ const GestureController: React.FC<GestureControllerProps> = ({
       alive = false;
       cancelAnimationFrame(raf);
       stream?.getTracks().forEach(t => t.stop());
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
       currentStreamRef.current = null;
     };
   }, [isActive, cameraSource, switchToRemoteCamera]);
@@ -925,15 +928,13 @@ const GestureController: React.FC<GestureControllerProps> = ({
         </AnimatePresence>
 
         {/* Hidden persistent video for MediaPipe processing */}
-        {isActive && (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="pointer-events-none absolute h-0 w-0 opacity-0"
-          />
-        )}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="pointer-events-none absolute h-0 w-0 opacity-0"
+        />
 
         <motion.div layout className="relative flex items-center gap-3 rounded-2xl overflow-hidden"
           style={{

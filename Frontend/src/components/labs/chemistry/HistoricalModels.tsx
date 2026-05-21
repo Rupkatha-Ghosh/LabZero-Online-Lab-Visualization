@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import * as d3 from 'd3';
+import { GraduationCap, History, LayoutGrid, LayoutList, Lightbulb } from 'lucide-react';
 
 type ModelID = 'dalton' | 'thomson' | 'rutherford' | 'bohr';
 
@@ -145,7 +146,7 @@ const HistoricalModels: React.FC = () => {
       {/* Header with Timeline */}
       <div className="bg-[var(--bg-panel)] p-10 rounded-[48px] border border-[var(--border-glass)] shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
-          <i className="fas fa-history text-9xl text-[var(--text-primary)]"></i>
+          <History className="text-[9rem] text-[var(--text-primary)]" />
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
@@ -158,7 +159,7 @@ const HistoricalModels: React.FC = () => {
             onClick={() => setCompareMode(!compareMode)}
             className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border ${compareMode ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white shadow-xl' : 'bg-[var(--bg-panel)] border-[var(--border-glass)] text-[var(--text-muted)] hover:bg-[var(--bg-panel)]/80'}`}
           >
-            <i className={`fas ${compareMode ? 'fa-th-large' : 'fa-columns'}`}></i> {compareMode ? 'Close Lab' : 'Compare Models'}
+            {compareMode ? <LayoutGrid className="h-4 w-4" /> : <LayoutList className="h-4 w-4" />} {compareMode ? 'Close Lab' : 'Compare Models'}
           </button>
         </div>
 
@@ -201,14 +202,14 @@ const HistoricalModels: React.FC = () => {
                 <h3 className="text-5xl font-black text-[var(--text-primary)] tracking-tighter leading-none">{activeModel.name}</h3>
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-[var(--bg-panel)] flex items-center justify-center text-[var(--text-muted)] border border-[var(--border-glass)]">
-                    <i className="fas fa-user-graduate"></i>
+                    <GraduationCap className="h-5 w-5" />
                   </div>
                   <span className="text-xl font-bold text-[var(--text-primary)]/60">{activeModel.scientist}</span>
                 </div>
                 <p className="text-lg text-[var(--text-muted)] leading-relaxed font-medium">"{activeModel.description}"</p>
                 <div className="p-6 bg-[var(--bg-deep)] rounded-3xl border border-[var(--border-glass)] flex gap-4 items-center shadow-sm">
                    <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
-                      <i className="fas fa-lightbulb text-white"></i>
+                      <Lightbulb className="h-6 w-6 text-white" />
                    </div>
                    <p className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wide leading-relaxed">
                      This model established the concept of <span className="text-[var(--text-primary)]">{activeModel.keyFeature}</span> in modern physics.

@@ -577,6 +577,24 @@ const useCoarsePointer = () => {
   return isCoarsePointer;
 };
 
+const ModelLoadedNotifier = () => {
+  useEffect(() => {
+    let frameId1: number;
+    let frameId2: number;
+    frameId1 = requestAnimationFrame(() => {
+      frameId2 = requestAnimationFrame(() => {
+        (window as any).hero3DModelLoaded = true;
+        window.dispatchEvent(new CustomEvent('hero-3d-model-loaded'));
+      });
+    });
+    return () => {
+      cancelAnimationFrame(frameId1);
+      cancelAnimationFrame(frameId2);
+    };
+  }, []);
+  return null;
+};
+
 export const Hero3DModel = ({ theme = 'light' }: { theme?: 'dark' | 'light' }) => {
   const isCoarsePointer = useCoarsePointer();
 
@@ -597,6 +615,7 @@ export const Hero3DModel = ({ theme = 'light' }: { theme?: 'dark' | 'light' }) =
         <React.Suspense fallback={null}>
           <InteractiveScene theme={theme} />
           <Environment preset={theme === 'dark' ? "night" : "city"} />
+          <ModelLoadedNotifier />
         </React.Suspense>
         <OrbitControls
           enableZoom={!isCoarsePointer}

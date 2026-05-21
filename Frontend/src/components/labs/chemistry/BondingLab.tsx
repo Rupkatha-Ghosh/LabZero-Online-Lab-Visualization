@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import { Link } from 'lucide-react';
 import { ElementData } from '../../../types/types';
 
 interface BondingLabProps {
@@ -290,7 +291,7 @@ const BondingLab: React.FC<BondingLabProps> = ({ elements }) => {
                 <div className="bg-[var(--bg-panel)] p-6 rounded-3xl border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 animate-in slide-in-from-right-4 duration-500 shadow-md">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/20 flex items-center justify-center">
-                      <i className="fas fa-link text-[var(--color-primary)] text-xs"></i>
+                      <Link className="h-4 w-4 text-[var(--color-primary)]" />
                     </div>
                     <h5 className="font-black text-sm uppercase text-[var(--text-primary)]">{bondType} Bond</h5>
                   </div>

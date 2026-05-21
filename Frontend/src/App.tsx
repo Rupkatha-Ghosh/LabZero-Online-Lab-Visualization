@@ -1,24 +1,23 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import axios from 'axios';
-import {
-  Sparkles, MessageSquare, X, Settings, Moon, Sun, BookOpen, Download, Brain
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import LandingPage from './components/pages/LandingPage';
-import SubjectPage from './components/pages/SubjectPage';
-import TopicPage from './components/pages/TopicPage';
-import MeetingRoom from './pages/MeetingRoom';
-import AdminDashboard from './components/dashboards/AdminDashboard';
-import StudentDashboard from './components/dashboards/StudentDashboard';
-import TeacherDashboard from './components/dashboards/TeacherDashboard';
-import InstituteDashboard from './components/dashboards/InstituteDashboard';
-import GestureController from './components/shared/GestureController';
+import { safeLocalStorage } from './utils/safeStorage';
+import { Settings } from 'lucide-react';
+const LandingPage = React.lazy(() => import('./components/pages/LandingPage'));
 import BottomNav from './components/common/BottomNav';
-import Glossary from './components/shared/Glossary';
-import SettingsMenu from './components/shared/SettingsMenu';
-import AuthOverlay from './components/auth/AuthOverlay';
-import AuthPage from './components/auth/AuthPage';
-import MemoryMapOverlay from './components/shared/MemoryMapOverlay';
+const SubjectPage = React.lazy(() => import('./components/pages/SubjectPage'));
+const TopicPage = React.lazy(() => import('./components/pages/TopicPage'));
+const MeetingRoom = React.lazy(() => import('./pages/MeetingRoom'));
+const AdminDashboard = React.lazy(() => import('./components/dashboards/AdminDashboard'));
+const StudentDashboard = React.lazy(() => import('./components/dashboards/StudentDashboard'));
+const TeacherDashboard = React.lazy(() => import('./components/dashboards/TeacherDashboard'));
+const InstituteDashboard = React.lazy(() => import('./components/dashboards/InstituteDashboard'));
+const GestureController = React.lazy(() => import('./components/shared/GestureController'));
+const Glossary = React.lazy(() => import('./components/shared/Glossary'));
+const SettingsMenu = React.lazy(() => import('./components/shared/SettingsMenu'));
+const AuthOverlay = React.lazy(() => import('./components/auth/AuthOverlay'));
+const MemoryMapOverlay = React.lazy(() => import('./components/shared/MemoryMapOverlay'));
+const QuizPage = React.lazy(() => import('./components/shared/Quiz'));
+const AnimationShell = React.lazy(() => import('./components/common/AnimationShell'));
 
 const useAnimatedFavicon = () => {
   useEffect(() => {
@@ -30,6 +29,10 @@ const useAnimatedFavicon = () => {
 
     let frame = 0;
     let animId: number;
+    let idleId: number | null = null;
+    let fallbackTimeoutId: any = null;
+    let isStarted = false;
+
     const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link');
     faviconLink.type = 'image/x-icon';
     faviconLink.rel = 'shortcut icon';
@@ -46,7 +49,7 @@ const useAnimatedFavicon = () => {
       ctx.stroke();
 
       // 2. Draw Z
-      ctx.strokeStyle = '#ffffff'; 
+      ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 3;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -57,7 +60,7 @@ const useAnimatedFavicon = () => {
       if (!isStatic) {
         // 3. Draw Animated "0" Formation
         const drawProgress = (Math.sin(frame * 0.03) + 1) / 2;
-        ctx.strokeStyle = '#6366f1'; 
+        ctx.strokeStyle = '#6366f1';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.arc(16, 16, 9, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * drawProgress));
@@ -65,7 +68,7 @@ const useAnimatedFavicon = () => {
 
         // 4. Draw Precision Nodes (Pulsating)
         const nodePulse = 1 + Math.sin(frame * 0.1) * 0.3;
-        
+
         ctx.fillStyle = '#f43f5e';
         ctx.beginPath();
         ctx.arc(3, 4, 2.5 * nodePulse, 0, Math.PI * 2);
@@ -98,37 +101,57 @@ const useAnimatedFavicon = () => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         cancelAnimationFrame(animId);
-        draw(true); // Draw static frame
+        if (isStarted) {
+          draw(true); // Draw static frame
+        }
       } else {
-        animate(); // Resume animation
+        if (isStarted) {
+          animate(); // Resume animation
+        }
       }
     };
 
+    const initFavicon = () => {
+      isStarted = true;
+      if (!document.hidden) {
+        animate();
+      } else {
+        draw(true);
+      }
+    };
+
+    // Defer initialization to idle time
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        idleId = (window as any).requestIdleCallback(initFavicon, { timeout: 2000 });
+      } else {
+        fallbackTimeoutId = setTimeout(initFavicon, 1000);
+      }
+    }
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    animate(); // Start initial animation
 
     return () => {
       cancelAnimationFrame(animId);
+      if (idleId !== null && 'cancelIdleCallback' in window) {
+        (window as any).cancelIdleCallback(idleId);
+      }
+      if (fallbackTimeoutId !== null) {
+        clearTimeout(fallbackTimeoutId);
+      }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 };
 
-import QuizPage from './components/shared/Quiz';
-import { generateQuizAI } from './data/quizData';
-import { Skeleton } from 'boneyard-js/react';
-
+import { HeroSkeleton } from './components/common/Skeleton';
 import { Molecule, ElementData, Subject, Topic, ViewState, TopicId } from './types/types';
 import { Language, translations } from './services/translations';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { getElements } from './services/elementsService';
-import { getMolecules } from './services/moleculesService';
 import { getSubjects } from './services/subjectsService';
 import { SIMULATION_REGISTRY } from './simulations/registry';
-import { Suspense } from 'react';
 import { usePWAInstall } from './hooks/usePWAInstall';
 import { MeetingConfig } from './context/MeetingContext';
-import { createRoomId } from './utils/peerUtils';
 import { getDefaultSignalingUrl } from './utils/urlUtils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -136,37 +159,15 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 const BackgroundLayer = ({ theme }: { theme: 'dark' | 'light' }) => (
   <div className={`fixed inset-0 z-[-1] overflow-hidden pointer-events-none transition-colors duration-700 ${theme === 'dark' ? 'bg-[#020617]' : 'bg-[#fafaf8]'}`}>
-    <motion.div
-      animate={{
-        scale: [1, 1.2, 1],
-        x: [0, 100, 0],
-        y: [0, 50, 0],
-      }}
-      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      className={`absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full blur-[120px] transition-colors duration-700 ${theme === 'dark' ? 'bg-sky-500/10' : 'bg-sky-300/20'}`}
-    />
-    <motion.div
-      animate={{
-        scale: [1, 1.3, 1],
-        x: [0, -100, 0],
-        y: [0, -50, 0],
-      }}
-      transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-      className={`absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full blur-[150px] transition-colors duration-700 ${theme === 'dark' ? 'bg-indigo-500/10' : 'bg-emerald-300/20'}`}
-    />
-    <motion.div
-      animate={{
-        scale: [1, 1.5, 1],
-        x: [0, 50, -50, 0],
-        y: [0, 100, 50, 0],
-      }}
-      transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-      className={`absolute top-[20%] left-[40%] w-[40vw] h-[40vw] rounded-full blur-[130px] transition-colors duration-700 ${theme === 'dark' ? 'bg-violet-600/10' : 'bg-violet-300/20'}`}
-    />
+    <div className={`absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full blur-[120px] transition-colors duration-700 ${theme === 'dark' ? 'bg-sky-500/10' : 'bg-sky-300/20'}`} />
+    <div className={`absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full blur-[150px] transition-colors duration-700 ${theme === 'dark' ? 'bg-indigo-500/10' : 'bg-emerald-300/20'}`} />
+    <div className={`absolute top-[20%] left-[40%] w-[40vw] h-[40vw] rounded-full blur-[130px] transition-colors duration-700 ${theme === 'dark' ? 'bg-violet-600/10' : 'bg-violet-300/20'}`} />
     <div className={`absolute inset-0 backdrop-blur-[50px] transition-colors duration-700 ${theme === 'dark' ? 'bg-slate-950/20' : 'bg-white/20'}`} />
     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
   </div>
 );
+
+// ViewLoader removed - now using CSS skeleton
 
 const AppContent: React.FC = () => {
   useAnimatedFavicon();
@@ -182,7 +183,7 @@ const AppContent: React.FC = () => {
   const [molecules, setMolecules] = useState<Molecule[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>(() => {
     // Initial load from cache to prevent layout shift and provide instant results
-    const cached = localStorage.getItem('labzero_subjects_cache');
+    const cached = safeLocalStorage.getItem('labzero_subjects_cache');
     return cached ? JSON.parse(cached) : [];
   });
 
@@ -202,9 +203,9 @@ const AppContent: React.FC = () => {
   const savedScrollPositions = useRef<Record<string, number>>({});
 
 
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('labzero_theme') as 'dark' | 'light') || 'light');
-  const [colorBlindMode, setColorBlindMode] = useState(() => localStorage.getItem('labzero_colorblind') === 'true');
-  const [language, setLanguage] = useState<Language>(() => (localStorage.getItem('labzero_language') as Language) || 'en');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (safeLocalStorage.getItem('labzero_theme') as 'dark' | 'light') || 'light');
+  const [colorBlindMode, setColorBlindMode] = useState(() => safeLocalStorage.getItem('labzero_colorblind') === 'true');
+  const [language, setLanguage] = useState<Language>(() => (safeLocalStorage.getItem('labzero_language') as Language) || 'en');
 
   const [isGestureActive, setIsGestureActive] = useState(false);
   const [cameraSource, setCameraSource] = useState<"local" | "remote">("local");
@@ -213,12 +214,15 @@ const AppContent: React.FC = () => {
   const [moleculeRotation, setMoleculeRotation] = useState({ dx: 0, dy: 0 });
   const [moleculeZoom, setMoleculeZoom] = useState(1);
   const [gesturePos, setGesturePos] = useState<{ x: number; y: number } | null>(null);
-  const [publicStats, setPublicStats] = useState({ 
-    subjects: 0, 
-    topics: 0, 
-    students: 0, 
-    average_rating: 4.9, 
-    feedback_count: 1000 
+  const [publicStats, setPublicStats] = useState(() => {
+    const cached = safeLocalStorage.getItem('labzero_public_stats_cache');
+    return cached ? JSON.parse(cached) : {
+      subjects: 0,
+      topics: 0,
+      students: 0,
+      average_rating: 0.0,
+      feedback_count: 0
+    };
   });
 
   // ================= QUIZ =================
@@ -251,71 +255,74 @@ const AppContent: React.FC = () => {
 
   // ================= FETCH =================
   const fetchAllData = useCallback(() => {
-    getElements()
-      .then((data) => {
-        if (data?.length) {
-          setElements(data);
-          setSelectedElement(data[0]);
+    axios.get(`${API_URL}/public-stats/`)
+      .then(res => {
+        if (res.data) {
+          const updated = {
+            subjects: Number(res.data.subjects ?? 0),
+            topics: Number(res.data.topics ?? 0),
+            students: Number(res.data.students ?? 0),
+            average_rating: Number(res.data.average_rating ?? res.data.rating ?? 0.0),
+            feedback_count: Number(res.data.feedback_count ?? 0)
+          };
+          setPublicStats(updated);
+          safeLocalStorage.setItem('labzero_public_stats_cache', JSON.stringify(updated));
         }
       })
       .catch(console.error);
 
-    getMolecules()
-      .then((data) => {
-        if (data?.length) {
-          setMolecules(data);
-        }
-      })
-      .catch(console.error);
+    // Fetch settings and subjects in parallel, then apply sorting once both settle
+    Promise.allSettled([
+      axios.get(`${API_URL}/settings/`),
+      getSubjects()
+    ]).then(([settingsResult, subjectsResult]) => {
+      const sortMethod = settingsResult.status === 'fulfilled'
+        ? (settingsResult.value.data.subject_sort_method || 'order')
+        : 'order';
 
-    // Fetch settings then subjects to ensure correct order
-    axios.get(`${API_URL}/settings/`)
-      .then(sRes => {
-        const sortMethod = sRes.data.subject_sort_method || 'order';
-        getSubjects()
-          .then((data) => {
-            if (data?.length) {
-              const sorted = [...data].sort((a, b) => {
-                if (sortMethod === 'alpha') return a.name.localeCompare(b.name);
-                return (a.order || 0) - (b.order || 0);
-              });
-              setSubjects(sorted);
-              // Save to cache
-              localStorage.setItem('labzero_subjects_cache', JSON.stringify(sorted));
-              localStorage.setItem('labzero_last_subject_count', sorted.length.toString());
-            }
-          })
-          .catch(console.error);
-
-        axios.get(`${API_URL}/public-stats/`)
-          .then(res => {
-            setPublicStats(prev => ({
-              ...prev,
-              ...res.data,
-              // Handle potential field name variations from backend (rating vs average_rating)
-              average_rating: res.data.average_rating ?? res.data.rating ?? prev.average_rating
-            }));
-          })
-          .catch(console.error);
-      })
-      .catch(err => {
-        console.error("Settings fetch failed", err);
-        getSubjects()
-          .then((data) => {
-            if (data?.length) {
-              const sorted = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
-              setSubjects(sorted);
-              localStorage.setItem('labzero_subjects_cache', JSON.stringify(sorted));
-              localStorage.setItem('labzero_last_subject_count', sorted.length.toString());
-            }
-          })
-          .catch(console.error);
-      });
+      if (subjectsResult.status === 'fulfilled' && subjectsResult.value?.length) {
+        const sorted = [...subjectsResult.value].sort((a, b) => {
+          if (sortMethod === 'alpha') return a.name.localeCompare(b.name);
+          return (a.order || 0) - (b.order || 0);
+        });
+        setSubjects(sorted);
+        safeLocalStorage.setItem('labzero_subjects_cache', JSON.stringify(sorted));
+        safeLocalStorage.setItem('labzero_last_subject_count', sorted.length.toString());
+      }
+    }).catch(console.error);
   }, []);
 
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
+
+  // Lazy-load heavier datasets (Elements, Molecules) only when navigating away from the Landing Page
+  useEffect(() => {
+    if (viewState !== ViewState.LANDING) {
+      if (elements.length === 0) {
+        import('./services/elementsService')
+          .then(({ getElements }) => getElements())
+          .then((data) => {
+            if (data?.length) {
+              setElements(data);
+              setSelectedElement(data[0]);
+            }
+          })
+          .catch(console.error);
+      }
+
+      if (molecules.length === 0) {
+        import('./services/moleculesService')
+          .then(({ getMolecules }) => getMolecules())
+          .then((data) => {
+            if (data?.length) {
+              setMolecules(data);
+            }
+          })
+          .catch(console.error);
+      }
+    }
+  }, [viewState, elements.length, molecules.length]);
 
   // Restore scroll position when view state changes
   // (Logic moved to ref callbacks for immediate execution)
@@ -323,16 +330,16 @@ const AppContent: React.FC = () => {
   // ================= THEME =================
   useEffect(() => {
     document.body.classList.toggle('light-mode', theme === 'light');
-    localStorage.setItem('labzero_theme', theme);
+    safeLocalStorage.setItem('labzero_theme', theme);
   }, [theme]);
 
   useEffect(() => {
     document.body.classList.toggle('colorblind-mode', colorBlindMode);
-    localStorage.setItem('labzero_colorblind', colorBlindMode.toString());
+    safeLocalStorage.setItem('labzero_colorblind', colorBlindMode.toString());
   }, [colorBlindMode]);
 
   useEffect(() => {
-    localStorage.setItem('labzero_language', language);
+    safeLocalStorage.setItem('labzero_language', language);
   }, [language]);
 
 
@@ -402,8 +409,9 @@ const AppContent: React.FC = () => {
     setSelectedTopic(null);
   };
 
-  const handleStartTopicMeeting = useCallback((topic: Topic) => {
+  const handleStartTopicMeeting = useCallback(async (topic: Topic) => {
     setSelectedTopic(topic);
+    const { createRoomId } = await import('./utils/peerUtils');
     setMeetingConfig({
       roomId: createRoomId(`topic-${topic.id}`),
       title: `${topic.name} Online Class`,
@@ -413,7 +421,8 @@ const AppContent: React.FC = () => {
     setViewState(ViewState.MEETING);
   }, [user?.role]);
 
-  const handleStartClassMeeting = useCallback((classroom: any) => {
+  const handleStartClassMeeting = useCallback(async (classroom: any) => {
+    const { createRoomId } = await import('./utils/peerUtils');
     setMeetingConfig({
       roomId: createRoomId(`class-${classroom?.id || classroom?.invite_code || classroom?.name || 'room'}`),
       title: `${classroom?.name || 'Classroom'} Online Class`,
@@ -429,16 +438,14 @@ const AppContent: React.FC = () => {
   }, [selectedTopic]);
 
   // ================= QUIZ =================
-  const startQuiz = () => {
+  const startQuiz = async () => {
     if (!selectedSubject) return;
-
+    const { generateQuizAI } = await import('./data/quizData');
     const generated = generateQuizAI(selectedSubject.slug, quizLevel);
-
     if (!generated || generated.length === 0) {
       alert("Quiz generation failed");
       return;
     }
-
     setQuizQuestions(generated);
     setShowQuiz(true);
   };
@@ -549,195 +556,220 @@ const AppContent: React.FC = () => {
   // ================= AUTH =================
 
   return (
-    <Skeleton name="labzero-main" loading={isLoading}>
-      <div className={`h-screen w-full flex flex-col bg-transparent overflow-hidden relative transition-colors duration-500 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-        <BackgroundLayer theme={theme} />
+    <div className={`h-screen w-full flex flex-col bg-transparent overflow-hidden relative transition-colors duration-500 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+      <BackgroundLayer theme={theme} />
 
-        {/* ================= QUIZ SCREEN ================= */}
-        <AnimatePresence>
-          {showQuiz && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[200]"
-            >
+      {/* ================= QUIZ SCREEN ================= */}
+      <>
+        {showQuiz && (
+          <div className="fixed inset-0 z-[200]">
+            <React.Suspense fallback={<HeroSkeleton theme={theme} />}>
               <QuizPage
                 questions={quizQuestions}
                 onExit={() => setShowQuiz(false)}
               />
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </React.Suspense>
+          </div>
+        )}
+      </>
 
 
 
-        {!showQuiz && (
+      {!showQuiz && (
+        <>
+          <React.Suspense fallback={null}>
+            <AnimationShell>
+              <>
+                {/* 1. MAIN LANDING PAGE (Now includes the Class Dropdown internally) */}
+                {viewState === ViewState.LANDING && (
+                  <div
+                    key="landing"
+                    ref={(el) => {
+                      landingScrollRef.current = el;
+                      if (el) {
+                        el.scrollTop = savedScrollPositions.current[ViewState.LANDING] || 0;
+                      }
+                    }}
+                    onScroll={(e) => {
+                      savedScrollPositions.current[ViewState.LANDING] = e.currentTarget.scrollTop;
+                    }}
+                    className="h-full w-full overflow-y-auto"
+                  >
+                    <React.Suspense fallback={<HeroSkeleton theme={theme} />}>
+                      <LandingPage
+                        onSelectSubject={handleSelectSubject}
+                        language={language}
+                        theme={theme}
+                        user={user}
+                        selectedClass={selectedClass}         // Pass current class state
+                        onSelectClass={setSelectedClass}      // Let dropdown update the state
+                        onLoginClick={() => setShowAuth(true)}
+                        onLogoutClick={logout}
+                        onProfileClick={() => setShowAuth(true)}
+                        onOpenGlossary={() => setShowGlossary(true)}
+                        onDashboardClick={() => setViewState(ViewState.DASHBOARD)}
+                        onAdminClick={() => setViewState(ViewState.ADMIN)}
+                        onLaunchSimulation={handleLaunchSimulation}
+                        subjects={subjects}
+                        stats={publicStats}
+                      />
+                    </React.Suspense>
+                  </div>
+                )}
+
+                {/* 2. SUBJECT PAGE (Preserves selected class to filter units) */}
+                {viewState === ViewState.SUBJECT && selectedSubject && (
+                  <div
+                    key="subject"
+                    ref={(el) => {
+                      subjectScrollRef.current = el;
+                      if (el) {
+                        el.scrollTop = savedScrollPositions.current[ViewState.SUBJECT] || 0;
+                      }
+                    }}
+                    onScroll={(e) => {
+                      savedScrollPositions.current[ViewState.SUBJECT] = e.currentTarget.scrollTop;
+                    }}
+                    className="h-full w-full overflow-y-auto"
+                  >
+                    <React.Suspense fallback={null}>
+                      <SubjectPage
+                        subject={selectedSubject}
+                        onSelectTopic={handleSelectTopic}
+                        onBack={() => setViewState(ViewState.LANDING)} // Directly back to landing!
+                        language={language}
+                        theme={theme}
+                        onStartQuiz={startQuiz}
+                        quizLevel={quizLevel}
+                        onLevelChange={setQuizLevel}
+                        selectedClass={selectedClass} // Keeps unit modules filtered
+                      />
+                    </React.Suspense>
+                  </div>
+                )}
+
+                {/* ... Rest of your views (TOPIC, DASHBOARD, ADMIN) stay the same ... */}
+
+
+                {/* ... Remaining view conditions (TOPIC, DASHBOARD, ADMIN) persist cleanly ... */}
+                {viewState === ViewState.TOPIC && selectedTopic && (
+                  <div key="topic" className="h-full w-full">
+                    <React.Suspense fallback={null}>
+                      <TopicPage
+                        topic={selectedTopic}
+                        onBack={handleBackToSubject}
+                        visualization={renderVisualization(selectedTopic.slug, selectedTopic)}
+                        language={language}
+                        onStartQuiz={startQuiz}
+                        onStartMeeting={handleStartTopicMeeting}
+                      />
+                    </React.Suspense>
+                  </div>
+                )}
+                {viewState === ViewState.MEETING && meetingConfig && (
+                  <div key="meeting" className="h-full w-full">
+                    <React.Suspense fallback={null}>
+                      <MeetingRoom config={meetingConfig} onLeave={handleLeaveMeeting} />
+                    </React.Suspense>
+                  </div>
+                )}
+                {viewState === ViewState.DASHBOARD && user && (
+                  <div key="dashboard" className="h-full w-full">
+                    <React.Suspense fallback={null}>
+                      {user.role === 'teacher' ? <TeacherDashboard onBack={handleBackToLanding} onStartMeeting={handleStartClassMeeting} /> : user.role === 'institute' ? <InstituteDashboard onBack={handleBackToLanding} /> : <StudentDashboard onBack={handleBackToLanding} onLaunchLab={handleLaunchSimulation} onStartMeeting={handleStartClassMeeting} />}
+                    </React.Suspense>
+                  </div>
+                )}
+                {viewState === ViewState.ADMIN && user && (user.is_staff || user.is_superuser) && (
+                  <div key="admin" className="h-full w-full overflow-y-auto">
+                    <React.Suspense fallback={null}>
+                      <AdminDashboard onBack={handleBackToLanding} onDataUpdate={fetchAllData} />
+                    </React.Suspense>
+                  </div>
+                )}
+              </>
+
+            </AnimationShell>
+          </React.Suspense>
+
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className={`fixed bottom-24 right-6 md:right-24 w-14 h-14 md:w-16 md:h-16 rounded-2xl hidden md:flex items-center justify-center transition-all duration-500 z-[110] ${showSettings ? 'bg-indigo-500 rotate-90' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
+          >
+            <Settings size={24} className={showSettings ? 'text-white' : 'text-slate-400'} />
+          </button>
+
+
           <>
-            <AnimatePresence mode="wait">
-              {/* 1. MAIN LANDING PAGE (Now includes the Class Dropdown internally) */}
-              {viewState === ViewState.LANDING && (
-                <motion.div 
-                  key="landing" 
-                  ref={(el) => {
-                    landingScrollRef.current = el;
-                    if (el) {
-                      el.scrollTop = savedScrollPositions.current[ViewState.LANDING] || 0;
-                    }
-                  }}
-                  onScroll={(e) => {
-                    savedScrollPositions.current[ViewState.LANDING] = e.currentTarget.scrollTop;
-                  }}
-                  className="h-full w-full overflow-y-auto"
-                >
-                  <LandingPage
-                    onSelectSubject={handleSelectSubject}
-                    language={language}
+            {showSettings && (
+              <>
+                <div
+                  onClick={() => setShowSettings(false)}
+                  className={`fixed inset-0 z-[115] backdrop-blur-[2px] cursor-pointer ${theme === 'dark' ? 'bg-black/20' : 'bg-slate-900/10'}`}
+                />
+                <React.Suspense fallback={null}>
+                  <SettingsMenu
+                    onClose={() => setShowSettings(false)}
                     theme={theme}
+                    onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+                    language={language}
+                    onLanguageChange={setLanguage}
+                    onOpenMindMap={() => { setShowMindMap(true); setShowSettings(false); }}
+                    onOpenGlossary={() => { setShowGlossary(true); setShowSettings(false); }}
+                    isInstallable={isInstallable}
+                    onInstallApp={handleInstallClick}
+                    cameraSource={cameraSource}
+                    onCameraSourceChange={setCameraSource}
+                    phoneSenderUrl={phoneSenderUrl}
+                    copyStatus={copyStatus}
+                    onCopyPhoneLink={copyPhoneLink}
+                    colorBlindMode={colorBlindMode}
+                    onToggleColorBlind={() => setColorBlindMode(prev => !prev)}
                     user={user}
-                    selectedClass={selectedClass}         // Pass current class state
-                    onSelectClass={setSelectedClass}      // Let dropdown update the state
-                    onLoginClick={() => setShowAuth(true)}
-                    onLogoutClick={logout}
-                    onProfileClick={() => setShowAuth(true)}
-                    onOpenGlossary={() => setShowGlossary(true)}
-                    onDashboardClick={() => setViewState(ViewState.DASHBOARD)}
-                    onAdminClick={() => setViewState(ViewState.ADMIN)}
-                    onLaunchSimulation={handleLaunchSimulation}
-                    subjects={subjects}
-                    stats={publicStats}
                   />
-                </motion.div>
-              )}
-
-              {/* 2. SUBJECT PAGE (Preserves selected class to filter units) */}
-              {viewState === ViewState.SUBJECT && selectedSubject && (
-                <motion.div 
-                  key="subject" 
-                  ref={(el) => {
-                    subjectScrollRef.current = el;
-                    if (el) {
-                      el.scrollTop = savedScrollPositions.current[ViewState.SUBJECT] || 0;
-                    }
-                  }}
-                  onScroll={(e) => {
-                    savedScrollPositions.current[ViewState.SUBJECT] = e.currentTarget.scrollTop;
-                  }}
-                  className="h-full w-full overflow-y-auto"
-                >
-                  <SubjectPage
-                    subject={selectedSubject}
-                    onSelectTopic={handleSelectTopic}
-                    onBack={() => setViewState(ViewState.LANDING)} // Directly back to landing!
-                    language={language}
-                    theme={theme}
-                    onStartQuiz={startQuiz}
-                    quizLevel={quizLevel}
-                    onLevelChange={setQuizLevel}
-                    selectedClass={selectedClass} // Keeps unit modules filtered
-                  />
-                </motion.div>
-              )}
-
-              {/* ... Rest of your views (TOPIC, DASHBOARD, ADMIN) stay the same ... */}
-
-
-              {/* ... Remaining view conditions (TOPIC, DASHBOARD, ADMIN) persist cleanly ... */}
-              {viewState === ViewState.TOPIC && selectedTopic && (
-                <motion.div key="topic" className="h-full w-full">
-                  <TopicPage
-                    topic={selectedTopic}
-                    onBack={handleBackToSubject}
-                    visualization={renderVisualization(selectedTopic.slug, selectedTopic)}
-                    language={language}
-                    onStartQuiz={startQuiz}
-                    onStartMeeting={handleStartTopicMeeting}
-                  />
-                </motion.div>
-              )}
-              {viewState === ViewState.MEETING && meetingConfig && (
-                <motion.div key="meeting" className="h-full w-full">
-                  <MeetingRoom config={meetingConfig} onLeave={handleLeaveMeeting} />
-                </motion.div>
-              )}
-              {viewState === ViewState.DASHBOARD && user && (
-                <motion.div key="dashboard" className="h-full w-full">
-                  {user.role === 'teacher' ? <TeacherDashboard onBack={handleBackToLanding} onStartMeeting={handleStartClassMeeting} /> : user.role === 'institute' ? <InstituteDashboard onBack={handleBackToLanding} /> : <StudentDashboard onBack={handleBackToLanding} onLaunchLab={handleLaunchSimulation} onStartMeeting={handleStartClassMeeting} />}
-                </motion.div>
-              )}
-              {viewState === ViewState.ADMIN && user && (user.is_staff || user.is_superuser) && (
-                <motion.div key="admin" className="h-full w-full overflow-y-auto">
-                  <AdminDashboard onBack={handleBackToLanding} onDataUpdate={fetchAllData} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className={`fixed bottom-24 right-6 md:right-24 w-14 h-14 md:w-16 md:h-16 rounded-2xl hidden md:flex items-center justify-center transition-all duration-500 z-[110] ${showSettings ? 'bg-indigo-500 rotate-90' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
-            >
-              <Settings size={24} className={showSettings ? 'text-white' : 'text-slate-400'} />
-            </button>
-
-
-            <AnimatePresence>
-              {showSettings && (
-                <>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setShowSettings(false)}
-                    className={`fixed inset-0 z-[115] backdrop-blur-[2px] cursor-pointer ${theme === 'dark' ? 'bg-black/20' : 'bg-slate-900/10'}`}
-                  />
-                    <SettingsMenu
-                      onClose={() => setShowSettings(false)}
-                      theme={theme}
-                      onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
-                      language={language}
-                      onLanguageChange={setLanguage}
-                      onOpenMindMap={() => { setShowMindMap(true); setShowSettings(false); }}
-                      onOpenGlossary={() => { setShowGlossary(true); setShowSettings(false); }}
-                      isInstallable={isInstallable}
-                      onInstallApp={handleInstallClick}
-                      cameraSource={cameraSource}
-                      onCameraSourceChange={setCameraSource}
-                      phoneSenderUrl={phoneSenderUrl}
-                      copyStatus={copyStatus}
-                      onCopyPhoneLink={copyPhoneLink}
-                      colorBlindMode={colorBlindMode}
-                      onToggleColorBlind={() => setColorBlindMode(prev => !prev)}
-                      user={user}
-                    />
-                </>
-              )}
-            </AnimatePresence>
-
-            {viewState !== ViewState.ADMIN && (
-              <BottomNav
-                currentView={viewState}
-                onNavigate={setViewState}
-                onOpenGlossary={() => setShowGlossary(!showGlossary)}
-                onOpenSettings={() => setShowSettings(!showSettings)}
-                onOpenProfile={() => setShowAuth(!showAuth)}
-                showSettings={showSettings}
-                showGlossary={showGlossary}
-                showAuth={showAuth}
-                language={language}
-                user={user}
-                theme={theme}
-              />
+                </React.Suspense>
+              </>
             )}
+          </>
 
-            <AnimatePresence>
-              {showGlossary && <Glossary language={language} onClose={() => setShowGlossary(false)} />}
-              {showAuth && <AuthOverlay onClose={() => setShowAuth(false)} />}
-              {showMindMap && <MemoryMapOverlay subjects={subjects} onClose={() => setShowMindMap(false)} />}
-            </AnimatePresence>
+          {viewState !== ViewState.ADMIN && (
+            <BottomNav
+              currentView={viewState}
+              onNavigate={setViewState}
+              onOpenGlossary={() => setShowGlossary(!showGlossary)}
+              onOpenSettings={() => setShowSettings(!showSettings)}
+              onOpenProfile={() => setShowAuth(!showAuth)}
+              showSettings={showSettings}
+              showGlossary={showGlossary}
+              showAuth={showAuth}
+              language={language}
+              user={user}
+              theme={theme}
+            />
+          )}
 
+          <>
+            {showGlossary && (
+              <React.Suspense fallback={null}>
+                <Glossary language={language} onClose={() => setShowGlossary(false)} />
+              </React.Suspense>
+            )}
+            {showAuth && (
+              <React.Suspense fallback={null}>
+                <AuthOverlay onClose={() => setShowAuth(false)} />
+              </React.Suspense>
+            )}
+            {showMindMap && (
+              <React.Suspense fallback={null}>
+                <MemoryMapOverlay subjects={subjects} onClose={() => setShowMindMap(false)} />
+              </React.Suspense>
+            )}
+          </>
+
+          <React.Suspense fallback={null}>
             <GestureController
-              isActive={isGestureActive && user?.role !== 'student'}
-              onToggle={() => { if (user?.role !== 'student') setIsGestureActive(!isGestureActive); }}
+              isActive={isGestureActive}
+              onToggle={() => setIsGestureActive(!isGestureActive)}
               onBack={handleGestureBack}
               onScroll={handleGestureScroll}
               onRotate={handleGestureRotate}
@@ -750,19 +782,22 @@ const AppContent: React.FC = () => {
               onCameraSourceChange={setCameraSource}
               theme={theme}
             />
+          </React.Suspense>
 
-            {isGestureActive && gesturePos && user?.role !== 'student' && (
-              <motion.div
-                className="fixed w-4 h-4 rounded-full bg-indigo-500 pointer-events-none z-[200] shadow-[0_0_20px_rgba(99,102,241,0.5)]"
-                animate={{ left: `${gesturePos.x * 100}%`, top: `${gesturePos.y * 100}%` }}
-                transition={{ type: 'spring', stiffness: 1000, damping: 60, mass: 1 }}
-                style={{ transform: 'translate(-50%, -50%)' }}
-              />
-            )}
-          </>
-        )}
-      </div>
-    </Skeleton>
+          {isGestureActive && gesturePos && user?.role !== 'student' && (
+            <div
+              className="fixed w-4 h-4 rounded-full bg-indigo-500 pointer-events-none z-[200] shadow-[0_0_20px_rgba(99,102,241,0.5)]"
+              style={{
+                left: `${gesturePos.x * 100}%`,
+                top: `${gesturePos.y * 100}%`,
+                transform: 'translate(-50%, -50%)',
+                transition: 'left 120ms ease, top 120ms ease',
+              }}
+            />
+          )}
+        </>
+      )}
+    </div>
   );
 };
 

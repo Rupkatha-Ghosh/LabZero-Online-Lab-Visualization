@@ -7,6 +7,7 @@ import {
   ChevronDown, ChevronUp, CheckCircle, Info
 } from 'lucide-react';
 import QRCodePairing from './QRCodePairing';
+import { safeLocalStorage } from '../../utils/safeStorage';
 
 interface SettingsMenuProps {
   onClose: () => void;
@@ -79,7 +80,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
     setSubmitStatus('idle');
 
     try {
-      const token = localStorage.getItem('labzero_token');
+      const token = safeLocalStorage.getItem('labzero_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/feedback/`, {
         method: 'POST',
         headers: {
@@ -309,10 +310,10 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                 <div className={`p-2.5 rounded-xl transition-all ${
                   isDark ? 'bg-indigo-400/20 text-indigo-400' : 'bg-indigo-100 text-indigo-600'
                 } group-hover:scale-110`}>
-                  {cameraSource === 'local' ? <Camera size={18} /> : <Smartphone size={18} />}
+                  {cameraSource === 'local' ? <Camera size={18} className={isDark ? 'text-white' : 'text-slate-900'} /> : <Smartphone size={18} className={isDark ? 'text-white' : 'text-slate-900'} />}
                 </div>
                 <div className="text-left">
-                  <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Gesture Camera</p>
+                  <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'} font-sans`}>Gesture Camera</p>
                   <p className={`text-[10px] font-medium opacity-50 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                     {isCameraExpanded ? (cameraSource === 'local' ? 'Local Webcam' : 'Phone Connection') : 'Source Settings'}
                   </p>

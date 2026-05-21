@@ -9,7 +9,7 @@ import { getResourcesByTopic, deleteResource } from '../../services/resourceServ
 import { motion, AnimatePresence } from 'motion/react';
 import { Language, translations } from '../../services/translations';
 import { useAuth } from '../../context/AuthContext';
-import { Skeleton } from 'boneyard-js/react';
+import { Skeleton } from '../common/Skeleton';
 
 interface TopicPageProps {
   topic: Topic;
@@ -167,7 +167,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
             >
               <div className="max-w-7xl mx-auto space-y-20">
                 {/* Theory Content */}
-                 <div className="space-y-8 sm:space-y-12">
+                <div className="space-y-8 sm:space-y-12">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-3">
                       <div className="h-px w-12 bg-primary" />

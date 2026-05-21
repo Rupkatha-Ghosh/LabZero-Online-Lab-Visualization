@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { safeLocalStorage } from '../../utils/safeStorage';
 import { uploadAssignmentFile, deleteAssignmentFile } from '../../utils/supabaseClient';
 import {
   Users,
@@ -24,7 +25,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
-import { Skeleton } from 'boneyard-js/react';
+import { Skeleton } from '../common/Skeleton';
 import { classroomsService } from '../../services/classroomsService';
 import { getSubjects } from '../../services/subjectsService';
 import AttendancePortal from '../shared/AttendancePortal';
@@ -126,7 +127,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
         await deleteAssignmentFile(taskToDelete.file_url);
       }
 
-      const token = localStorage.getItem('labzero_token');
+      const token = safeLocalStorage.getItem('labzero_token');
       await axios.delete(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'}/classrooms/assignments/${assignmentId}/`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -151,10 +152,10 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
       alert("Please select a classroom and enter a title.");
       return;
     }
-    
+
     try {
       setIsCreating(true);
-      
+
       let finalFileUrl = '';
       if (newAssignment.file) {
         finalFileUrl = await uploadAssignmentFile(newAssignment.file, targetClassroomId);
@@ -169,9 +170,9 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
         file_url: finalFileUrl
       };
 
-      const token = localStorage.getItem('labzero_token');
+      const token = safeLocalStorage.getItem('labzero_token');
       await axios.post(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'}/classrooms/assignments/`, payload, {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
@@ -180,7 +181,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
       setIsAssignmentModalOpen(false);
       setNewAssignment({ title: '', description: '', topic: '', due_date: '', file: null, classroom: '' });
       fetchClasses();
-      
+
       const updatedClasses = await classroomsService.getClassrooms();
       setClasses(updatedClasses);
       if (selectedClass) {
@@ -291,13 +292,13 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
               </AnimatePresence>
             </div>
           )}
-          <button 
+          <button
             onClick={() => setIsCreateModalOpen(true)}
             className="teacher-secondary-button px-6 py-3 rounded-2xl bg-white/90 border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 hover:text-slate-950 transition-all shadow-sm hover:border-sky-200"
           >
             Create Class
           </button>
-          <button 
+          <button
             onClick={() => {
               // Pre-fill classroom if one is selected
               setNewAssignment(prev => ({ ...prev, classroom: selectedClass?.id || '' }));
@@ -485,13 +486,12 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
               className="teacher-detail-panel relative w-full h-full max-w-6xl bg-[#f8fafc] border border-white shadow-2xl overflow-hidden flex flex-col md:rounded-[40px]"
             >
               <div className="teacher-detail-bg absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.15),_transparent_26rem),radial-gradient(circle_at_bottom_left,_rgba(124,58,237,0.09),_transparent_24rem)] pointer-events-none" />
-              
+
               {/* Overlay Header */}
               <div className="teacher-detail-header p-8 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 bg-white/82 backdrop-blur-xl">
                 <div className="flex items-center gap-6">
-                  <div className={`w-16 h-16 rounded-3xl flex items-center justify-center border shadow-lg ${
-                    selectedClass.is_live ? 'bg-sky-100 text-sky-700 border-sky-200' : 'bg-slate-100 text-slate-500 border-slate-200'
-                  }`}>
+                  <div className={`w-16 h-16 rounded-3xl flex items-center justify-center border shadow-lg ${selectedClass.is_live ? 'bg-sky-100 text-sky-700 border-sky-200' : 'bg-slate-100 text-slate-500 border-slate-200'
+                    }`}>
                     <Play size={28} />
                   </div>
                   <div>
@@ -513,14 +513,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                       Start Online Class
                     </button>
                   )}
-                  <button 
+                  <button
                     onClick={() => handleDeleteClass(selectedClass.id, selectedClass.name)}
                     className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                     title="Delete Class"
                   >
                     <Trash2 size={20} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => setSelectedClass(null)}
                     className="teacher-secondary-button p-3 rounded-2xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 transition-all shadow-sm"
                   >
@@ -541,9 +541,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all ${
-                          activeTab === tab.id ? 'bg-white text-sky-700 shadow-sm border border-sky-100' : 'text-slate-500 hover:text-slate-900'
-                        }`}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-white text-sky-700 shadow-sm border border-sky-100' : 'text-slate-500 hover:text-slate-900'
+                          }`}
                       >
                         <tab.icon size={14} />
                         {tab.label}
@@ -553,7 +552,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
 
                   <div className="relative group max-w-md w-full">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-600 transition-colors" size={18} />
-                    <input 
+                    <input
                       type="text"
                       placeholder={`Search ${activeTab}...`}
                       value={searchQuery}
@@ -568,8 +567,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                   {activeTab === 'students' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {(selectedClass.students || [])
-                        .filter((s: any) => 
-                          s.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        .filter((s: any) =>
+                          s.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           `${s.first_name} ${s.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
                         )
                         .map((student: any) => (
@@ -587,7 +586,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                               <Trash2 size={16} />
                             </button>
                           </div>
-                      ))}
+                        ))}
                       {(!selectedClass.students || selectedClass.students.length === 0) && (
                         <div className="col-span-full py-20 text-center space-y-4">
                           <div className="w-16 h-16 rounded-3xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 mx-auto">
@@ -616,9 +615,9 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="relative">
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setActiveMenuId(activeMenuId === task.id ? null : task.id);
@@ -627,7 +626,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                             >
                               <MoreVertical size={18} />
                             </button>
-                            
+
                             <AnimatePresence>
                               {activeMenuId === task.id && (
                                 <motion.div
@@ -636,7 +635,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                                   exit={{ opacity: 0, scale: 0.9, y: 10 }}
                                   className="absolute right-0 top-12 w-40 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden"
                                 >
-                                  <button 
+                                  <button
                                     onClick={() => handleDeleteAssignment(task.id)}
                                     className="w-full flex items-center gap-3 px-4 py-3 text-rose-400 hover:bg-rose-500/10 transition-all text-xs font-mono uppercase tracking-widest"
                                   >
@@ -654,7 +653,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                             <Plus size={32} strokeWidth={1} />
                           </div>
                           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">No assignments created yet</p>
-                          <button 
+                          <button
                             onClick={() => {
                               setNewAssignment(prev => ({ ...prev, classroom: selectedClass.id }));
                               setIsAssignmentModalOpen(true);
@@ -678,20 +677,20 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
       <AnimatePresence>
         {isCreateModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsCreateModalOpen(false)}
-              className="teacher-modal-scrim absolute inset-0 bg-slate-900/35 backdrop-blur-sm" 
+              className="teacher-modal-scrim absolute inset-0 bg-slate-900/35 backdrop-blur-sm"
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               className="teacher-form-modal relative w-full max-w-md p-8 rounded-[40px] bg-white border border-white shadow-2xl overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-violet-100/70 via-transparent to-sky-100/70 pointer-events-none" />
-              
+
               <div className="relative z-10 space-y-6">
                 <div className="space-y-2 text-center">
                   <div className="w-16 h-16 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-700 mx-auto mb-4">
@@ -704,9 +703,9 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                 <form onSubmit={handleCreateClass} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em] ml-2">Classroom Name</label>
-                    <input 
+                    <input
                       autoFocus
-                      type="text" 
+                      type="text"
                       placeholder="E.g. Grade 11 Physics - Sec A"
                       value={newClassName}
                       onChange={(e) => setNewClassName(e.target.value)}
@@ -715,14 +714,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                   </div>
 
                   <div className="flex gap-3 pt-2">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setIsCreateModalOpen(false)}
                       className="teacher-secondary-button flex-1 py-4 rounded-2xl bg-white border border-slate-200 text-slate-600 text-[10px] font-mono uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
                     >
                       Cancel
                     </button>
-                    <button 
+                    <button
                       type="submit"
                       disabled={isCreating || !newClassName}
                       className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-sky-600 text-white text-[10px] font-mono uppercase tracking-widest shadow-lg disabled:opacity-50 disabled:grayscale transition-all"
@@ -740,20 +739,20 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
       <AnimatePresence>
         {isAssignmentModalOpen && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsAssignmentModalOpen(false)}
-              className="teacher-modal-scrim absolute inset-0 bg-slate-900/35 backdrop-blur-sm" 
+              className="teacher-modal-scrim absolute inset-0 bg-slate-900/35 backdrop-blur-sm"
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               className="teacher-form-modal relative w-full max-w-2xl p-8 rounded-[40px] bg-white border border-white shadow-2xl overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-sky-100/70 via-transparent to-violet-100/70 pointer-events-none" />
-              
+
               <div className="relative z-10 space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -765,7 +764,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                       <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">For {selectedClass?.name}</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => {
                       setIsAssignmentModalOpen(false);
                       setNewAssignment({ title: '', description: '', topic: '', due_date: '', file: null, classroom: '' });
@@ -780,10 +779,10 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                   <div className="space-y-2">
                     <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Target Classroom</label>
                     <div className="relative">
-                      <select 
+                      <select
                         required
                         value={newAssignment.classroom}
-                        onChange={(e) => setNewAssignment({...newAssignment, classroom: e.target.value})}
+                        onChange={(e) => setNewAssignment({ ...newAssignment, classroom: e.target.value })}
                         className="teacher-input w-full px-6 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:border-sky-300 outline-none transition-all appearance-none"
                       >
                         <option value="">Select a Classroom</option>
@@ -798,21 +797,21 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Assignment Title</label>
-                      <input 
+                      <input
                         required
-                        type="text" 
+                        type="text"
                         placeholder="E.g. Hydrogen Spectroscopy Lab"
                         value={newAssignment.title}
-                        onChange={(e) => setNewAssignment({...newAssignment, title: e.target.value})}
+                        onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
                         className="teacher-input w-full px-6 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-300 outline-none transition-all"
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Due Date</label>
-                      <input 
+                      <input
                         type="datetime-local"
                         value={newAssignment.due_date}
-                        onChange={(e) => setNewAssignment({...newAssignment, due_date: e.target.value})}
+                        onChange={(e) => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
                         className="teacher-input w-full px-6 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:border-sky-300 outline-none transition-all"
                       />
                     </div>
@@ -821,9 +820,9 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                   <div className="space-y-2">
                     <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Related Lab Topic</label>
                     <div className="relative">
-                      <select 
+                      <select
                         value={newAssignment.topic}
-                        onChange={(e) => setNewAssignment({...newAssignment, topic: e.target.value})}
+                        onChange={(e) => setNewAssignment({ ...newAssignment, topic: e.target.value })}
                         className="teacher-input w-full px-6 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:border-sky-300 outline-none transition-all appearance-none"
                       >
                         <option value="">Select a Lab (Optional)</option>
@@ -837,10 +836,10 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Instructions</label>
-                    <textarea 
+                    <textarea
                       placeholder="Enter assignment details or instructions..."
                       value={newAssignment.description}
-                      onChange={(e) => setNewAssignment({...newAssignment, description: e.target.value})}
+                      onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
                       rows={3}
                       className="teacher-input w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-300 outline-none transition-all resize-none"
                     />
@@ -849,9 +848,9 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                   <div className="space-y-2">
                     <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Attachment (PDF/Doc)</label>
                     <div className="relative group">
-                      <input 
-                        type="file" 
-                        onChange={(e) => setNewAssignment({...newAssignment, file: e.target.files?.[0] || null})}
+                      <input
+                        type="file"
+                        onChange={(e) => setNewAssignment({ ...newAssignment, file: e.target.files?.[0] || null })}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
                       <div className="teacher-input w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 border-dashed group-hover:border-sky-300 transition-all flex items-center gap-4">
@@ -864,7 +863,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                   </div>
 
                   <div className="flex gap-3 pt-2">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => {
                         setIsAssignmentModalOpen(false);
@@ -874,7 +873,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                     >
                       Cancel
                     </button>
-                    <button 
+                    <button
                       type="submit"
                       disabled={isCreating || !newAssignment.title}
                       className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-sky-600 to-violet-600 text-white text-[10px] font-mono uppercase tracking-widest shadow-lg disabled:opacity-50 disabled:grayscale transition-all flex items-center justify-center gap-2"
