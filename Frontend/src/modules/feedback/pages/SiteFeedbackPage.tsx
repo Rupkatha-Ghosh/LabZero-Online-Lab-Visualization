@@ -297,6 +297,153 @@ const defaultStudentDropdownAnswers = Object.fromEntries(
   studentDropdownQuestions.map((question) => [question.id, ''])
 ) as Record<(typeof studentDropdownQuestions)[number]['id'], string>;
 
+const teacherTextQuestions = [
+  {
+    id: 'classEffectiveness',
+    label: 'How effective is LabZero for conducting classes?',
+    placeholder: 'Describe how LabZero supports lectures, lab sessions, discussion, and follow-up work.',
+  },
+  {
+    id: 'studentManagementChallenges',
+    label: 'What challenges did you face while managing students?',
+    placeholder: 'Mention attendance, participation, tracking, communication, or classroom control issues.',
+  },
+  {
+    id: 'mostUsefulTeachingFeature',
+    label: 'Which teaching feature did you find most useful?',
+    placeholder: 'Example: live classes, resource sharing, attendance, analytics, assignments...',
+  },
+  {
+    id: 'additionalTeachingTools',
+    label: 'What additional tools would improve teaching experience?',
+    placeholder: 'Suggest tools for assessment, collaboration, monitoring, content delivery, or analytics.',
+  },
+  {
+    id: 'classroomManagementSuggestions',
+    label: 'Any suggestions for improving classroom management?',
+    placeholder: 'Share practical changes that would help you manage classes more efficiently.',
+  },
+] as const;
+
+const teacherRatingQuestions = [
+  { id: 'classroomManagementEase', label: 'Rate the ease of classroom management.' },
+  { id: 'resourceSharingEfficiency', label: 'Rate the efficiency of resource sharing.' },
+  { id: 'studentEngagementLevel', label: 'Rate the student engagement level.' },
+  { id: 'liveClassPerformance', label: 'Rate the performance of live class features.' },
+  { id: 'overallTeachingExperience', label: 'Rate your overall teaching experience on LabZero.' },
+] as const;
+
+const teacherCheckboxQuestions = [
+  {
+    id: 'frequentFeatures',
+    label: 'Which features do you use frequently?',
+    options: [
+      'Attendance Management',
+      'Notes Sharing',
+      'Assignment Upload',
+      'Live Classes',
+      'Student Analytics',
+      'Classroom Chat',
+      'Recorded Sessions',
+      'Assessment / Quiz Tools',
+    ],
+  },
+  {
+    id: 'neededImprovements',
+    label: 'Which improvements are needed?',
+    options: [
+      'Better Video Quality',
+      'Easier Student Monitoring',
+      'Faster Uploads',
+      'Better Notifications',
+      'Improved Analytics',
+      'Bulk Assignment Actions',
+      'Better Attendance Reports',
+    ],
+  },
+  {
+    id: 'uploadedMaterials',
+    label: 'What teaching materials do you upload?',
+    options: ['PDFs', 'PPTs', 'Videos', 'Assignments', 'External Links', 'Worksheets', 'Lab Manuals'],
+  },
+] as const;
+
+const teacherRadioQuestions = [
+  {
+    id: 'comfortLevel',
+    label: 'How comfortable are you using LabZero?',
+    options: ['Very Comfortable', 'Comfortable', 'Neutral', 'Uncomfortable'],
+  },
+  {
+    id: 'improvesProductivity',
+    label: 'Does LabZero improve classroom productivity?',
+    options: ['Yes', 'No'],
+  },
+  {
+    id: 'continueUsing',
+    label: 'Would you continue using LabZero?',
+    options: ['Yes', 'No'],
+  },
+] as const;
+
+const teacherDropdownQuestions = [
+  {
+    id: 'department',
+    label: 'Select your department.',
+    options: [
+      'Science',
+      'Mathematics',
+      'Computer Science',
+      'Engineering',
+      'Biology',
+      'Chemistry',
+      'Physics',
+      'Humanities',
+      'Other',
+    ],
+  },
+  {
+    id: 'teachingExperienceRange',
+    label: 'Select your teaching experience range.',
+    options: ['0-1 years', '2-5 years', '6-10 years', '11-15 years', '16+ years'],
+  },
+  {
+    id: 'averageClassSize',
+    label: 'Select average class size.',
+    options: ['Below 20 students', '20-40 students', '41-60 students', '61-100 students', 'More than 100 students'],
+  },
+  {
+    id: 'preferredTeachingMode',
+    label: 'Select preferred teaching mode.',
+    options: ['Live online teaching', 'Recorded lesson support', 'Hybrid classroom', 'In-person with digital resources', 'Virtual lab-led teaching'],
+  },
+  {
+    id: 'platformUsageFrequency',
+    label: 'Select frequency of platform usage.',
+    options: ['Daily', 'Several times a week', 'Weekly', 'Occasionally', 'Rarely'],
+  },
+] as const;
+
+const defaultTeacherTextAnswers = Object.fromEntries(
+  teacherTextQuestions.map((question) => [question.id, ''])
+) as Record<(typeof teacherTextQuestions)[number]['id'], string>;
+
+const defaultTeacherRatings = Object.fromEntries(
+  teacherRatingQuestions.map((question) => [question.id, 5])
+) as Record<(typeof teacherRatingQuestions)[number]['id'], number>;
+
+const defaultTeacherCheckboxAnswers = Object.fromEntries(
+  teacherCheckboxQuestions.map((question) => [question.id, []])
+) as Record<(typeof teacherCheckboxQuestions)[number]['id'], string[]>;
+
+const defaultTeacherRadioAnswers = Object.fromEntries(
+  teacherRadioQuestions.map((question) => [question.id, question.options[0]])
+) as Record<(typeof teacherRadioQuestions)[number]['id'], string>;
+
+const defaultTeacherDropdownAnswers = Object.fromEntries(
+  teacherDropdownQuestions.map((question) => [question.id, ''])
+) as Record<(typeof teacherDropdownQuestions)[number]['id'], string>;
+
 const SiteFeedbackPage = ({
   user,
   theme,
@@ -320,11 +467,17 @@ const SiteFeedbackPage = ({
   const [studentCheckboxAnswers, setStudentCheckboxAnswers] = useState(defaultStudentCheckboxAnswers);
   const [studentRadioAnswers, setStudentRadioAnswers] = useState(defaultStudentRadioAnswers);
   const [studentDropdownAnswers, setStudentDropdownAnswers] = useState(defaultStudentDropdownAnswers);
+  const [teacherTextAnswers, setTeacherTextAnswers] = useState(defaultTeacherTextAnswers);
+  const [teacherRatings, setTeacherRatings] = useState(defaultTeacherRatings);
+  const [teacherCheckboxAnswers, setTeacherCheckboxAnswers] = useState(defaultTeacherCheckboxAnswers);
+  const [teacherRadioAnswers, setTeacherRadioAnswers] = useState(defaultTeacherRadioAnswers);
+  const [teacherDropdownAnswers, setTeacherDropdownAnswers] = useState(defaultTeacherDropdownAnswers);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [error, setError] = useState('Could not submit feedback. Please try again.');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isLight = theme === 'light';
   const isStudentFeedback = feedbackRole === 'student';
+  const isTeacherFeedback = feedbackRole === 'teacher';
 
   const inputClass = `mt-2 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
     isLight
@@ -347,6 +500,16 @@ const SiteFeedbackPage = ({
     }
   }, [isStudentFeedback]);
 
+  useEffect(() => {
+    if (isTeacherFeedback) {
+      setTeacherTextAnswers(defaultTeacherTextAnswers);
+      setTeacherRatings(defaultTeacherRatings);
+      setTeacherCheckboxAnswers(defaultTeacherCheckboxAnswers);
+      setTeacherRadioAnswers(defaultTeacherRadioAnswers);
+      setTeacherDropdownAnswers(defaultTeacherDropdownAnswers);
+    }
+  }, [isTeacherFeedback]);
+
   const toggleArea = (area: string) => {
     setSelectedAreas((current) =>
       current.includes(area)
@@ -360,6 +523,21 @@ const SiteFeedbackPage = ({
     option: string
   ) => {
     setStudentCheckboxAnswers((current) => {
+      const selected = current[questionId];
+      return {
+        ...current,
+        [questionId]: selected.includes(option)
+          ? selected.filter((item) => item !== option)
+          : [...selected, option],
+      };
+    });
+  };
+
+  const toggleTeacherCheckbox = (
+    questionId: keyof typeof defaultTeacherCheckboxAnswers,
+    option: string
+  ) => {
+    setTeacherCheckboxAnswers((current) => {
       const selected = current[questionId];
       return {
         ...current,
@@ -413,6 +591,33 @@ const SiteFeedbackPage = ({
             `Covered Areas: ${selectedAreas.length ? selectedAreas.join(', ') : 'Not specified'}`,
             `Comment: ${comment.trim() || 'No written comment provided.'}`,
           ];
+      const teacherFeedbackDetails = isTeacherFeedback
+        ? [
+            'Teacher Text Feedback:',
+            ...teacherTextQuestions.map(
+              (question) =>
+                `- ${question.label}: ${teacherTextAnswers[question.id].trim() || 'Not provided'}`
+            ),
+            'Teacher Ratings:',
+            ...teacherRatingQuestions.map(
+              (question) => `- ${question.label}: ${teacherRatings[question.id]}/5`
+            ),
+            'Teacher Multiple Choice:',
+            ...teacherCheckboxQuestions.map((question) => {
+              const selected = teacherCheckboxAnswers[question.id];
+              return `- ${question.label}: ${selected.length ? selected.join(', ') : 'Not selected'}`;
+            }),
+            'Teacher Single Choice:',
+            ...teacherRadioQuestions.map(
+              (question) => `- ${question.label}: ${teacherRadioAnswers[question.id]}`
+            ),
+            'Teacher Dropdown Details:',
+            ...teacherDropdownQuestions.map(
+              (question) =>
+                `- ${question.label}: ${teacherDropdownAnswers[question.id] || 'Not selected'}`
+            ),
+          ]
+        : studentFeedbackDetails;
 
       const structuredComment = [
         `Feedback Category: ${roleConfig.badge}`,
@@ -421,11 +626,15 @@ const SiteFeedbackPage = ({
         `${roleConfig.fields.classroom.label}: ${classroom || 'Not specified'}`,
         `${roleConfig.fields.teacher.label}: ${teacher || 'Not specified'}`,
         `${roleConfig.fields.session.label}: ${session || 'Not specified'}`,
-        ...studentFeedbackDetails,
+        ...teacherFeedbackDetails,
       ].join('\n');
 
       await submitSiteFeedback({
-        rating: isStudentFeedback ? studentRatings.overallLearning : rating,
+        rating: isStudentFeedback
+          ? studentRatings.overallLearning
+          : isTeacherFeedback
+            ? teacherRatings.overallTeachingExperience
+            : rating,
         comment: structuredComment,
       });
       setStatus('success');
@@ -436,6 +645,13 @@ const SiteFeedbackPage = ({
         setStudentCheckboxAnswers(defaultStudentCheckboxAnswers);
         setStudentRadioAnswers(defaultStudentRadioAnswers);
         setStudentDropdownAnswers(defaultStudentDropdownAnswers);
+      }
+      if (isTeacherFeedback) {
+        setTeacherTextAnswers(defaultTeacherTextAnswers);
+        setTeacherRatings(defaultTeacherRatings);
+        setTeacherCheckboxAnswers(defaultTeacherCheckboxAnswers);
+        setTeacherRadioAnswers(defaultTeacherRadioAnswers);
+        setTeacherDropdownAnswers(defaultTeacherDropdownAnswers);
       }
     } catch (submitError) {
       setError(getFeedbackApiError(submitError));
@@ -629,6 +845,29 @@ const SiteFeedbackPage = ({
                 }
                 onDropdownChange={(questionId, value) =>
                   setStudentDropdownAnswers((current) => ({ ...current, [questionId]: value }))
+                }
+              />
+            ) : isTeacherFeedback ? (
+              <TeacherFeedbackQuestions
+                isLight={isLight}
+                inputClass={inputClass}
+                textAnswers={teacherTextAnswers}
+                ratings={teacherRatings}
+                checkboxAnswers={teacherCheckboxAnswers}
+                radioAnswers={teacherRadioAnswers}
+                dropdownAnswers={teacherDropdownAnswers}
+                onTextChange={(questionId, value) =>
+                  setTeacherTextAnswers((current) => ({ ...current, [questionId]: value }))
+                }
+                onRatingChange={(questionId, value) =>
+                  setTeacherRatings((current) => ({ ...current, [questionId]: value }))
+                }
+                onCheckboxToggle={toggleTeacherCheckbox}
+                onRadioChange={(questionId, value) =>
+                  setTeacherRadioAnswers((current) => ({ ...current, [questionId]: value }))
+                }
+                onDropdownChange={(questionId, value) =>
+                  setTeacherDropdownAnswers((current) => ({ ...current, [questionId]: value }))
                 }
               />
             ) : (
@@ -830,6 +1069,11 @@ type StudentRatingQuestionId = keyof typeof defaultStudentRatings;
 type StudentCheckboxQuestionId = keyof typeof defaultStudentCheckboxAnswers;
 type StudentRadioQuestionId = keyof typeof defaultStudentRadioAnswers;
 type StudentDropdownQuestionId = keyof typeof defaultStudentDropdownAnswers;
+type TeacherTextQuestionId = keyof typeof defaultTeacherTextAnswers;
+type TeacherRatingQuestionId = keyof typeof defaultTeacherRatings;
+type TeacherCheckboxQuestionId = keyof typeof defaultTeacherCheckboxAnswers;
+type TeacherRadioQuestionId = keyof typeof defaultTeacherRadioAnswers;
+type TeacherDropdownQuestionId = keyof typeof defaultTeacherDropdownAnswers;
 
 interface StudentFeedbackQuestionsProps {
   isLight: boolean;
@@ -1011,6 +1255,205 @@ const StudentFeedbackQuestions = ({
               </label>
               <select
                 id={`student-${question.id}`}
+                value={dropdownAnswers[question.id]}
+                onChange={(event) => onDropdownChange(question.id, event.target.value)}
+                className={inputClass}
+              >
+                <option value="">Choose an option</option>
+                {question.options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+};
+
+interface TeacherFeedbackQuestionsProps {
+  isLight: boolean;
+  inputClass: string;
+  textAnswers: typeof defaultTeacherTextAnswers;
+  ratings: typeof defaultTeacherRatings;
+  checkboxAnswers: typeof defaultTeacherCheckboxAnswers;
+  radioAnswers: typeof defaultTeacherRadioAnswers;
+  dropdownAnswers: typeof defaultTeacherDropdownAnswers;
+  onTextChange: (questionId: TeacherTextQuestionId, value: string) => void;
+  onRatingChange: (questionId: TeacherRatingQuestionId, value: number) => void;
+  onCheckboxToggle: (questionId: TeacherCheckboxQuestionId, option: string) => void;
+  onRadioChange: (questionId: TeacherRadioQuestionId, value: string) => void;
+  onDropdownChange: (questionId: TeacherDropdownQuestionId, value: string) => void;
+}
+
+const TeacherFeedbackQuestions = ({
+  isLight,
+  inputClass,
+  textAnswers,
+  ratings,
+  checkboxAnswers,
+  radioAnswers,
+  dropdownAnswers,
+  onTextChange,
+  onRatingChange,
+  onCheckboxToggle,
+  onRadioChange,
+  onDropdownChange,
+}: TeacherFeedbackQuestionsProps) => {
+  const labelClass = `text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`;
+  const panelClass = `mt-5 rounded-3xl border p-4 sm:p-5 ${
+    isLight ? 'border-slate-200 bg-slate-50/80' : 'border-white/10 bg-white/5'
+  }`;
+  const panelTitleClass = `text-base font-black ${isLight ? 'text-slate-950' : 'text-slate-50'}`;
+  const panelHintClass = `mt-1 text-xs leading-5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`;
+
+  return (
+    <>
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Teaching Feedback</h3>
+        <p className={panelHintClass}>
+          Share classroom, student management, and teaching workflow details for academic planning.
+        </p>
+        <div className="mt-4 grid gap-4">
+          {teacherTextQuestions.map((question) => (
+            <div key={question.id}>
+              <label htmlFor={`teacher-${question.id}`} className={labelClass}>
+                {question.label}
+              </label>
+              <textarea
+                id={`teacher-${question.id}`}
+                value={textAnswers[question.id]}
+                onChange={(event) => onTextChange(question.id, event.target.value)}
+                rows={4}
+                placeholder={question.placeholder}
+                className={`${inputClass} resize-none`}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Teaching Ratings</h3>
+        <p className={panelHintClass}>
+          Use 1 for very poor and 5 for excellent.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {teacherRatingQuestions.map((question) => (
+            <div
+              key={question.id}
+              className={`rounded-2xl border px-4 py-4 ${
+                isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
+              }`}
+            >
+              <p className={labelClass}>{question.label}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => onRatingChange(question.id, value)}
+                    aria-label={`${question.label} ${value} out of 5`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${
+                      value <= ratings[question.id]
+                        ? 'border-amber-400 bg-amber-400 text-slate-950'
+                        : isLight
+                          ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
+                          : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
+                    }`}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Feature Usage and Materials</h3>
+        <p className={panelHintClass}>
+          Select every option that applies to your teaching workflow.
+        </p>
+        <div className="mt-4 grid gap-4">
+          {teacherCheckboxQuestions.map((question) => (
+            <fieldset key={question.id}>
+              <legend className={labelClass}>{question.label}</legend>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {question.options.map((option) => (
+                  <label
+                    key={option}
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                      checkboxAnswers[question.id].includes(option)
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                        : isLight
+                          ? 'border-slate-200 bg-white text-slate-600'
+                          : 'border-white/10 bg-white/5 text-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checkboxAnswers[question.id].includes(option)}
+                      onChange={() => onCheckboxToggle(question.id, option)}
+                      className="h-4 w-4 rounded border-slate-300 text-emerald-600"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Comfort and Continuity</h3>
+        <div className="mt-4 grid gap-4">
+          {teacherRadioQuestions.map((question) => (
+            <fieldset key={question.id}>
+              <legend className={labelClass}>{question.label}</legend>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {question.options.map((option) => (
+                  <label
+                    key={option}
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                      radioAnswers[question.id] === option
+                        ? 'border-indigo-500 bg-indigo-600 text-white'
+                        : isLight
+                          ? 'border-slate-200 bg-white text-slate-600'
+                          : 'border-white/10 bg-white/5 text-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`teacher-${question.id}`}
+                      checked={radioAnswers[question.id] === option}
+                      onChange={() => onRadioChange(question.id, option)}
+                      className="h-4 w-4 border-slate-300 text-indigo-600"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Teaching Profile and Usage</h3>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {teacherDropdownQuestions.map((question) => (
+            <div key={question.id}>
+              <label htmlFor={`teacher-${question.id}`} className={labelClass}>
+                {question.label}
+              </label>
+              <select
+                id={`teacher-${question.id}`}
                 value={dropdownAnswers[question.id]}
                 onChange={(event) => onDropdownChange(question.id, event.target.value)}
                 className={inputClass}
