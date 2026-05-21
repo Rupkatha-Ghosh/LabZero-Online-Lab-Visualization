@@ -444,6 +444,142 @@ const defaultTeacherDropdownAnswers = Object.fromEntries(
   teacherDropdownQuestions.map((question) => [question.id, ''])
 ) as Record<(typeof teacherDropdownQuestions)[number]['id'], string>;
 
+const instituteTextQuestions = [
+  {
+    id: 'managementBenefit',
+    label: 'How beneficial is LabZero for institutional management?',
+    placeholder: 'Describe the impact on administration, monitoring, communication, and academic operations.',
+  },
+  {
+    id: 'institutionalChallengesSolved',
+    label: 'What institutional challenges can LabZero solve?',
+    placeholder: 'Mention challenges in coordination, reporting, digital learning, analytics, or resource flow.',
+  },
+  {
+    id: 'administrationFeatures',
+    label: 'What features should be added for better administration?',
+    placeholder: 'Suggest tools for approvals, reports, roles, compliance, automation, or dashboards.',
+  },
+  {
+    id: 'academicCoordinationEffectiveness',
+    label: 'How effective is the platform for academic coordination?',
+    placeholder: 'Share how well it supports departments, teachers, classrooms, and academic planning.',
+  },
+  {
+    id: 'institutionalImprovementSuggestions',
+    label: 'Any suggestions for institutional improvement?',
+    placeholder: 'Add recommendations for long-term adoption, deployment, training, or governance.',
+  },
+] as const;
+
+const instituteRatingQuestions = [
+  { id: 'scalability', label: 'Rate the scalability of LabZero.' },
+  { id: 'academicCoordination', label: 'Rate the effectiveness of academic coordination.' },
+  { id: 'securityReliability', label: 'Rate the platform security and reliability.' },
+  { id: 'communicationEfficiency', label: 'Rate the communication efficiency.' },
+  { id: 'overallInstitutionalUsefulness', label: 'Rate the overall institutional usefulness.' },
+] as const;
+
+const instituteCheckboxQuestions = [
+  {
+    id: 'usefulInstitutionalFeatures',
+    label: 'Which institutional features are most useful?',
+    options: [
+      'Student Monitoring',
+      'Teacher Management',
+      'Analytics Dashboard',
+      'Classroom Management',
+      'Digital Resource Sharing',
+      'Attendance Oversight',
+      'Department Performance Tracking',
+    ],
+  },
+  {
+    id: 'neededInstitutionalImprovements',
+    label: 'What improvements are needed?',
+    options: [
+      'Better Reporting',
+      'AI-Based Analytics',
+      'Stronger Security',
+      'More Automation',
+      'Mobile App Support',
+      'Role-Based Permissions',
+      'Data Export Tools',
+    ],
+  },
+  {
+    id: 'activeDepartments',
+    label: 'Which departments use LabZero most?',
+    options: ['Science', 'Commerce', 'Arts', 'Engineering', 'Management', 'Mathematics', 'Computer Science'],
+  },
+] as const;
+
+const instituteRadioQuestions = [
+  {
+    id: 'longTermAdoption',
+    label: 'Would your institute adopt LabZero long-term?',
+    options: ['Yes', 'No'],
+  },
+  {
+    id: 'digitalTransformationRating',
+    label: 'How would you rate digital transformation using LabZero?',
+    options: ['Excellent', 'Good', 'Average', 'Poor'],
+  },
+  {
+    id: 'largeScaleDeployment',
+    label: 'Is LabZero suitable for large-scale deployment?',
+    options: ['Yes', 'No'],
+  },
+] as const;
+
+const instituteDropdownQuestions = [
+  {
+    id: 'institutionType',
+    label: 'Select institution type.',
+    options: ['School', 'College', 'University', 'Training Institute', 'Coaching Center', 'Research Institute', 'Other'],
+  },
+  {
+    id: 'institutionSize',
+    label: 'Select institution size.',
+    options: ['Single campus', '2-5 campuses', '6-10 campuses', 'Multi-city institution', 'Large institution group'],
+  },
+  {
+    id: 'averageStudentStrength',
+    label: 'Select average student strength.',
+    options: ['Below 500', '500-1,000', '1,001-5,000', '5,001-10,000', 'More than 10,000'],
+  },
+  {
+    id: 'preferredDeploymentMode',
+    label: 'Select preferred deployment mode.',
+    options: ['Cloud hosted', 'On-premise', 'Hybrid deployment', 'Private cloud', 'Managed SaaS'],
+  },
+  {
+    id: 'institutionalSatisfaction',
+    label: 'Select overall institutional satisfaction level.',
+    options: ['Excellent', 'Good', 'Average', 'Needs improvement', 'Poor'],
+  },
+] as const;
+
+const defaultInstituteTextAnswers = Object.fromEntries(
+  instituteTextQuestions.map((question) => [question.id, ''])
+) as Record<(typeof instituteTextQuestions)[number]['id'], string>;
+
+const defaultInstituteRatings = Object.fromEntries(
+  instituteRatingQuestions.map((question) => [question.id, 5])
+) as Record<(typeof instituteRatingQuestions)[number]['id'], number>;
+
+const defaultInstituteCheckboxAnswers = Object.fromEntries(
+  instituteCheckboxQuestions.map((question) => [question.id, []])
+) as Record<(typeof instituteCheckboxQuestions)[number]['id'], string[]>;
+
+const defaultInstituteRadioAnswers = Object.fromEntries(
+  instituteRadioQuestions.map((question) => [question.id, question.options[0]])
+) as Record<(typeof instituteRadioQuestions)[number]['id'], string>;
+
+const defaultInstituteDropdownAnswers = Object.fromEntries(
+  instituteDropdownQuestions.map((question) => [question.id, ''])
+) as Record<(typeof instituteDropdownQuestions)[number]['id'], string>;
+
 const SiteFeedbackPage = ({
   user,
   theme,
@@ -472,12 +608,18 @@ const SiteFeedbackPage = ({
   const [teacherCheckboxAnswers, setTeacherCheckboxAnswers] = useState(defaultTeacherCheckboxAnswers);
   const [teacherRadioAnswers, setTeacherRadioAnswers] = useState(defaultTeacherRadioAnswers);
   const [teacherDropdownAnswers, setTeacherDropdownAnswers] = useState(defaultTeacherDropdownAnswers);
+  const [instituteTextAnswers, setInstituteTextAnswers] = useState(defaultInstituteTextAnswers);
+  const [instituteRatings, setInstituteRatings] = useState(defaultInstituteRatings);
+  const [instituteCheckboxAnswers, setInstituteCheckboxAnswers] = useState(defaultInstituteCheckboxAnswers);
+  const [instituteRadioAnswers, setInstituteRadioAnswers] = useState(defaultInstituteRadioAnswers);
+  const [instituteDropdownAnswers, setInstituteDropdownAnswers] = useState(defaultInstituteDropdownAnswers);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [error, setError] = useState('Could not submit feedback. Please try again.');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isLight = theme === 'light';
   const isStudentFeedback = feedbackRole === 'student';
   const isTeacherFeedback = feedbackRole === 'teacher';
+  const isInstituteFeedback = feedbackRole === 'institute';
 
   const inputClass = `mt-2 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
     isLight
@@ -510,6 +652,16 @@ const SiteFeedbackPage = ({
     }
   }, [isTeacherFeedback]);
 
+  useEffect(() => {
+    if (isInstituteFeedback) {
+      setInstituteTextAnswers(defaultInstituteTextAnswers);
+      setInstituteRatings(defaultInstituteRatings);
+      setInstituteCheckboxAnswers(defaultInstituteCheckboxAnswers);
+      setInstituteRadioAnswers(defaultInstituteRadioAnswers);
+      setInstituteDropdownAnswers(defaultInstituteDropdownAnswers);
+    }
+  }, [isInstituteFeedback]);
+
   const toggleArea = (area: string) => {
     setSelectedAreas((current) =>
       current.includes(area)
@@ -538,6 +690,21 @@ const SiteFeedbackPage = ({
     option: string
   ) => {
     setTeacherCheckboxAnswers((current) => {
+      const selected = current[questionId];
+      return {
+        ...current,
+        [questionId]: selected.includes(option)
+          ? selected.filter((item) => item !== option)
+          : [...selected, option],
+      };
+    });
+  };
+
+  const toggleInstituteCheckbox = (
+    questionId: keyof typeof defaultInstituteCheckboxAnswers,
+    option: string
+  ) => {
+    setInstituteCheckboxAnswers((current) => {
       const selected = current[questionId];
       return {
         ...current,
@@ -618,6 +785,33 @@ const SiteFeedbackPage = ({
             ),
           ]
         : studentFeedbackDetails;
+      const instituteFeedbackDetails = isInstituteFeedback
+        ? [
+            'Institute Text Feedback:',
+            ...instituteTextQuestions.map(
+              (question) =>
+                `- ${question.label}: ${instituteTextAnswers[question.id].trim() || 'Not provided'}`
+            ),
+            'Institute Ratings:',
+            ...instituteRatingQuestions.map(
+              (question) => `- ${question.label}: ${instituteRatings[question.id]}/5`
+            ),
+            'Institute Multiple Choice:',
+            ...instituteCheckboxQuestions.map((question) => {
+              const selected = instituteCheckboxAnswers[question.id];
+              return `- ${question.label}: ${selected.length ? selected.join(', ') : 'Not selected'}`;
+            }),
+            'Institute Single Choice:',
+            ...instituteRadioQuestions.map(
+              (question) => `- ${question.label}: ${instituteRadioAnswers[question.id]}`
+            ),
+            'Institute Dropdown Details:',
+            ...instituteDropdownQuestions.map(
+              (question) =>
+                `- ${question.label}: ${instituteDropdownAnswers[question.id] || 'Not selected'}`
+            ),
+          ]
+        : teacherFeedbackDetails;
 
       const structuredComment = [
         `Feedback Category: ${roleConfig.badge}`,
@@ -626,7 +820,7 @@ const SiteFeedbackPage = ({
         `${roleConfig.fields.classroom.label}: ${classroom || 'Not specified'}`,
         `${roleConfig.fields.teacher.label}: ${teacher || 'Not specified'}`,
         `${roleConfig.fields.session.label}: ${session || 'Not specified'}`,
-        ...teacherFeedbackDetails,
+        ...instituteFeedbackDetails,
       ].join('\n');
 
       await submitSiteFeedback({
@@ -634,7 +828,9 @@ const SiteFeedbackPage = ({
           ? studentRatings.overallLearning
           : isTeacherFeedback
             ? teacherRatings.overallTeachingExperience
-            : rating,
+            : isInstituteFeedback
+              ? instituteRatings.overallInstitutionalUsefulness
+              : rating,
         comment: structuredComment,
       });
       setStatus('success');
@@ -652,6 +848,13 @@ const SiteFeedbackPage = ({
         setTeacherCheckboxAnswers(defaultTeacherCheckboxAnswers);
         setTeacherRadioAnswers(defaultTeacherRadioAnswers);
         setTeacherDropdownAnswers(defaultTeacherDropdownAnswers);
+      }
+      if (isInstituteFeedback) {
+        setInstituteTextAnswers(defaultInstituteTextAnswers);
+        setInstituteRatings(defaultInstituteRatings);
+        setInstituteCheckboxAnswers(defaultInstituteCheckboxAnswers);
+        setInstituteRadioAnswers(defaultInstituteRadioAnswers);
+        setInstituteDropdownAnswers(defaultInstituteDropdownAnswers);
       }
     } catch (submitError) {
       setError(getFeedbackApiError(submitError));
@@ -870,6 +1073,29 @@ const SiteFeedbackPage = ({
                   setTeacherDropdownAnswers((current) => ({ ...current, [questionId]: value }))
                 }
               />
+            ) : isInstituteFeedback ? (
+              <InstituteFeedbackQuestions
+                isLight={isLight}
+                inputClass={inputClass}
+                textAnswers={instituteTextAnswers}
+                ratings={instituteRatings}
+                checkboxAnswers={instituteCheckboxAnswers}
+                radioAnswers={instituteRadioAnswers}
+                dropdownAnswers={instituteDropdownAnswers}
+                onTextChange={(questionId, value) =>
+                  setInstituteTextAnswers((current) => ({ ...current, [questionId]: value }))
+                }
+                onRatingChange={(questionId, value) =>
+                  setInstituteRatings((current) => ({ ...current, [questionId]: value }))
+                }
+                onCheckboxToggle={toggleInstituteCheckbox}
+                onRadioChange={(questionId, value) =>
+                  setInstituteRadioAnswers((current) => ({ ...current, [questionId]: value }))
+                }
+                onDropdownChange={(questionId, value) =>
+                  setInstituteDropdownAnswers((current) => ({ ...current, [questionId]: value }))
+                }
+              />
             ) : (
               <>
                 <div className="mt-5">
@@ -1074,6 +1300,11 @@ type TeacherRatingQuestionId = keyof typeof defaultTeacherRatings;
 type TeacherCheckboxQuestionId = keyof typeof defaultTeacherCheckboxAnswers;
 type TeacherRadioQuestionId = keyof typeof defaultTeacherRadioAnswers;
 type TeacherDropdownQuestionId = keyof typeof defaultTeacherDropdownAnswers;
+type InstituteTextQuestionId = keyof typeof defaultInstituteTextAnswers;
+type InstituteRatingQuestionId = keyof typeof defaultInstituteRatings;
+type InstituteCheckboxQuestionId = keyof typeof defaultInstituteCheckboxAnswers;
+type InstituteRadioQuestionId = keyof typeof defaultInstituteRadioAnswers;
+type InstituteDropdownQuestionId = keyof typeof defaultInstituteDropdownAnswers;
 
 interface StudentFeedbackQuestionsProps {
   isLight: boolean;
@@ -1454,6 +1685,205 @@ const TeacherFeedbackQuestions = ({
               </label>
               <select
                 id={`teacher-${question.id}`}
+                value={dropdownAnswers[question.id]}
+                onChange={(event) => onDropdownChange(question.id, event.target.value)}
+                className={inputClass}
+              >
+                <option value="">Choose an option</option>
+                {question.options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+};
+
+interface InstituteFeedbackQuestionsProps {
+  isLight: boolean;
+  inputClass: string;
+  textAnswers: typeof defaultInstituteTextAnswers;
+  ratings: typeof defaultInstituteRatings;
+  checkboxAnswers: typeof defaultInstituteCheckboxAnswers;
+  radioAnswers: typeof defaultInstituteRadioAnswers;
+  dropdownAnswers: typeof defaultInstituteDropdownAnswers;
+  onTextChange: (questionId: InstituteTextQuestionId, value: string) => void;
+  onRatingChange: (questionId: InstituteRatingQuestionId, value: number) => void;
+  onCheckboxToggle: (questionId: InstituteCheckboxQuestionId, option: string) => void;
+  onRadioChange: (questionId: InstituteRadioQuestionId, value: string) => void;
+  onDropdownChange: (questionId: InstituteDropdownQuestionId, value: string) => void;
+}
+
+const InstituteFeedbackQuestions = ({
+  isLight,
+  inputClass,
+  textAnswers,
+  ratings,
+  checkboxAnswers,
+  radioAnswers,
+  dropdownAnswers,
+  onTextChange,
+  onRatingChange,
+  onCheckboxToggle,
+  onRadioChange,
+  onDropdownChange,
+}: InstituteFeedbackQuestionsProps) => {
+  const labelClass = `text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`;
+  const panelClass = `mt-5 rounded-3xl border p-4 sm:p-5 ${
+    isLight ? 'border-slate-200 bg-slate-50/80' : 'border-white/10 bg-white/5'
+  }`;
+  const panelTitleClass = `text-base font-black ${isLight ? 'text-slate-950' : 'text-slate-50'}`;
+  const panelHintClass = `mt-1 text-xs leading-5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`;
+
+  return (
+    <>
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Institutional Feedback</h3>
+        <p className={panelHintClass}>
+          Share strategic, administrative, and academic coordination feedback for institution-wide planning.
+        </p>
+        <div className="mt-4 grid gap-4">
+          {instituteTextQuestions.map((question) => (
+            <div key={question.id}>
+              <label htmlFor={`institute-${question.id}`} className={labelClass}>
+                {question.label}
+              </label>
+              <textarea
+                id={`institute-${question.id}`}
+                value={textAnswers[question.id]}
+                onChange={(event) => onTextChange(question.id, event.target.value)}
+                rows={4}
+                placeholder={question.placeholder}
+                className={`${inputClass} resize-none`}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Institutional Ratings</h3>
+        <p className={panelHintClass}>
+          Use 1 for very poor and 5 for excellent.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {instituteRatingQuestions.map((question) => (
+            <div
+              key={question.id}
+              className={`rounded-2xl border px-4 py-4 ${
+                isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
+              }`}
+            >
+              <p className={labelClass}>{question.label}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => onRatingChange(question.id, value)}
+                    aria-label={`${question.label} ${value} out of 5`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${
+                      value <= ratings[question.id]
+                        ? 'border-amber-400 bg-amber-400 text-slate-950'
+                        : isLight
+                          ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
+                          : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
+                    }`}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Institutional Priorities</h3>
+        <p className={panelHintClass}>
+          Select every option that applies across your institution.
+        </p>
+        <div className="mt-4 grid gap-4">
+          {instituteCheckboxQuestions.map((question) => (
+            <fieldset key={question.id}>
+              <legend className={labelClass}>{question.label}</legend>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {question.options.map((option) => (
+                  <label
+                    key={option}
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                      checkboxAnswers[question.id].includes(option)
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                        : isLight
+                          ? 'border-slate-200 bg-white text-slate-600'
+                          : 'border-white/10 bg-white/5 text-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checkboxAnswers[question.id].includes(option)}
+                      onChange={() => onCheckboxToggle(question.id, option)}
+                      className="h-4 w-4 rounded border-slate-300 text-emerald-600"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Adoption and Deployment</h3>
+        <div className="mt-4 grid gap-4">
+          {instituteRadioQuestions.map((question) => (
+            <fieldset key={question.id}>
+              <legend className={labelClass}>{question.label}</legend>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {question.options.map((option) => (
+                  <label
+                    key={option}
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                      radioAnswers[question.id] === option
+                        ? 'border-indigo-500 bg-indigo-600 text-white'
+                        : isLight
+                          ? 'border-slate-200 bg-white text-slate-600'
+                          : 'border-white/10 bg-white/5 text-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`institute-${question.id}`}
+                      checked={radioAnswers[question.id] === option}
+                      onChange={() => onRadioChange(question.id, option)}
+                      className="h-4 w-4 border-slate-300 text-indigo-600"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Institution Profile</h3>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {instituteDropdownQuestions.map((question) => (
+            <div key={question.id}>
+              <label htmlFor={`institute-${question.id}`} className={labelClass}>
+                {question.label}
+              </label>
+              <select
+                id={`institute-${question.id}`}
                 value={dropdownAnswers[question.id]}
                 onChange={(event) => onDropdownChange(question.id, event.target.value)}
                 className={inputClass}
