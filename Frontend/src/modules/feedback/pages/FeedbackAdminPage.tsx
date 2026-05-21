@@ -24,7 +24,10 @@ const FeedbackAdminPage = () => {
   const admin = useFeedbackAdmin(query);
 
   const canAdmin = Boolean(
-    user?.role === 'institute' || user?.is_staff || user?.is_superuser
+    user?.role === 'teacher' ||
+      user?.role === 'institute' ||
+      user?.is_staff ||
+      user?.is_superuser
   );
   const currentUser = useMemo(
     () =>
