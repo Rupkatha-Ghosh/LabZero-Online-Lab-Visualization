@@ -16,8 +16,8 @@ import {
   Video,
 } from 'lucide-react';
 import { FormEvent } from 'react';
-import { useState } from 'react';
-import { User } from '../../../types/types';
+import { useEffect, useState } from 'react';
+import { User, UserRole } from '../../../types/types';
 import FeedbackPageShell from '../components/common/FeedbackPageShell';
 import { getFeedbackApiError, submitSiteFeedback } from '../services/feedbackApi';
 
@@ -39,12 +39,97 @@ const platformFeatures = [
   { label: 'Feedback collection and analysis', icon: BarChart3 },
 ];
 
-const feedbackAreas = [
-  'Platform usability',
-  'Teaching effectiveness',
-  'Classroom experience',
-  'System performance',
-];
+type RoleFeedbackConfig = {
+  badge: string;
+  title: string;
+  description: string;
+  fields: {
+    course: { label: string; placeholder: string };
+    classroom: { label: string; placeholder: string };
+    teacher: { label: string; placeholder: string };
+    session: { label: string; placeholder: string };
+  };
+  feedbackAreas: string[];
+  usageSteps: string[];
+};
+
+const roleFeedbackConfig: Record<UserRole, RoleFeedbackConfig> = {
+  student: {
+    badge: 'Student Feedback',
+    title: 'Student learning feedback',
+    description:
+      'Share feedback about your course, teacher, live class, resources, assignments, and overall learning experience.',
+    fields: {
+      course: { label: 'Course', placeholder: 'Example: Physics' },
+      classroom: { label: 'Classroom', placeholder: 'Example: Class 11 A' },
+      teacher: { label: 'Teacher', placeholder: 'Teacher name' },
+      session: { label: 'Session', placeholder: 'Example: Live class / Lab session' },
+    },
+    feedbackAreas: [
+      'Platform usability',
+      'Teaching effectiveness',
+      'Classroom experience',
+      'System performance',
+    ],
+    usageSteps: [
+      'Login/Register with a student account.',
+      'Open the feedback page from the floating feedback button or Dashboard -> Feedback.',
+      'Select Course, Classroom, Teacher, and Session.',
+      'Answer learning experience, rating, checkbox, radio, and text feedback questions.',
+      'Submit feedback for teacher and platform improvement.',
+    ],
+  },
+  teacher: {
+    badge: 'Teacher Feedback',
+    title: 'Teacher workflow feedback',
+    description:
+      'Share feedback about classroom management, resource delivery, student interaction, assignments, and live teaching tools.',
+    fields: {
+      course: { label: 'Course / Subject', placeholder: 'Example: Chemistry' },
+      classroom: { label: 'Classroom handled', placeholder: 'Example: Class 12 B' },
+      teacher: { label: 'Student group', placeholder: 'Example: Batch A / Section 2' },
+      session: { label: 'Teaching session', placeholder: 'Example: Weekly live lecture' },
+    },
+    feedbackAreas: [
+      'Classroom management',
+      'Resource sharing workflow',
+      'Student interaction',
+      'Live class performance',
+    ],
+    usageSteps: [
+      'Login/Register with a teacher account.',
+      'Open the feedback page from the floating feedback button or Dashboard -> Feedback.',
+      'Select Course, Classroom, Student Group, and Teaching Session.',
+      'Answer workflow, resource sharing, live class, and interaction feedback questions.',
+      'Submit feedback for institute and platform improvement.',
+    ],
+  },
+  institute: {
+    badge: 'Institute Feedback',
+    title: 'Institute management feedback',
+    description:
+      'Share feedback about department operations, classroom analytics, teacher coordination, system performance, and platform adoption.',
+    fields: {
+      course: { label: 'Department / Program', placeholder: 'Example: Science Department' },
+      classroom: { label: 'Classroom / Cohort', placeholder: 'Example: Senior Secondary' },
+      teacher: { label: 'Coordinator / Teacher', placeholder: 'Coordinator or teacher name' },
+      session: { label: 'Review period', placeholder: 'Example: May 2026' },
+    },
+    feedbackAreas: [
+      'Academic operations',
+      'Teacher coordination',
+      'Analytics dashboard',
+      'System scalability',
+    ],
+    usageSteps: [
+      'Login/Register with an institute account.',
+      'Open the feedback page from the floating feedback button or Dashboard -> Feedback.',
+      'Select Department, Classroom/Cohort, Coordinator, and Review Period.',
+      'Answer operations, analytics, coordination, and system performance questions.',
+      'Submit feedback for platform planning and institutional reporting.',
+    ],
+  },
+};
 
 const questionTypes = [
   { label: 'Text Feedback', icon: FileText },
@@ -52,14 +137,6 @@ const questionTypes = [
   { label: 'Checkbox Questions', icon: CheckSquare },
   { label: 'Radio Questions', icon: Radio },
   { label: 'Dropdown Questions', icon: ListChecks },
-];
-
-const usageSteps = [
-  'Login/Register into LabZero.',
-  'Navigate to Dashboard -> Feedback.',
-  'Select Course, Classroom, Teacher, and Session.',
-  'Answer text, rating, checkbox, radio, and dropdown questions.',
-  'Submit feedback for analytics and review.',
 ];
 
 const SiteFeedbackPage = ({
@@ -70,10 +147,12 @@ const SiteFeedbackPage = ({
   onLogin,
   onManageFeedback,
 }: SiteFeedbackPageProps) => {
+  const feedbackRole = user?.role ?? 'student';
+  const roleConfig = roleFeedbackConfig[feedbackRole];
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
-  const [feedbackType, setFeedbackType] = useState(feedbackAreas[0]);
-  const [selectedAreas, setSelectedAreas] = useState<string[]>(feedbackAreas);
+  const [feedbackType, setFeedbackType] = useState(roleConfig.feedbackAreas[0]);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>(roleConfig.feedbackAreas);
   const [course, setCourse] = useState('');
   const [classroom, setClassroom] = useState('');
   const [teacher, setTeacher] = useState('');
@@ -88,6 +167,11 @@ const SiteFeedbackPage = ({
       ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
       : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
   }`;
+
+  useEffect(() => {
+    setFeedbackType(roleConfig.feedbackAreas[0]);
+    setSelectedAreas(roleConfig.feedbackAreas);
+  }, [feedbackRole, roleConfig.feedbackAreas]);
 
   const toggleArea = (area: string) => {
     setSelectedAreas((current) =>
@@ -110,11 +194,13 @@ const SiteFeedbackPage = ({
 
     try {
       const structuredComment = [
+        `Feedback Category: ${roleConfig.badge}`,
+        `User Role: ${feedbackRole}`,
         `Feedback Type: ${feedbackType}`,
-        `Course: ${course || 'Not specified'}`,
-        `Classroom: ${classroom || 'Not specified'}`,
-        `Teacher: ${teacher || 'Not specified'}`,
-        `Session: ${session || 'Not specified'}`,
+        `${roleConfig.fields.course.label}: ${course || 'Not specified'}`,
+        `${roleConfig.fields.classroom.label}: ${classroom || 'Not specified'}`,
+        `${roleConfig.fields.teacher.label}: ${teacher || 'Not specified'}`,
+        `${roleConfig.fields.session.label}: ${session || 'Not specified'}`,
         `Covered Areas: ${selectedAreas.length ? selectedAreas.join(', ') : 'Not specified'}`,
         `Comment: ${comment.trim() || 'No written comment provided.'}`,
       ].join('\n');
@@ -158,76 +244,74 @@ const SiteFeedbackPage = ({
           )}
         </div>
 
-        <section className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="space-y-5">
-            <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-6 shadow-sm backdrop-blur sm:p-7">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-indigo-600">
-                Name of the Project
-              </p>
-              <h1 className="mt-3 text-4xl font-black text-slate-950 sm:text-5xl">
-                LABZERO
-              </h1>
-              <p className="mt-3 text-lg font-bold text-slate-800">
-                Intelligent Collaborative Learning & Virtual Classroom Platform
-              </p>
-              <p className="mt-4 text-sm leading-6 text-slate-600">
-                LabZero is a modern educational collaboration platform designed
-                to bridge the gap between traditional classroom learning and
-                digital education systems. It creates a centralized ecosystem
-                for digital learning, communication, live classrooms, academic
-                tools, and feedback analytics.
-              </p>
+        <section className="flex flex-col gap-5">
+          <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-6 shadow-sm backdrop-blur sm:p-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-indigo-600">
+              Name of the Project
+            </p>
+            <h1 className="mt-3 text-4xl font-black text-slate-950 sm:text-5xl">
+              LABZERO
+            </h1>
+            <p className="mt-3 text-lg font-bold text-slate-800">
+              Intelligent Collaborative Learning & Virtual Classroom Platform
+            </p>
+            <p className="mt-4 text-sm leading-6 text-slate-600">
+              LabZero is a modern educational collaboration platform designed
+              to bridge the gap between traditional classroom learning and
+              digital education systems. It creates a centralized ecosystem
+              for digital learning, communication, live classrooms, academic
+              tools, and feedback analytics.
+            </p>
 
-              {!user && (
-                <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  Please sign in before submitting feedback.
+            {!user && (
+              <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Please sign in before submitting feedback.
+              </div>
+            )}
+          </article>
+
+          <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
+            <h2 className="text-lg font-black text-slate-950">
+              Platform Framework
+            </h2>
+            <div className="mt-4 flex flex-col gap-3">
+              {platformFeatures.map((feature) => (
+                <div
+                  key={feature.label}
+                  className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-3"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700">
+                    <feature.icon size={18} />
+                  </span>
+                  <span className="text-sm font-semibold text-slate-700">
+                    {feature.label}
+                  </span>
                 </div>
-              )}
-            </article>
+              ))}
+            </div>
+          </article>
 
-            <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
-              <h2 className="text-lg font-black text-slate-950">
-                Platform Framework
-              </h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {platformFeatures.map((feature) => (
-                  <div
-                    key={feature.label}
-                    className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-3"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700">
-                      <feature.icon size={18} />
-                    </span>
-                    <span className="text-sm font-semibold text-slate-700">
-                      {feature.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
-              <h2 className="text-lg font-black text-slate-950">
-                Unique Selling Proposition
-              </h2>
-              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
-                <p>
-                  LabZero combines collaborative learning, virtual classroom
-                  interaction, analytics, and intelligent feedback management
-                  within a single educational platform.
-                </p>
-                <p>
-                  The feedback module collects multiple forms of feedback,
-                  stores them dynamically, and generates graphical analytical
-                  reports for better understanding.
-                </p>
-                <p>
-                  The architecture is designed around React, TypeScript, API
-                  services, and WebSocket/WebRTC-ready live interaction flows.
-                </p>
-              </div>
-            </article>
-          </div>
+          <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
+            <h2 className="text-lg font-black text-slate-950">
+              Unique Selling Proposition
+            </h2>
+            <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+              <p>
+                LabZero combines collaborative learning, virtual classroom
+                interaction, analytics, and intelligent feedback management
+                within a single educational platform.
+              </p>
+              <p>
+                The feedback module collects multiple forms of feedback,
+                stores them dynamically, and generates graphical analytical
+                reports for better understanding.
+              </p>
+              <p>
+                The architecture is designed around React, TypeScript, API
+                services, and WebSocket/WebRTC-ready live interaction flows.
+              </p>
+            </div>
+          </article>
 
           <form
             onSubmit={handleSubmit}
@@ -239,61 +323,60 @@ const SiteFeedbackPage = ({
           >
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
-                Feedback Management Module
+                {roleConfig.badge}
               </p>
-              <h2 className="mt-2 text-2xl font-black">Submit structured feedback</h2>
+              <h2 className="mt-2 text-2xl font-black">{roleConfig.title}</h2>
               <p className={`mt-2 text-sm leading-6 ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-                Select the academic context, choose the feedback focus, and
-                share your experience for platform and classroom analysis.
+                {roleConfig.description}
               </p>
             </div>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="feedback-course" className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                  Course
+                  {roleConfig.fields.course.label}
                 </label>
                 <input
                   id="feedback-course"
                   value={course}
                   onChange={(event) => setCourse(event.target.value)}
-                  placeholder="Example: Physics"
+                  placeholder={roleConfig.fields.course.placeholder}
                   className={inputClass}
                 />
               </div>
               <div>
                 <label htmlFor="feedback-classroom" className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                  Classroom
+                  {roleConfig.fields.classroom.label}
                 </label>
                 <input
                   id="feedback-classroom"
                   value={classroom}
                   onChange={(event) => setClassroom(event.target.value)}
-                  placeholder="Example: Class 11 A"
+                  placeholder={roleConfig.fields.classroom.placeholder}
                   className={inputClass}
                 />
               </div>
               <div>
                 <label htmlFor="feedback-teacher" className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                  Teacher
+                  {roleConfig.fields.teacher.label}
                 </label>
                 <input
                   id="feedback-teacher"
                   value={teacher}
                   onChange={(event) => setTeacher(event.target.value)}
-                  placeholder="Teacher name"
+                  placeholder={roleConfig.fields.teacher.placeholder}
                   className={inputClass}
                 />
               </div>
               <div>
                 <label htmlFor="feedback-session" className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                  Session
+                  {roleConfig.fields.session.label}
                 </label>
                 <input
                   id="feedback-session"
                   value={session}
                   onChange={(event) => setSession(event.target.value)}
-                  placeholder="Example: Live class / Lab session"
+                  placeholder={roleConfig.fields.session.placeholder}
                   className={inputClass}
                 />
               </div>
@@ -304,7 +387,7 @@ const SiteFeedbackPage = ({
                 Feedback focus
               </label>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {feedbackAreas.map((area) => (
+                {roleConfig.feedbackAreas.map((area) => (
                   <button
                     key={area}
                     type="button"
@@ -328,7 +411,7 @@ const SiteFeedbackPage = ({
                 Areas covered
               </label>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {feedbackAreas.map((area) => (
+                {roleConfig.feedbackAreas.map((area) => (
                   <label
                     key={area}
                     className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
@@ -446,13 +529,13 @@ const SiteFeedbackPage = ({
           </form>
         </section>
 
-        <section className="mt-5 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+        <section className="mt-5 flex flex-col gap-5">
           <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
             <h2 className="text-lg font-black text-slate-950">
               Instruction / Manual / Demo
             </h2>
             <div className="mt-4 space-y-3">
-              {usageSteps.map((step, index) => (
+              {roleConfig.usageSteps.map((step, index) => (
                 <div key={step} className="flex gap-3 rounded-2xl bg-slate-50/80 px-3 py-3">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xs font-black text-white">
                     {index + 1}
@@ -467,7 +550,7 @@ const SiteFeedbackPage = ({
             <h2 className="text-lg font-black text-slate-950">
               Supported Question Types
             </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 flex flex-col gap-3">
               {questionTypes.map((questionType) => (
                 <div
                   key={questionType.label}
