@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   CheckSquare,
   FileText,
-  LayoutDashboard,
   ListChecks,
   Loader2,
   Radio,
@@ -24,10 +23,8 @@ import { getFeedbackApiError, submitSiteFeedback } from '../services/feedbackApi
 interface SiteFeedbackPageProps {
   user: User | null;
   theme: 'dark' | 'light';
-  canManageFeedback: boolean;
   onBack: () => void;
   onLogin: () => void;
-  onManageFeedback: () => void;
 }
 
 const platformFeatures = [
@@ -583,10 +580,8 @@ const defaultInstituteDropdownAnswers = Object.fromEntries(
 const SiteFeedbackPage = ({
   user,
   theme,
-  canManageFeedback,
   onBack,
   onLogin,
-  onManageFeedback,
 }: SiteFeedbackPageProps) => {
   const feedbackRole = user?.role ?? 'student';
   const roleConfig = roleFeedbackConfig[feedbackRole];
@@ -876,17 +871,6 @@ const SiteFeedbackPage = ({
             <ArrowLeft size={16} />
             Back
           </button>
-
-          {canManageFeedback && (
-            <button
-              type="button"
-              onClick={onManageFeedback}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
-            >
-              <LayoutDashboard size={16} />
-              Manage forms
-            </button>
-          )}
         </div>
 
         <section className="flex flex-col gap-5">
@@ -955,6 +939,22 @@ const SiteFeedbackPage = ({
                 The architecture is designed around React, TypeScript, API
                 services, and WebSocket/WebRTC-ready live interaction flows.
               </p>
+            </div>
+          </article>
+
+          <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
+            <h2 className="text-lg font-black text-slate-950">
+              Instruction / Manual / Demo
+            </h2>
+            <div className="mt-4 space-y-3">
+              {roleConfig.usageSteps.map((step, index) => (
+                <div key={step} className="flex gap-3 rounded-2xl bg-slate-50/80 px-3 py-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xs font-black text-white">
+                    {index + 1}
+                  </span>
+                  <p className="text-sm font-medium text-slate-700">{step}</p>
+                </div>
+              ))}
             </div>
           </article>
 
@@ -1248,22 +1248,6 @@ const SiteFeedbackPage = ({
         </section>
 
         <section className="mt-5 flex flex-col gap-5">
-          <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
-            <h2 className="text-lg font-black text-slate-950">
-              Instruction / Manual / Demo
-            </h2>
-            <div className="mt-4 space-y-3">
-              {roleConfig.usageSteps.map((step, index) => (
-                <div key={step} className="flex gap-3 rounded-2xl bg-slate-50/80 px-3 py-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xs font-black text-white">
-                    {index + 1}
-                  </span>
-                  <p className="text-sm font-medium text-slate-700">{step}</p>
-                </div>
-              ))}
-            </div>
-          </article>
-
           <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
             <h2 className="text-lg font-black text-slate-950">
               Supported Question Types

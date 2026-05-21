@@ -363,14 +363,6 @@ const AppContent: React.FC = () => {
 
 
   const t = (key: string) => translations[key]?.[language] || key;
-  const canManageFeedback = Boolean(
-    user && (
-      user.role === 'teacher' ||
-      user.role === 'institute' ||
-      user.is_staff ||
-      user.is_superuser
-    )
-  );
   const isFeedbackView = [
     ViewState.SITE_FEEDBACK,
     ViewState.FEEDBACK_FORM,
@@ -743,10 +735,8 @@ const AppContent: React.FC = () => {
                       <LazySiteFeedbackPage
                         user={user}
                         theme={theme}
-                        canManageFeedback={canManageFeedback}
                         onBack={handleBackFromSiteFeedback}
                         onLogin={() => setShowAuth(true)}
-                        onManageFeedback={() => setViewState(ViewState.FEEDBACK_ADMIN)}
                       />
                     </FeedbackModuleBoundary>
                   </div>
