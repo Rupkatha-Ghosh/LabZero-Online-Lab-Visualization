@@ -156,6 +156,14 @@ import { getDefaultSignalingUrl } from './utils/urlUtils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
+const getInitialViewState = () => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('textAnalysisFormId')) return ViewState.FEEDBACK_TEXT_ANALYSIS;
+  if (params.get('analyticsFormId')) return ViewState.FEEDBACK_ANALYTICS;
+  if (params.get('feedbackFormId') || params.get('formId')) return ViewState.FEEDBACK_FORM;
+  return ViewState.LANDING;
+};
+
 
 const BackgroundLayer = ({ theme }: { theme: 'dark' | 'light' }) => (
   <div className={`fixed inset-0 z-[-1] overflow-hidden pointer-events-none transition-colors duration-700 ${theme === 'dark' ? 'bg-[#020617]' : 'bg-[#fafaf8]'}`}>
@@ -187,7 +195,7 @@ const AppContent: React.FC = () => {
     return cached ? JSON.parse(cached) : [];
   });
 
-  const [viewState, setViewState] = useState<ViewState>(ViewState.LANDING);
+  const [viewState, setViewState] = useState<ViewState>(getInitialViewState);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
@@ -395,6 +403,12 @@ const AppContent: React.FC = () => {
       case ViewState.SUBJECT: setViewState(ViewState.CLASS_SUBJECTS); break;
       case ViewState.CLASS_SUBJECTS: setViewState(ViewState.LANDING); break;
       case ViewState.DASHBOARD: setViewState(ViewState.LANDING); break;
+      case ViewState.FEEDBACK_FORM:
+      case ViewState.FEEDBACK_ADMIN:
+      case ViewState.FEEDBACK_ANALYTICS:
+      case ViewState.FEEDBACK_TEXT_ANALYSIS:
+        setViewState(user ? ViewState.DASHBOARD : ViewState.LANDING);
+        break;
       default: setViewState(ViewState.LANDING);
     }
   };

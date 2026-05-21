@@ -103,6 +103,10 @@ export enum ViewState {
   MEETING = 'meeting',
   DASHBOARD = 'dashboard',
   ADMIN = 'admin',
+  FEEDBACK_FORM = 'feedback_form',
+  FEEDBACK_ADMIN = 'feedback_admin',
+  FEEDBACK_ANALYTICS = 'feedback_analytics',
+  FEEDBACK_TEXT_ANALYSIS = 'feedback_text_analysis',
 }
 
 export enum TopicView {

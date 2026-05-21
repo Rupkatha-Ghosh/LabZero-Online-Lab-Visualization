@@ -6,7 +6,14 @@ from .views import (
     TopicList, TopicDetail,
     GlobalSettingsView,
     PublicStatsView,
-    FeedbackList
+    FeedbackList,
+    FeedbackFormDetailView,
+    FeedbackResponseCreateView,
+    FeedbackAnalyticsView,
+    FeedbackTextAnalysisView,
+    FeedbackAdminFormsView,
+    FeedbackAdminFormDetailView,
+    FeedbackAdminStatusView,
 )
 
 urlpatterns = [
@@ -22,4 +29,11 @@ urlpatterns = [
     path('topics/', TopicList.as_view(), name='topic-list'),
     path('topics/<int:pk>/', TopicDetail.as_view(), name='topic-detail'),
     path('feedback/', FeedbackList.as_view(), name='feedback-list'),
+    path('feedback/forms/<int:form_id>/', FeedbackFormDetailView.as_view(), name='feedback-form-detail'),
+    path('feedback/responses/', FeedbackResponseCreateView.as_view(), name='feedback-response-create'),
+    path('feedback/forms/<int:form_id>/analytics/', FeedbackAnalyticsView.as_view(), name='feedback-analytics'),
+    path('feedback/forms/<int:form_id>/text-analysis/', FeedbackTextAnalysisView.as_view(), name='feedback-text-analysis'),
+    path('feedback/admin/forms/', FeedbackAdminFormsView.as_view(), name='feedback-admin-forms'),
+    path('feedback/admin/forms/<int:form_id>/', FeedbackAdminFormDetailView.as_view(), name='feedback-admin-form-detail'),
+    path('feedback/admin/forms/<int:form_id>/status/', FeedbackAdminStatusView.as_view(), name='feedback-admin-form-status'),
 ]

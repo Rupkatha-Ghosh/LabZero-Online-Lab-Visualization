@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Book, User as UserIcon, Settings, Database, GraduationCap } from 'lucide-react';
+import { Home, Book, User as UserIcon, Settings, Database, GraduationCap, MessageSquareText } from 'lucide-react';
 import { ViewState, User } from '../../types/types';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -37,6 +37,9 @@ const BottomNav: React.FC<BottomNavProps> = ({
     { id: 'home', icon: Home, label: 'Home', action: () => onNavigate(ViewState.LANDING), active: currentView === ViewState.LANDING, color: 'bg-indigo-500' },
     ...(user ? [
       { id: 'dash', icon: GraduationCap, label: 'Dash', action: () => onNavigate(ViewState.DASHBOARD), active: currentView === ViewState.DASHBOARD, color: 'bg-sky-500' }
+    ] : []),
+    ...(user && (user.role === 'teacher' || user.role === 'institute' || user.is_staff || user.is_superuser) ? [
+      { id: 'feedback', icon: MessageSquareText, label: 'Feedback', action: () => onNavigate(ViewState.FEEDBACK_ADMIN), active: currentView === ViewState.FEEDBACK_ADMIN, color: 'bg-cyan-500' }
     ] : []),
     { id: 'book', icon: Book, label: 'Glossary', action: onOpenGlossary, active: showGlossary, color: 'bg-amber-500' },
     { id: 'user', icon: UserIcon, label: 'Profile', action: onOpenProfile, active: showAuth, color: 'bg-emerald-500' },
