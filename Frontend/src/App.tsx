@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import axios from 'axios';
 import { safeLocalStorage } from './utils/safeStorage';
-import { AlertCircle, CheckCircle2, LayoutDashboard, Loader2, MessageSquareText, Send, Settings, Star, X } from 'lucide-react';
+import { Settings } from 'lucide-react';
 const LandingPage = React.lazy(() => import('./components/pages/LandingPage'));
 import BottomNav from './components/common/BottomNav';
 const SubjectPage = React.lazy(() => import('./components/pages/SubjectPage'));
@@ -153,12 +153,13 @@ import { SIMULATION_REGISTRY } from './simulations/registry';
 import { usePWAInstall } from './hooks/usePWAInstall';
 import { MeetingConfig } from './context/MeetingContext';
 import { getDefaultSignalingUrl } from './utils/urlUtils';
-import { api } from './services/api';
 import {
+  FeedbackButton,
   FeedbackModuleBoundary,
   LazyAnalyticsDashboardPage,
   LazyFeedbackAdminPage,
   LazyFeedbackFormPage,
+  LazySiteFeedbackPage,
   LazyTextFeedbackAnalysisPage,
 } from './modules/feedback';
 
@@ -169,6 +170,7 @@ const getInitialViewState = () => {
   if (params.get('textAnalysisFormId')) return ViewState.FEEDBACK_TEXT_ANALYSIS;
   if (params.get('analyticsFormId')) return ViewState.FEEDBACK_ANALYTICS;
   if (params.get('feedbackFormId') || params.get('formId')) return ViewState.FEEDBACK_FORM;
+  if (params.get('feedback') === 'site') return ViewState.SITE_FEEDBACK;
   return ViewState.LANDING;
 };
 
@@ -182,188 +184,6 @@ const BackgroundLayer = ({ theme }: { theme: 'dark' | 'light' }) => (
     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
   </div>
 );
-
-interface FeedbackButtonProps {
-  theme: 'dark' | 'light';
-  user: any;
-  canManageFeedback: boolean;
-  isOpen: boolean;
-  rating: number;
-  comment: string;
-  status: 'idle' | 'success' | 'error';
-  errorMessage: string;
-  isSubmitting: boolean;
-  onOpen: () => void;
-  onClose: () => void;
-  onRatingChange: (rating: number) => void;
-  onCommentChange: (comment: string) => void;
-  onSubmit: () => void;
-  onManage: () => void;
-}
-
-const FeedbackButton: React.FC<FeedbackButtonProps> = ({
-  theme,
-  user,
-  canManageFeedback,
-  isOpen,
-  rating,
-  comment,
-  status,
-  errorMessage,
-  isSubmitting,
-  onOpen,
-  onClose,
-  onRatingChange,
-  onCommentChange,
-  onSubmit,
-  onManage,
-}) => {
-  const isLight = theme === 'light';
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={onOpen}
-        aria-label="Open feedback"
-        className={`fixed bottom-24 right-6 z-[140] inline-flex h-14 w-14 items-center justify-center rounded-2xl border transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 md:bottom-24 md:right-6 ${
-          isLight
-            ? 'border-slate-200 bg-white/90 text-indigo-700 shadow-[0_18px_45px_rgba(15,23,42,0.16)] hover:bg-indigo-50 focus-visible:ring-indigo-500 focus-visible:ring-offset-white'
-            : 'border-white/10 bg-slate-900/90 text-cyan-200 shadow-[0_18px_45px_rgba(0,0,0,0.38)] hover:border-cyan-300/30 hover:bg-slate-800 focus-visible:ring-cyan-300 focus-visible:ring-offset-slate-950'
-        }`}
-      >
-        <MessageSquareText size={24} />
-      </button>
-
-      {isOpen && (
-        <div className="fixed inset-0 z-[210] flex items-end justify-center px-4 py-5 sm:items-center">
-          <div
-            className={`absolute inset-0 backdrop-blur-sm ${
-              isLight ? 'bg-slate-950/20' : 'bg-black/45'
-            }`}
-            onClick={onClose}
-          />
-          <section
-            className={`relative w-full max-w-md rounded-2xl border p-5 shadow-2xl ${
-              isLight
-                ? 'border-slate-200 bg-white text-slate-950'
-                : 'border-white/10 bg-slate-950 text-slate-50'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className={`text-xs font-semibold uppercase tracking-[0.2em] ${isLight ? 'text-indigo-600' : 'text-cyan-300'}`}>
-                  LabZero Feedback
-                </p>
-                <h2 className="mt-2 text-xl font-black">Share your experience</h2>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close feedback"
-                className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
-                  isLight ? 'text-slate-500 hover:bg-slate-100 hover:text-slate-900' : 'text-slate-400 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {!user ? (
-              <div className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${isLight ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-amber-300/20 bg-amber-400/10 text-amber-100'}`}>
-                Please sign in before sending feedback so we can save it correctly.
-              </div>
-            ) : (
-              <div className="mt-5 space-y-5">
-                <div>
-                  <label className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                    Rating
-                  </label>
-                  <div className="mt-2 flex gap-2">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => onRatingChange(value)}
-                        aria-label={`Rate ${value} out of 5`}
-                        className={`flex h-10 w-10 items-center justify-center rounded-xl border transition ${
-                          value <= rating
-                            ? 'border-amber-400 bg-amber-400 text-slate-950'
-                            : isLight
-                              ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
-                              : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
-                        }`}
-                      >
-                        <Star size={18} fill={value <= rating ? 'currentColor' : 'none'} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="global-feedback-comment" className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                    Comment
-                  </label>
-                  <textarea
-                    id="global-feedback-comment"
-                    value={comment}
-                    onChange={(event) => onCommentChange(event.target.value)}
-                    rows={4}
-                    placeholder="Tell us what worked well or what should be improved."
-                    className={`mt-2 w-full resize-none rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
-                      isLight
-                        ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
-                        : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
-                    }`}
-                  />
-                </div>
-
-                {status === 'success' && (
-                  <div className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold ${isLight ? 'bg-emerald-50 text-emerald-700' : 'bg-emerald-400/10 text-emerald-200'}`}>
-                    <CheckCircle2 size={17} />
-                    Feedback submitted. Thank you.
-                  </div>
-                )}
-                {status === 'error' && (
-                  <div className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold ${isLight ? 'bg-rose-50 text-rose-700' : 'bg-rose-400/10 text-rose-200'}`}>
-                    <AlertCircle size={17} />
-                    {errorMessage}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              {canManageFeedback && (
-                <button
-                  type="button"
-                  onClick={onManage}
-                  className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition ${
-                    isLight
-                      ? 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                      : 'border-white/10 text-slate-200 hover:bg-white/10'
-                  }`}
-                >
-                  <LayoutDashboard size={16} />
-                  Manage forms
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={onSubmit}
-                disabled={!user || isSubmitting}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                Send feedback
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
-    </>
-  );
-};
 
 // ViewLoader removed - now using CSS skeleton
 
@@ -396,14 +216,9 @@ const AppContent: React.FC = () => {
   const [showGlossary, setShowGlossary] = useState(false);
   const [showAuth, setShowAuth] = useState(() => new URLSearchParams(window.location.search).get('auth') === '1');
   const [showMindMap, setShowMindMap] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackRating, setFeedbackRating] = useState(5);
-  const [feedbackComment, setFeedbackComment] = useState('');
-  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [feedbackError, setFeedbackError] = useState('Could not submit feedback. Please try again.');
-  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const landingScrollRef = useRef<HTMLDivElement>(null);
   const subjectScrollRef = useRef<HTMLDivElement>(null);
+  const feedbackReturnView = useRef<ViewState>(ViewState.LANDING);
   const savedScrollPositions = useRef<Record<string, number>>({});
 
 
@@ -556,6 +371,13 @@ const AppContent: React.FC = () => {
       user.is_superuser
     )
   );
+  const isFeedbackView = [
+    ViewState.SITE_FEEDBACK,
+    ViewState.FEEDBACK_FORM,
+    ViewState.FEEDBACK_ADMIN,
+    ViewState.FEEDBACK_ANALYTICS,
+    ViewState.FEEDBACK_TEXT_ANALYSIS,
+  ].includes(viewState);
 
   // ================= NAVIGATION =================
   const handleSelectSubject = useCallback((subject: Subject) => {
@@ -607,6 +429,7 @@ const AppContent: React.FC = () => {
       case ViewState.SUBJECT: setViewState(ViewState.CLASS_SUBJECTS); break;
       case ViewState.CLASS_SUBJECTS: setViewState(ViewState.LANDING); break;
       case ViewState.DASHBOARD: setViewState(ViewState.LANDING); break;
+      case ViewState.SITE_FEEDBACK:
       case ViewState.FEEDBACK_FORM:
       case ViewState.FEEDBACK_ADMIN:
       case ViewState.FEEDBACK_ANALYTICS:
@@ -621,43 +444,13 @@ const AppContent: React.FC = () => {
     setViewState(ViewState.DASHBOARD);
   };
 
-  const handleOpenFeedback = () => {
-    setFeedbackStatus('idle');
-    if (!user) {
-      setShowAuth(true);
-      setShowFeedback(false);
-      return;
-    }
-    setShowFeedback(true);
+  const handleOpenSiteFeedback = () => {
+    feedbackReturnView.current = viewState;
+    setViewState(ViewState.SITE_FEEDBACK);
   };
 
-  const handleManageFeedback = () => {
-    setShowFeedback(false);
-    setViewState(ViewState.FEEDBACK_ADMIN);
-  };
-
-  const handleSubmitFeedback = async () => {
-    if (!user) {
-      setShowAuth(true);
-      return;
-    }
-
-    setIsSubmittingFeedback(true);
-    setFeedbackStatus('idle');
-
-    try {
-      await api.post('/feedback/', {
-        rating: feedbackRating,
-        comment: feedbackComment.trim(),
-      });
-      setFeedbackStatus('success');
-      setFeedbackComment('');
-    } catch (error: any) {
-      setFeedbackError(error?.response?.data?.detail || error?.response?.data?.message || 'Could not submit feedback. Please try again.');
-      setFeedbackStatus('error');
-    } finally {
-      setIsSubmittingFeedback(false);
-    }
+  const handleBackFromSiteFeedback = () => {
+    setViewState(feedbackReturnView.current || ViewState.LANDING);
   };
 
   const handleBackToSubject = () => {
@@ -944,6 +737,20 @@ const AppContent: React.FC = () => {
                     </React.Suspense>
                   </div>
                 )}
+                {viewState === ViewState.SITE_FEEDBACK && (
+                  <div key="site-feedback" className="h-full w-full overflow-y-auto">
+                    <FeedbackModuleBoundary fallbackTitle="Feedback page unavailable">
+                      <LazySiteFeedbackPage
+                        user={user}
+                        theme={theme}
+                        canManageFeedback={canManageFeedback}
+                        onBack={handleBackFromSiteFeedback}
+                        onLogin={() => setShowAuth(true)}
+                        onManageFeedback={() => setViewState(ViewState.FEEDBACK_ADMIN)}
+                      />
+                    </FeedbackModuleBoundary>
+                  </div>
+                )}
                 {viewState === ViewState.FEEDBACK_ADMIN && (
                   <div key="feedback-admin" className="h-full w-full overflow-y-auto">
                     <FeedbackModuleBoundary fallbackTitle="Feedback admin unavailable">
@@ -977,23 +784,12 @@ const AppContent: React.FC = () => {
             </AnimationShell>
           </React.Suspense>
 
-          <FeedbackButton
-            theme={theme}
-            user={user}
-            canManageFeedback={canManageFeedback}
-            isOpen={showFeedback}
-            rating={feedbackRating}
-            comment={feedbackComment}
-            status={feedbackStatus}
-            errorMessage={feedbackError}
-            isSubmitting={isSubmittingFeedback}
-            onOpen={handleOpenFeedback}
-            onClose={() => setShowFeedback(false)}
-            onRatingChange={setFeedbackRating}
-            onCommentChange={setFeedbackComment}
-            onSubmit={handleSubmitFeedback}
-            onManage={handleManageFeedback}
-          />
+          {!isFeedbackView && (
+            <FeedbackButton
+              theme={theme}
+              onClick={handleOpenSiteFeedback}
+            />
+          )}
 
           <button
             onClick={() => setShowSettings(!showSettings)}

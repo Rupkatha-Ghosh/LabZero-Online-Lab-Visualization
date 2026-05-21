@@ -30,6 +30,14 @@ export const submitFeedbackResponse = async (
   return response.data;
 };
 
+export const submitSiteFeedback = async (payload: {
+  rating: number;
+  comment: string;
+}) => {
+  const response = await withRetry(() => api.post('/feedback/', payload), 1);
+  return response.data;
+};
+
 export const fetchFeedbackAnalytics = async (
   formId: string,
   filters: FeedbackAnalyticsFilters = {}
