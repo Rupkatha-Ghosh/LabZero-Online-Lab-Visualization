@@ -10,6 +10,15 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: '0.0.0.0',
+      watch: {
+        ignored: [
+          '**/chrome-profile*/**',
+          '**/chrome_log*.*',
+          '**/dist/**',
+          '**/.git/**',
+          '**/node_modules/**'
+        ]
+      },
       proxy: {
         '/signal': {
           target: env.VITE_SIGNALING_SERVER_URL || 'ws://localhost:5000',
@@ -52,12 +61,51 @@ export default defineConfig(({ mode }) => {
               },
             },
             {
+              // Cache JavaScript and CSS chunks (including vendor bundles) under /assets/
+              urlPattern: /\/assets\/.*\.(?:js|css)$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'assets-cache',
+                expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 }, // 30 days
+              },
+            },
+            {
               // Cache image assets (icons, logos) similarly
               urlPattern: /\.(?:png|svg|jpg|jpeg|webp)$/,
               handler: 'StaleWhileRevalidate',
               options: {
                 cacheName: 'image-cache',
                 expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              },
+            },
+            {
+              // Cache 3D model files (glb, gltf) aggressively using CacheFirst
+              urlPattern: /\.(?:glb|gltf)$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: '3d-model-cache',
+                expiration: {
+                  maxEntries: 30,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // Cache for 1 year
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              },
+            },
+            {
+              // Cache Draco decoder files aggressively from Google Static CDN
+              urlPattern: /^https:\/\/www\.gstatic\.com\/draco\/.*$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'draco-decoder-cache',
+                expiration: {
+                  maxEntries: 20,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // Cache for 1 year
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
               },
             },
             // Existing API caching remains unchanged

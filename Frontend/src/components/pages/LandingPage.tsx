@@ -181,8 +181,16 @@ const Hero3DModelFallback = ({ theme }: { theme: 'dark' | 'light' }) => {
       </div>
       
       {/* Subtle loading hint text */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 pointer-events-none">
-        <span className="text-[10px] font-mono tracking-[0.25em] uppercase text-[var(--text-muted)] opacity-50">Loading 3D Visualizer...</span>
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none z-20">
+        <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-200/40 dark:bg-slate-950/45 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-lg">
+          <div className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+          </div>
+          <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-slate-600 dark:text-sky-300 font-semibold">
+            Loading Interactive 3D...
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -272,14 +280,13 @@ const SuspendedHero3DModel = ({ theme }: { theme: 'dark' | 'light' }) => (
 );
 
 const useDeferredHeroWidgets = () => {
-  // If we already loaded the hero widgets in this session, skip delay
-  if (typeof window !== 'undefined' && safeLocalStorage.getItem('heroWidgetsLoaded') === 'true') {
-    return true;
-  }
-
-  const [shouldLoad, setShouldLoad] = React.useState(false);
+  const [shouldLoad, setShouldLoad] = React.useState(() => {
+    return typeof window !== 'undefined' && safeLocalStorage.getItem('heroWidgetsLoaded') === 'true';
+  });
 
   React.useEffect(() => {
+    if (shouldLoad) return;
+
     let idleId: number | null = null;
     let timeoutId: any = null;
 
@@ -311,7 +318,7 @@ const useDeferredHeroWidgets = () => {
       window.removeEventListener('pointerdown', onInteraction);
       window.removeEventListener('keydown', onInteraction);
     };
-  }, []);
+  }, [shouldLoad]);
 
   return shouldLoad;
 };
@@ -738,7 +745,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               <div className="absolute inset-0 pt-20 px-4 pb-4">
-                {useDeferredHeroWidgets() ? (
+                {shouldLoadHeroWidgets ? (
                   <SuspendedElectricFieldSimulation theme={theme} />
                 ) : (
                   <ElectricFieldSimulationFallback />

@@ -1,34 +1,12 @@
+import './polyfill';
 import './index.css';
-import { safeLocalStorage, safeSessionStorage } from './utils/safeStorage';
-
-// Polyfill window storage properties inside try-catch to protect third-party libraries
-if (typeof window !== 'undefined') {
-  try {
-    Object.defineProperty(window, 'localStorage', {
-      value: safeLocalStorage,
-      writable: true,
-      configurable: true
-    });
-  } catch (e) {
-    console.warn('Failed to define safeLocalStorage on window:', e);
-  }
-
-  try {
-    Object.defineProperty(window, 'sessionStorage', {
-      value: safeSessionStorage,
-      writable: true,
-      configurable: true
-    });
-  } catch (e) {
-    console.warn('Failed to define safeSessionStorage on window:', e);
-  }
-}
-
 import React from 'react';
+import { safeSessionStorage } from './utils/safeStorage';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 const Sender = React.lazy(() => import('./components/shared/Sender'));
 import { registerSW } from 'virtual:pwa-register';
+
 
 // Unregister stale service workers in development mode, or register in production
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
@@ -91,7 +69,7 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
 
 // Catch and reload on dynamic import failures (preload errors and window-level chunk errors)
 if (typeof window !== 'undefined') {
-  const triggerReload = (reason: string) => {
+  const triggerReload = async (reason: string) => {
     const reloadKey = 'chunk-load-error-reload';
     const lastReload = safeSessionStorage.getItem(reloadKey);
     const now = Date.now();
@@ -100,7 +78,18 @@ if (typeof window !== 'undefined') {
       return;
     }
     safeSessionStorage.setItem(reloadKey, now.toString());
-    console.warn('Chunk load/preload error detected, reloading page to fetch fresh assets. Reason:', reason);
+    console.warn('Chunk load/preload error detected, unregistering SW and reloading page. Reason:', reason);
+    
+    if ('serviceWorker' in navigator) {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          await reg.unregister();
+        }
+      } catch (e) {
+        console.error('Failed to unregister SW before reload:', e);
+      }
+    }
     window.location.reload();
   };
 
@@ -114,8 +103,8 @@ if (typeof window !== 'undefined') {
     const errorMsg = event.message || '';
     const errorObj = event.error;
     const isChunkError = 
-      /chunk|load|loading|import|dynamically/i.test(errorMsg) ||
-      (errorObj && /chunk|load|loading|import|dynamically/i.test(errorObj.message || errorObj.toString() || ''));
+      /chunk|import|dynamically/i.test(errorMsg) ||
+      (errorObj && /chunk|import|dynamically/i.test(errorObj.message || errorObj.toString() || ''));
     
     if (isChunkError) {
       triggerReload('window error: ' + errorMsg);
@@ -126,7 +115,7 @@ if (typeof window !== 'undefined') {
     const reason = event.reason;
     if (reason) {
       const reasonStr = typeof reason === 'string' ? reason : (reason.message || reason.toString() || '');
-      if (/chunk|load|loading|import|dynamically/i.test(reasonStr)) {
+      if (/chunk|import|dynamically/i.test(reasonStr)) {
         triggerReload('unhandledrejection: ' + reasonStr);
       }
     }

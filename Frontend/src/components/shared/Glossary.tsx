@@ -17,13 +17,31 @@ const Glossary: React.FC<GlossaryProps> = ({ onClose, language }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     const init = async () => {
-      await glossaryService.init();
-      const allTerms = await glossaryService.getAll();
-      setTerms(allTerms);
-      setIsLoading(false);
+      try {
+        await glossaryService.init();
+        if (!active) return;
+        const allTerms = await glossaryService.getAll();
+        if (!active) return;
+        setTerms(allTerms);
+      } catch (err) {
+        console.warn('Failed to initialize local glossary DB:', err);
+        if (active) {
+          // Fallback to static glossary terms
+          const { INITIAL_GLOSSARY_TERMS } = await import('../../services/glossaryService');
+          setTerms(INITIAL_GLOSSARY_TERMS);
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
     };
     init();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const filteredTerms = terms.filter(t => {
