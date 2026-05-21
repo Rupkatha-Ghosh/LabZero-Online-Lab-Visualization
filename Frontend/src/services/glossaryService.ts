@@ -16,23 +16,30 @@ export class GlossaryService {
 
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      try {
+        if (typeof window === 'undefined' || !window.indexedDB) {
+          throw new Error('IndexedDB is not supported or is blocked');
         }
-      };
+        const request = window.indexedDB.open(DB_NAME, DB_VERSION);
 
-      request.onsuccess = async (event) => {
-        this.db = (event.target as IDBOpenDBRequest).result;
-        // Attempt to sync with backend, but don't block the UI
-        this.syncWithBackend().catch(err => console.warn("Background sync failed:", err));
-        resolve();
-      };
+        request.onupgradeneeded = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        };
 
-      request.onerror = () => reject(request.error);
+        request.onsuccess = async (event) => {
+          this.db = (event.target as IDBOpenDBRequest).result;
+          // Attempt to sync with backend, but don't block the UI
+          this.syncWithBackend().catch(err => console.warn("Background sync failed:", err));
+          resolve();
+        };
+
+        request.onerror = () => reject(request.error);
+      } catch (e) {
+        reject(e);
+      }
     });
   }
 

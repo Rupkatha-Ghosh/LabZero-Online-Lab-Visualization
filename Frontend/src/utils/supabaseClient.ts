@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { safeLocalStorage } from './safeStorage';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -16,7 +17,14 @@ const isValidUrl = (url: string) => {
 };
 
 export const supabase = (isValidUrl(supabaseUrl) && supabaseAnonKey && supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY_HERE') 
-  ? createClient(supabaseUrl, supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        storage: safeLocalStorage,
+        persistSession: true,
+        detectSessionInUrl: true,
+        autoRefreshToken: true
+      }
+    }) 
   : null as any;
 
 export const uploadAssignmentFile = async (file: File, classroomId: number) => {
