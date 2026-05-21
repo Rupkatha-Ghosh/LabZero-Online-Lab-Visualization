@@ -139,6 +139,164 @@ const questionTypes = [
   { label: 'Dropdown Questions', icon: ListChecks },
 ];
 
+const studentTextQuestions = [
+  {
+    id: 'mostHelpfulFeature',
+    label: 'What feature of LabZero helped you most in learning?',
+    placeholder: 'Example: live classes, lab visualizations, notes, chat, assignments...',
+  },
+  {
+    id: 'difficulties',
+    label: 'What difficulties did you face while using the platform?',
+    placeholder: 'Share login, navigation, loading, classroom, resource, or device issues.',
+  },
+  {
+    id: 'onlineClassExperience',
+    label: 'Describe your experience during online classes.',
+    placeholder: 'Tell us about interaction, clarity, audio/video quality, and participation.',
+  },
+  {
+    id: 'improvements',
+    label: 'What improvements would you suggest for better learning?',
+    placeholder: 'Suggest changes that would make LabZero more useful for your studies.',
+  },
+  {
+    id: 'additionalComments',
+    label: 'Any additional comments regarding student experience?',
+    placeholder: 'Add anything else you want your teacher or the LabZero team to know.',
+  },
+] as const;
+
+const studentRatingQuestions = [
+  { id: 'overallUsability', label: 'Rate the overall usability of LabZero.' },
+  { id: 'classroomInteraction', label: 'Rate the quality of classroom interaction.' },
+  { id: 'studyMaterialsAccess', label: 'Rate the ease of accessing study materials.' },
+  { id: 'platformSpeed', label: 'Rate the responsiveness/speed of the platform.' },
+  { id: 'overallLearning', label: 'Rate your overall learning experience.' },
+] as const;
+
+const studentCheckboxQuestions = [
+  {
+    id: 'regularFeatures',
+    label: 'Which features do you use regularly?',
+    options: [
+      'Live Classes',
+      'Notes/PDF Sharing',
+      'Assignment Submission',
+      'Classroom Chat',
+      'Recorded Sessions',
+      'Virtual Labs',
+      'Quizzes / Practice Tasks',
+    ],
+  },
+  {
+    id: 'desiredImprovements',
+    label: 'What improvements would you like?',
+    options: [
+      'Better UI Design',
+      'Faster Loading',
+      'More Interactive Features',
+      'Mobile Optimization',
+      'Better Notifications',
+      'More Recorded Sessions',
+      'Clearer Assignment Tracking',
+    ],
+  },
+  {
+    id: 'devicesUsed',
+    label: 'Which devices do you use for LabZero?',
+    options: ['Mobile', 'Laptop', 'Tablet', 'Desktop'],
+  },
+] as const;
+
+const studentRadioQuestions = [
+  {
+    id: 'usageFrequency',
+    label: 'How often do you use LabZero?',
+    options: ['Daily', 'Weekly', 'Occasionally', 'Rarely'],
+  },
+  {
+    id: 'overallSatisfaction',
+    label: 'Overall satisfaction with the platform?',
+    options: ['Excellent', 'Good', 'Average', 'Poor'],
+  },
+  {
+    id: 'wouldRecommend',
+    label: 'Would you recommend LabZero to others?',
+    options: ['Yes', 'No'],
+  },
+] as const;
+
+const studentDropdownQuestions = [
+  {
+    id: 'department',
+    label: 'Select your department.',
+    options: [
+      'Science',
+      'Mathematics',
+      'Computer Science',
+      'Engineering',
+      'Biology',
+      'Chemistry',
+      'Physics',
+      'Other',
+    ],
+  },
+  {
+    id: 'yearSemester',
+    label: 'Select your year/semester.',
+    options: [
+      'Class 9',
+      'Class 10',
+      'Class 11',
+      'Class 12',
+      'Year 1 / Semester 1',
+      'Year 1 / Semester 2',
+      'Year 2 / Semester 3',
+      'Year 2 / Semester 4',
+      'Year 3 / Semester 5',
+      'Year 3 / Semester 6',
+      'Year 4 / Semester 7',
+      'Year 4 / Semester 8',
+    ],
+  },
+  {
+    id: 'preferredLearningMode',
+    label: 'Select your preferred learning mode.',
+    options: ['Live online classes', 'Recorded lessons', 'Self-paced study', 'Blended learning', 'Virtual lab practice'],
+  },
+  {
+    id: 'internetQuality',
+    label: 'Select your internet connectivity quality.',
+    options: ['Excellent', 'Good', 'Average', 'Poor', 'Unstable'],
+  },
+  {
+    id: 'primaryUsageTime',
+    label: 'Select your primary usage time.',
+    options: ['Morning', 'Afternoon', 'Evening', 'Night', 'Flexible / varies'],
+  },
+] as const;
+
+const defaultStudentTextAnswers = Object.fromEntries(
+  studentTextQuestions.map((question) => [question.id, ''])
+) as Record<(typeof studentTextQuestions)[number]['id'], string>;
+
+const defaultStudentRatings = Object.fromEntries(
+  studentRatingQuestions.map((question) => [question.id, 5])
+) as Record<(typeof studentRatingQuestions)[number]['id'], number>;
+
+const defaultStudentCheckboxAnswers = Object.fromEntries(
+  studentCheckboxQuestions.map((question) => [question.id, []])
+) as Record<(typeof studentCheckboxQuestions)[number]['id'], string[]>;
+
+const defaultStudentRadioAnswers = Object.fromEntries(
+  studentRadioQuestions.map((question) => [question.id, question.options[0]])
+) as Record<(typeof studentRadioQuestions)[number]['id'], string>;
+
+const defaultStudentDropdownAnswers = Object.fromEntries(
+  studentDropdownQuestions.map((question) => [question.id, ''])
+) as Record<(typeof studentDropdownQuestions)[number]['id'], string>;
+
 const SiteFeedbackPage = ({
   user,
   theme,
@@ -157,10 +315,16 @@ const SiteFeedbackPage = ({
   const [classroom, setClassroom] = useState('');
   const [teacher, setTeacher] = useState('');
   const [session, setSession] = useState('');
+  const [studentTextAnswers, setStudentTextAnswers] = useState(defaultStudentTextAnswers);
+  const [studentRatings, setStudentRatings] = useState(defaultStudentRatings);
+  const [studentCheckboxAnswers, setStudentCheckboxAnswers] = useState(defaultStudentCheckboxAnswers);
+  const [studentRadioAnswers, setStudentRadioAnswers] = useState(defaultStudentRadioAnswers);
+  const [studentDropdownAnswers, setStudentDropdownAnswers] = useState(defaultStudentDropdownAnswers);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [error, setError] = useState('Could not submit feedback. Please try again.');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isLight = theme === 'light';
+  const isStudentFeedback = feedbackRole === 'student';
 
   const inputClass = `mt-2 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
     isLight
@@ -173,12 +337,37 @@ const SiteFeedbackPage = ({
     setSelectedAreas(roleConfig.feedbackAreas);
   }, [feedbackRole, roleConfig.feedbackAreas]);
 
+  useEffect(() => {
+    if (isStudentFeedback) {
+      setStudentTextAnswers(defaultStudentTextAnswers);
+      setStudentRatings(defaultStudentRatings);
+      setStudentCheckboxAnswers(defaultStudentCheckboxAnswers);
+      setStudentRadioAnswers(defaultStudentRadioAnswers);
+      setStudentDropdownAnswers(defaultStudentDropdownAnswers);
+    }
+  }, [isStudentFeedback]);
+
   const toggleArea = (area: string) => {
     setSelectedAreas((current) =>
       current.includes(area)
         ? current.filter((item) => item !== area)
         : [...current, area]
     );
+  };
+
+  const toggleStudentCheckbox = (
+    questionId: keyof typeof defaultStudentCheckboxAnswers,
+    option: string
+  ) => {
+    setStudentCheckboxAnswers((current) => {
+      const selected = current[questionId];
+      return {
+        ...current,
+        [questionId]: selected.includes(option)
+          ? selected.filter((item) => item !== option)
+          : [...selected, option],
+      };
+    });
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -193,24 +382,61 @@ const SiteFeedbackPage = ({
     setStatus('idle');
 
     try {
+      const studentFeedbackDetails = isStudentFeedback
+        ? [
+            'Student Text Feedback:',
+            ...studentTextQuestions.map(
+              (question) =>
+                `- ${question.label}: ${studentTextAnswers[question.id].trim() || 'Not provided'}`
+            ),
+            'Student Ratings:',
+            ...studentRatingQuestions.map(
+              (question) => `- ${question.label}: ${studentRatings[question.id]}/5`
+            ),
+            'Student Multiple Choice:',
+            ...studentCheckboxQuestions.map((question) => {
+              const selected = studentCheckboxAnswers[question.id];
+              return `- ${question.label}: ${selected.length ? selected.join(', ') : 'Not selected'}`;
+            }),
+            'Student Single Choice:',
+            ...studentRadioQuestions.map(
+              (question) => `- ${question.label}: ${studentRadioAnswers[question.id]}`
+            ),
+            'Student Dropdown Details:',
+            ...studentDropdownQuestions.map(
+              (question) =>
+                `- ${question.label}: ${studentDropdownAnswers[question.id] || 'Not selected'}`
+            ),
+          ]
+        : [
+            `Feedback Type: ${feedbackType}`,
+            `Covered Areas: ${selectedAreas.length ? selectedAreas.join(', ') : 'Not specified'}`,
+            `Comment: ${comment.trim() || 'No written comment provided.'}`,
+          ];
+
       const structuredComment = [
         `Feedback Category: ${roleConfig.badge}`,
         `User Role: ${feedbackRole}`,
-        `Feedback Type: ${feedbackType}`,
         `${roleConfig.fields.course.label}: ${course || 'Not specified'}`,
         `${roleConfig.fields.classroom.label}: ${classroom || 'Not specified'}`,
         `${roleConfig.fields.teacher.label}: ${teacher || 'Not specified'}`,
         `${roleConfig.fields.session.label}: ${session || 'Not specified'}`,
-        `Covered Areas: ${selectedAreas.length ? selectedAreas.join(', ') : 'Not specified'}`,
-        `Comment: ${comment.trim() || 'No written comment provided.'}`,
+        ...studentFeedbackDetails,
       ].join('\n');
 
       await submitSiteFeedback({
-        rating,
+        rating: isStudentFeedback ? studentRatings.overallLearning : rating,
         comment: structuredComment,
       });
       setStatus('success');
       setComment('');
+      if (isStudentFeedback) {
+        setStudentTextAnswers(defaultStudentTextAnswers);
+        setStudentRatings(defaultStudentRatings);
+        setStudentCheckboxAnswers(defaultStudentCheckboxAnswers);
+        setStudentRadioAnswers(defaultStudentRadioAnswers);
+        setStudentDropdownAnswers(defaultStudentDropdownAnswers);
+      }
     } catch (submitError) {
       setError(getFeedbackApiError(submitError));
       setStatus('error');
@@ -382,112 +608,139 @@ const SiteFeedbackPage = ({
               </div>
             </div>
 
-            <div className="mt-5">
-              <label className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                Feedback focus
-              </label>
-              <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {roleConfig.feedbackAreas.map((area) => (
-                  <button
-                    key={area}
-                    type="button"
-                    onClick={() => setFeedbackType(area)}
-                    className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
-                      feedbackType === area
-                        ? 'border-indigo-500 bg-indigo-600 text-white'
-                        : isLight
-                          ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
-                          : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
-                    }`}
-                  >
-                    {area}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <label className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                Areas covered
-              </label>
-              <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {roleConfig.feedbackAreas.map((area) => (
-                  <label
-                    key={area}
-                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                      selectedAreas.includes(area)
-                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                        : isLight
-                          ? 'border-slate-200 bg-white text-slate-600'
-                          : 'border-white/10 bg-white/5 text-slate-300'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedAreas.includes(area)}
-                      onChange={() => toggleArea(area)}
-                      className="h-4 w-4 rounded border-slate-300 text-emerald-600"
-                    />
-                    {area}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label
-                className={`text-sm font-semibold ${
-                  isLight ? 'text-slate-700' : 'text-slate-200'
-                }`}
-              >
-                Overall rating
-              </label>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setRating(value)}
-                    aria-label={`Rate ${value} out of 5`}
-                    className={`flex h-11 w-11 items-center justify-center rounded-xl border transition ${
-                      value <= rating
-                        ? 'border-amber-400 bg-amber-400 text-slate-950'
-                        : isLight
-                          ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
-                          : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
-                    }`}
-                  >
-                    <Star
-                      size={19}
-                      fill={value <= rating ? 'currentColor' : 'none'}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <label
-                htmlFor="site-feedback-comment"
-                className={`text-sm font-semibold ${
-                  isLight ? 'text-slate-700' : 'text-slate-200'
-                }`}
-              >
-                Feedback
-              </label>
-              <textarea
-                id="site-feedback-comment"
-                value={comment}
-                onChange={(event) => setComment(event.target.value)}
-                rows={7}
-                placeholder="Tell us what worked well or what should be improved."
-                className={`mt-2 w-full resize-none rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
-                  isLight
-                    ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
-                    : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
-                }`}
+            {isStudentFeedback ? (
+              <StudentFeedbackQuestions
+                isLight={isLight}
+                inputClass={inputClass}
+                textAnswers={studentTextAnswers}
+                ratings={studentRatings}
+                checkboxAnswers={studentCheckboxAnswers}
+                radioAnswers={studentRadioAnswers}
+                dropdownAnswers={studentDropdownAnswers}
+                onTextChange={(questionId, value) =>
+                  setStudentTextAnswers((current) => ({ ...current, [questionId]: value }))
+                }
+                onRatingChange={(questionId, value) =>
+                  setStudentRatings((current) => ({ ...current, [questionId]: value }))
+                }
+                onCheckboxToggle={toggleStudentCheckbox}
+                onRadioChange={(questionId, value) =>
+                  setStudentRadioAnswers((current) => ({ ...current, [questionId]: value }))
+                }
+                onDropdownChange={(questionId, value) =>
+                  setStudentDropdownAnswers((current) => ({ ...current, [questionId]: value }))
+                }
               />
-            </div>
+            ) : (
+              <>
+                <div className="mt-5">
+                  <label className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
+                    Feedback focus
+                  </label>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    {roleConfig.feedbackAreas.map((area) => (
+                      <button
+                        key={area}
+                        type="button"
+                        onClick={() => setFeedbackType(area)}
+                        className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
+                          feedbackType === area
+                            ? 'border-indigo-500 bg-indigo-600 text-white'
+                            : isLight
+                              ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
+                              : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                        }`}
+                      >
+                        {area}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5">
+                  <label className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
+                    Areas covered
+                  </label>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    {roleConfig.feedbackAreas.map((area) => (
+                      <label
+                        key={area}
+                        className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                          selectedAreas.includes(area)
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                            : isLight
+                              ? 'border-slate-200 bg-white text-slate-600'
+                              : 'border-white/10 bg-white/5 text-slate-300'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedAreas.includes(area)}
+                          onChange={() => toggleArea(area)}
+                          className="h-4 w-4 rounded border-slate-300 text-emerald-600"
+                        />
+                        {area}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    className={`text-sm font-semibold ${
+                      isLight ? 'text-slate-700' : 'text-slate-200'
+                    }`}
+                  >
+                    Overall rating
+                  </label>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setRating(value)}
+                        aria-label={`Rate ${value} out of 5`}
+                        className={`flex h-11 w-11 items-center justify-center rounded-xl border transition ${
+                          value <= rating
+                            ? 'border-amber-400 bg-amber-400 text-slate-950'
+                            : isLight
+                              ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
+                              : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
+                        }`}
+                      >
+                        <Star
+                          size={19}
+                          fill={value <= rating ? 'currentColor' : 'none'}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5">
+                  <label
+                    htmlFor="site-feedback-comment"
+                    className={`text-sm font-semibold ${
+                      isLight ? 'text-slate-700' : 'text-slate-200'
+                    }`}
+                  >
+                    Feedback
+                  </label>
+                  <textarea
+                    id="site-feedback-comment"
+                    value={comment}
+                    onChange={(event) => setComment(event.target.value)}
+                    rows={7}
+                    placeholder="Tell us what worked well or what should be improved."
+                    className={`mt-2 w-full resize-none rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
+                      isLight
+                        ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
+                        : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
+                    }`}
+                  />
+                </div>
+              </>
+            )}
 
             {status === 'success' && (
               <div className="mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
@@ -569,6 +822,211 @@ const SiteFeedbackPage = ({
         </section>
       </div>
     </FeedbackPageShell>
+  );
+};
+
+type StudentTextQuestionId = keyof typeof defaultStudentTextAnswers;
+type StudentRatingQuestionId = keyof typeof defaultStudentRatings;
+type StudentCheckboxQuestionId = keyof typeof defaultStudentCheckboxAnswers;
+type StudentRadioQuestionId = keyof typeof defaultStudentRadioAnswers;
+type StudentDropdownQuestionId = keyof typeof defaultStudentDropdownAnswers;
+
+interface StudentFeedbackQuestionsProps {
+  isLight: boolean;
+  inputClass: string;
+  textAnswers: typeof defaultStudentTextAnswers;
+  ratings: typeof defaultStudentRatings;
+  checkboxAnswers: typeof defaultStudentCheckboxAnswers;
+  radioAnswers: typeof defaultStudentRadioAnswers;
+  dropdownAnswers: typeof defaultStudentDropdownAnswers;
+  onTextChange: (questionId: StudentTextQuestionId, value: string) => void;
+  onRatingChange: (questionId: StudentRatingQuestionId, value: number) => void;
+  onCheckboxToggle: (questionId: StudentCheckboxQuestionId, option: string) => void;
+  onRadioChange: (questionId: StudentRadioQuestionId, value: string) => void;
+  onDropdownChange: (questionId: StudentDropdownQuestionId, value: string) => void;
+}
+
+const StudentFeedbackQuestions = ({
+  isLight,
+  inputClass,
+  textAnswers,
+  ratings,
+  checkboxAnswers,
+  radioAnswers,
+  dropdownAnswers,
+  onTextChange,
+  onRatingChange,
+  onCheckboxToggle,
+  onRadioChange,
+  onDropdownChange,
+}: StudentFeedbackQuestionsProps) => {
+  const labelClass = `text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`;
+  const panelClass = `mt-5 rounded-3xl border p-4 sm:p-5 ${
+    isLight ? 'border-slate-200 bg-slate-50/80' : 'border-white/10 bg-white/5'
+  }`;
+  const panelTitleClass = `text-base font-black ${isLight ? 'text-slate-950' : 'text-slate-50'}`;
+  const panelHintClass = `mt-1 text-xs leading-5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`;
+
+  return (
+    <>
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Written Feedback</h3>
+        <p className={panelHintClass}>
+          Share specific details so teachers and administrators can understand the student experience clearly.
+        </p>
+        <div className="mt-4 grid gap-4">
+          {studentTextQuestions.map((question) => (
+            <div key={question.id}>
+              <label htmlFor={`student-${question.id}`} className={labelClass}>
+                {question.label}
+              </label>
+              <textarea
+                id={`student-${question.id}`}
+                value={textAnswers[question.id]}
+                onChange={(event) => onTextChange(question.id, event.target.value)}
+                rows={4}
+                placeholder={question.placeholder}
+                className={`${inputClass} resize-none`}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Ratings</h3>
+        <p className={panelHintClass}>
+          Use 1 for very poor and 5 for excellent.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {studentRatingQuestions.map((question) => (
+            <div
+              key={question.id}
+              className={`rounded-2xl border px-4 py-4 ${
+                isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
+              }`}
+            >
+              <p className={labelClass}>{question.label}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => onRatingChange(question.id, value)}
+                    aria-label={`${question.label} ${value} out of 5`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${
+                      value <= ratings[question.id]
+                        ? 'border-amber-400 bg-amber-400 text-slate-950'
+                        : isLight
+                          ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
+                          : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
+                    }`}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Feature Usage and Improvements</h3>
+        <p className={panelHintClass}>
+          Select every option that applies.
+        </p>
+        <div className="mt-4 grid gap-4">
+          {studentCheckboxQuestions.map((question) => (
+            <fieldset key={question.id}>
+              <legend className={labelClass}>{question.label}</legend>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {question.options.map((option) => (
+                  <label
+                    key={option}
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                      checkboxAnswers[question.id].includes(option)
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                        : isLight
+                          ? 'border-slate-200 bg-white text-slate-600'
+                          : 'border-white/10 bg-white/5 text-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checkboxAnswers[question.id].includes(option)}
+                      onChange={() => onCheckboxToggle(question.id, option)}
+                      className="h-4 w-4 rounded border-slate-300 text-emerald-600"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Usage and Satisfaction</h3>
+        <div className="mt-4 grid gap-4">
+          {studentRadioQuestions.map((question) => (
+            <fieldset key={question.id}>
+              <legend className={labelClass}>{question.label}</legend>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {question.options.map((option) => (
+                  <label
+                    key={option}
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                      radioAnswers[question.id] === option
+                        ? 'border-indigo-500 bg-indigo-600 text-white'
+                        : isLight
+                          ? 'border-slate-200 bg-white text-slate-600'
+                          : 'border-white/10 bg-white/5 text-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`student-${question.id}`}
+                      checked={radioAnswers[question.id] === option}
+                      onChange={() => onRadioChange(question.id, option)}
+                      className="h-4 w-4 border-slate-300 text-indigo-600"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </div>
+      </section>
+
+      <section className={panelClass}>
+        <h3 className={panelTitleClass}>Academic and Access Details</h3>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {studentDropdownQuestions.map((question) => (
+            <div key={question.id}>
+              <label htmlFor={`student-${question.id}`} className={labelClass}>
+                {question.label}
+              </label>
+              <select
+                id={`student-${question.id}`}
+                value={dropdownAnswers[question.id]}
+                onChange={(event) => onDropdownChange(question.id, event.target.value)}
+                className={inputClass}
+              >
+                <option value="">Choose an option</option>
+                {question.options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
   );
 };
 
