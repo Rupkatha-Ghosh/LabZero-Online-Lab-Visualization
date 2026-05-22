@@ -13,7 +13,7 @@ from .serializers import (
 )
 from django.db.models import Avg
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework import status
 
 class GlobalSettingsView(APIView):
