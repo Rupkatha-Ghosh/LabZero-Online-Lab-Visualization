@@ -1,16 +1,35 @@
-import { AlertCircle, FilePlus2, LayoutDashboard, Loader2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { AlertCircle, BarChart3, FilePlus2, LayoutDashboard, Loader2, MessageSquareText, PieChart as PieChartIcon, RefreshCw, Star, Users } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { useAuth } from '../../../context/AuthContext';
 import AdminFilterBar from '../components/admin/AdminFilterBar';
 import AdminFormsTable from '../components/admin/AdminFormsTable';
 import FeedbackFormBuilderModal from '../components/admin/FeedbackFormBuilderModal';
 import FeedbackPageShell from '../components/common/FeedbackPageShell';
 import FeedbackSkeleton from '../components/common/FeedbackSkeleton';
+import SentimentSummary from '../components/text-analysis/SentimentSummary';
+import WordCloud from '../components/text-analysis/WordCloud';
 import { useFeedbackAdmin } from '../hooks/useFeedbackAdmin';
+import { fetchAdminFeedbackOverview, getFeedbackApiError } from '../services/feedbackApi';
 import {
   FeedbackAdminListQuery,
+  FeedbackAdminOverview,
+  FeedbackAnalytics,
   FeedbackForm,
   FeedbackFormDraft,
+  TextFeedbackAnalysis,
 } from '../types/feedback.types';
 
 const FeedbackAdminPage = () => {
@@ -21,14 +40,13 @@ const FeedbackAdminPage = () => {
   });
   const [editingForm, setEditingForm] = useState<FeedbackForm | null>(null);
   const [builderOpen, setBuilderOpen] = useState(false);
-  const admin = useFeedbackAdmin(query);
-
   const canAdmin = Boolean(
-    user?.role === 'teacher' ||
-      user?.role === 'institute' ||
-      user?.is_staff ||
-      user?.is_superuser
+    user?.is_staff || user?.is_superuser
   );
+  const admin = useFeedbackAdmin(query, canAdmin);
+  const [overview, setOverview] = useState<FeedbackAdminOverview | null>(null);
+  const [overviewLoading, setOverviewLoading] = useState(false);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
   const currentUser = useMemo(
     () =>
       user
@@ -55,7 +73,26 @@ const FeedbackAdminPage = () => {
     }
     setBuilderOpen(false);
     setEditingForm(null);
+    void loadOverview();
   };
+
+  const loadOverview = async () => {
+    if (!canAdmin) return;
+
+    setOverviewLoading(true);
+    setOverviewError(null);
+    try {
+      setOverview(await fetchAdminFeedbackOverview());
+    } catch (requestError) {
+      setOverviewError(getFeedbackApiError(requestError));
+    } finally {
+      setOverviewLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadOverview();
+  }, [canAdmin]);
 
   if (isAuthLoading) {
     return (
@@ -102,7 +139,25 @@ const FeedbackAdminPage = () => {
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <SummaryCard label="Forms" value={admin.pagination.total} />
+          <SummaryCard label="Forms" value={overview?.overall.totalForms ?? admin.pagination.total} />
+          <SummaryCard
+            label="Total responses"
+            value={overview?.overall.totalResponses ?? 0}
+          />
+          <SummaryCard
+            label="Site feedback"
+            value={overview?.overall.siteFeedback.total ?? 0}
+          />
+        </section>
+
+        <FeedbackOverview
+          overview={overview}
+          isLoading={overviewLoading}
+          error={overviewError}
+          onRefresh={loadOverview}
+        />
+
+        <section className="grid gap-4 md:grid-cols-3">
           <SummaryCard
             label="Current page"
             value={`${admin.pagination.page}/${Math.max(admin.pagination.totalPages, 1)}`}
@@ -110,6 +165,10 @@ const FeedbackAdminPage = () => {
           <SummaryCard
             label="Visible rows"
             value={admin.forms.length}
+          />
+          <SummaryCard
+            label="Questions"
+            value={overview?.overall.totalQuestions ?? 0}
           />
         </section>
 
@@ -134,10 +193,10 @@ const FeedbackAdminPage = () => {
           }}
           onDelete={(form) => {
             if (window.confirm(`Delete "${form.title}" and all responses?`)) {
-              void admin.deleteForm(form);
+              void admin.deleteForm(form).then(loadOverview);
             }
           }}
-          onStatusChange={(form, status) => void admin.updateStatus(form, status)}
+          onStatusChange={(form, status) => void admin.updateStatus(form, status).then(loadOverview)}
           onViewAnalytics={(form) => {
             window.location.href = `?analyticsFormId=${form._id}`;
           }}
@@ -202,10 +261,281 @@ const AccessDenied = () => (
         Admin access required
       </h1>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        You need an institute or staff account to manage feedback forms.
+        You need an admin account to manage feedback forms and view analytics.
       </p>
     </div>
   </div>
 );
+
+const chartColors = ['#4f46e5', '#0891b2', '#059669', '#d97706', '#c026d3', '#e11d48', '#475569'];
+
+const FeedbackOverview = ({
+  overview,
+  isLoading,
+  error,
+  onRefresh,
+}: {
+  overview: FeedbackAdminOverview | null;
+  isLoading: boolean;
+  error: string | null;
+  onRefresh: () => void;
+}) => (
+  <section className="space-y-4">
+    <div className="flex flex-col gap-3 rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-600">
+          Visualization mapping
+        </p>
+        <h2 className="mt-1 text-2xl font-black text-slate-950">
+          Feedback Overview
+        </h2>
+      </div>
+      <button
+        type="button"
+        onClick={onRefresh}
+        disabled={isLoading}
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+      >
+        <RefreshCw size={16} className={isLoading ? 'animate-spin' : undefined} />
+        Refresh overview
+      </button>
+    </div>
+
+    {isLoading && <FeedbackSkeleton rows={2} variant="cards" />}
+
+    {error && (
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+        {error}
+      </div>
+    )}
+
+    {overview && !isLoading && (
+      <>
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <OverviewMetric label="All form responses" value={overview.overall.totalResponses} icon={Users} />
+          <OverviewMetric label="Average rating" value={overview.overall.averageRating.toFixed(2)} icon={Star} />
+          <OverviewMetric label="Satisfaction" value={`${overview.overall.satisfactionPercentage}%`} icon={BarChart3} />
+          <OverviewMetric label="Text responses" value={overview.overall.textAnalysis.totalTextResponses} icon={MessageSquareText} />
+        </section>
+
+        <section className="grid gap-5 xl:grid-cols-2">
+          <OverviewCard title="Scale / Rating" subtitle="Histogram / Bar Graph">
+            <BarVisualization data={toChartData(overview.overall.ratingDistribution)} />
+          </OverviewCard>
+          <OverviewCard title="Checkbox / Radio / Dropdown" subtitle="Pie Chart">
+            <PieVisualization data={toChartData(overview.overall.optionCounts)} />
+          </OverviewCard>
+          <OverviewCard title="Question Types" subtitle="Overall form composition">
+            <BarVisualization data={toChartData(overview.overall.questionTypeCounts)} />
+          </OverviewCard>
+          <OverviewCard title="Text Feedback" subtitle="Word Cloud / Sentiment Analysis">
+            <div className="grid gap-4 md:grid-cols-2">
+              <WordCloud words={overview.overall.textAnalysis.wordFrequencies.slice(0, 28)} />
+              <SentimentSummary
+                sentiment={overview.overall.textAnalysis.sentiment}
+                totalResponses={overview.overall.textAnalysis.totalTextResponses}
+              />
+            </div>
+          </OverviewCard>
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-lg font-black text-slate-950">
+            Each Feedback Overview
+          </h3>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {overview.forms.map((item) => (
+              <FormOverviewCard
+                key={item.form._id}
+                form={item.form}
+                analytics={item.analytics}
+                textAnalysis={item.textAnalysis}
+              />
+            ))}
+          </div>
+        </section>
+      </>
+    )}
+  </section>
+);
+
+const OverviewMetric = ({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: string | number;
+  icon: typeof Users;
+}) => (
+  <article className="rounded-2xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <p className="text-sm font-medium text-slate-500">{label}</p>
+        <p className="mt-2 text-3xl font-black text-slate-950">{value}</p>
+      </div>
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-100 bg-cyan-50 text-cyan-700">
+        <Icon size={20} />
+      </span>
+    </div>
+  </article>
+);
+
+const OverviewCard = ({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) => (
+  <article className="rounded-2xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
+    <div className="mb-4 flex items-start justify-between gap-3">
+      <div>
+        <h3 className="font-bold text-slate-950">{title}</h3>
+        <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+      </div>
+      <PieChartIcon size={18} className="text-slate-400" />
+    </div>
+    {children}
+  </article>
+);
+
+const FormOverviewCard = ({
+  form,
+  analytics,
+  textAnalysis,
+}: {
+  form: FeedbackForm;
+  analytics: FeedbackAnalytics;
+  textAnalysis: Omit<TextFeedbackAnalysis, 'formId' | 'questions' | 'generatedAt'>;
+}) => {
+  const ratingStats = analytics.questionStats.filter((question) => question.type === 'rating');
+  const ratingDistribution = ratingStats.reduce<Record<string, number>>((distribution, question) => {
+    Object.entries(question.ratingDistribution ?? {}).forEach(([rating, count]) => {
+      distribution[rating] = (distribution[rating] ?? 0) + count;
+    });
+    return distribution;
+  }, {});
+  const choiceCounts = analytics.questionStats.reduce<Record<string, number>>((counts, question) => {
+    Object.entries(question.optionCounts ?? {}).forEach(([option, count]) => {
+      counts[option] = (counts[option] ?? 0) + count;
+    });
+    return counts;
+  }, {});
+
+  return (
+    <article className="rounded-2xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
+      <div className="mb-4">
+        <h4 className="text-lg font-bold text-slate-950">{form.title}</h4>
+        <p className="mt-1 text-sm text-slate-500">
+          {analytics.totalResponses} responses · {analytics.questionStats.length} questions
+        </p>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <MiniPanel title="Rating">
+          <BarVisualization data={toChartData(ratingDistribution)} heightClass="h-44" />
+        </MiniPanel>
+        <MiniPanel title="Choices">
+          <PieVisualization data={toChartData(choiceCounts)} heightClass="h-44" />
+        </MiniPanel>
+        <MiniPanel title="Text" wide>
+          <div className="grid gap-3 md:grid-cols-2">
+            <WordCloud words={textAnalysis.wordFrequencies.slice(0, 18)} />
+            <SentimentSummary
+              sentiment={textAnalysis.sentiment}
+              totalResponses={textAnalysis.totalTextResponses}
+            />
+          </div>
+        </MiniPanel>
+      </div>
+    </article>
+  );
+};
+
+const MiniPanel = ({
+  title,
+  children,
+  wide,
+}: {
+  title: string;
+  children: React.ReactNode;
+  wide?: boolean;
+}) => (
+  <div className={`rounded-2xl border border-slate-100 bg-slate-50/70 p-3 ${wide ? 'md:col-span-2' : ''}`}>
+    <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">{title}</p>
+    {children}
+  </div>
+);
+
+const BarVisualization = ({
+  data,
+  heightClass = 'h-72',
+}: {
+  data: Array<{ name: string; value: number; fill: string }>;
+  heightClass?: string;
+}) => (
+  <div className={heightClass}>
+    {data.length ? (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+          <Tooltip cursor={{ fill: 'rgba(79, 70, 229, 0.08)' }} />
+          <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+            {data.map((entry) => (
+              <Cell key={entry.name} fill={entry.fill} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    ) : (
+      <EmptyViz />
+    )}
+  </div>
+);
+
+const PieVisualization = ({
+  data,
+  heightClass = 'h-72',
+}: {
+  data: Array<{ name: string; value: number; fill: string }>;
+  heightClass?: string;
+}) => (
+  <div className={heightClass}>
+    {data.length ? (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Tooltip />
+          <Legend />
+          <Pie data={data} dataKey="value" nameKey="name" innerRadius={44} outerRadius={88}>
+            {data.map((entry) => (
+              <Cell key={entry.name} fill={entry.fill} />
+            ))}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+    ) : (
+      <EmptyViz />
+    )}
+  </div>
+);
+
+const EmptyViz = () => (
+  <div className="flex h-full min-h-36 items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-400">
+    No responses yet
+  </div>
+);
+
+const toChartData = (source: Record<string, number>) =>
+  Object.entries(source)
+    .filter(([, value]) => value > 0)
+    .map(([name, value], index) => ({
+      name,
+      value,
+      fill: chartColors[index % chartColors.length],
+    }));
 
 export default FeedbackAdminPage;

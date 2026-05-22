@@ -38,7 +38,7 @@ const BottomNav: React.FC<BottomNavProps> = ({
     ...(user ? [
       { id: 'dash', icon: GraduationCap, label: 'Dash', action: () => onNavigate(ViewState.DASHBOARD), active: currentView === ViewState.DASHBOARD, color: 'bg-sky-500' }
     ] : []),
-    ...(user && (user.role === 'teacher' || user.role === 'institute' || user.is_staff || user.is_superuser) ? [
+    ...(user && (user.is_staff || user.is_superuser) ? [
       { id: 'feedback', icon: MessageSquareText, label: 'Feedback', action: () => onNavigate(ViewState.FEEDBACK_ADMIN), active: currentView === ViewState.FEEDBACK_ADMIN, color: 'bg-cyan-500' }
     ] : []),
     { id: 'book', icon: Book, label: 'Glossary', action: onOpenGlossary, active: showGlossary, color: 'bg-amber-500' },

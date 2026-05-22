@@ -361,6 +361,13 @@ const AppContent: React.FC = () => {
     safeLocalStorage.setItem('labzero_language', language);
   }, [language]);
 
+  useEffect(() => {
+    if (viewState === ViewState.FEEDBACK_FORM) {
+      setShowSettings(false);
+      setIsGestureActive(false);
+    }
+  }, [viewState]);
+
 
   const t = (key: string) => translations[key]?.[language] || key;
   const isFeedbackView = [
@@ -781,12 +788,14 @@ const AppContent: React.FC = () => {
             />
           )}
 
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className={`fixed bottom-24 right-6 md:right-24 w-14 h-14 md:w-16 md:h-16 rounded-2xl hidden md:flex items-center justify-center transition-all duration-500 z-[110] ${showSettings ? 'bg-indigo-500 rotate-90' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
-          >
-            <Settings size={24} className={showSettings ? 'text-white' : 'text-slate-400'} />
-          </button>
+          {viewState !== ViewState.FEEDBACK_FORM && (
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`fixed bottom-24 right-6 md:right-24 w-14 h-14 md:w-16 md:h-16 rounded-2xl hidden md:flex items-center justify-center transition-all duration-500 z-[110] ${showSettings ? 'bg-indigo-500 rotate-90' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
+            >
+              <Settings size={24} className={showSettings ? 'text-white' : 'text-slate-400'} />
+            </button>
+          )}
 
 
           <>
@@ -821,7 +830,7 @@ const AppContent: React.FC = () => {
             )}
           </>
 
-          {viewState !== ViewState.ADMIN && (
+          {viewState !== ViewState.ADMIN && viewState !== ViewState.FEEDBACK_FORM && (
             <BottomNav
               currentView={viewState}
               onNavigate={setViewState}
@@ -855,25 +864,27 @@ const AppContent: React.FC = () => {
             )}
           </>
 
-          <React.Suspense fallback={null}>
-            <GestureController
-              isActive={isGestureActive}
-              onToggle={() => setIsGestureActive(!isGestureActive)}
-              onBack={handleGestureBack}
-              onScroll={handleGestureScroll}
-              onRotate={handleGestureRotate}
-              onZoom={handleGestureZoom}
-              onResetZoom={handleResetZoom}
-              onSelect={handleGestureSelect}
-              onPositionChange={setGesturePos}
-              onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
-              cameraSource={cameraSource}
-              onCameraSourceChange={setCameraSource}
-              theme={theme}
-            />
-          </React.Suspense>
+          {viewState !== ViewState.FEEDBACK_FORM && (
+            <React.Suspense fallback={null}>
+              <GestureController
+                isActive={isGestureActive}
+                onToggle={() => setIsGestureActive(!isGestureActive)}
+                onBack={handleGestureBack}
+                onScroll={handleGestureScroll}
+                onRotate={handleGestureRotate}
+                onZoom={handleGestureZoom}
+                onResetZoom={handleResetZoom}
+                onSelect={handleGestureSelect}
+                onPositionChange={setGesturePos}
+                onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+                cameraSource={cameraSource}
+                onCameraSourceChange={setCameraSource}
+                theme={theme}
+              />
+            </React.Suspense>
+          )}
 
-          {isGestureActive && gesturePos && user?.role !== 'student' && (
+          {viewState !== ViewState.FEEDBACK_FORM && isGestureActive && gesturePos && user?.role !== 'student' && (
             <div
               className="fixed w-4 h-4 rounded-full bg-indigo-500 pointer-events-none z-[200] shadow-[0_0_20px_rgba(99,102,241,0.5)]"
               style={{

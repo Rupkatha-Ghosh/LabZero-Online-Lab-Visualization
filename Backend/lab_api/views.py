@@ -105,7 +105,6 @@ class IsFeedbackAdmin(IsAuthenticated):
         return bool(
             getattr(user, 'is_staff', False)
             or getattr(user, 'is_superuser', False)
-            or getattr(user, 'role', '') in ['institute', 'teacher']
         )
 
 
@@ -342,6 +341,94 @@ def text_analysis_for_values(values):
     }
 
 
+def aggregate_feedback_overview(forms):
+    form_overviews = []
+    overall_rating_distribution = Counter()
+    overall_option_counts = Counter()
+    overall_text_values = []
+    total_responses = 0
+    anonymous_responses = 0
+    identified_responses = 0
+    total_questions = 0
+    question_type_counts = Counter()
+
+    for form in forms:
+        analytics = build_feedback_analytics(form)
+        responses = list(form.responses.all())
+        form_text_values = []
+
+        for question in all_questions(form):
+            total_questions += 1
+            question_type_counts[question.get('type')] += 1
+            if question.get('type') != 'text':
+                continue
+            question_id = str(question.get('_id'))
+            values = [
+                str(answer.get('value'))
+                for response in responses
+                for answer in response.answers
+                if str(answer.get('questionId')) == question_id and answer.get('value')
+            ]
+            form_text_values.extend(values)
+
+        for question_stat in analytics.get('questionStats', []):
+            if question_stat.get('ratingDistribution'):
+                overall_rating_distribution.update(question_stat.get('ratingDistribution'))
+            if question_stat.get('optionCounts'):
+                overall_option_counts.update(question_stat.get('optionCounts'))
+
+        overall_text_values.extend(form_text_values)
+        total_responses += analytics.get('totalResponses', 0)
+        anonymous_responses += analytics.get('anonymousResponses', 0)
+        identified_responses += analytics.get('identifiedResponses', 0)
+        form_overviews.append({
+            'form': serialize_feedback_form(form),
+            'analytics': analytics,
+            'textAnalysis': {
+                'totalTextResponses': len(form_text_values),
+                **text_analysis_for_values(form_text_values),
+            },
+        })
+
+    rating_values = [
+        int(rating) * count
+        for rating, count in overall_rating_distribution.items()
+        if str(rating).isdigit()
+    ]
+    rating_count = sum(
+        count for rating, count in overall_rating_distribution.items() if str(rating).isdigit()
+    )
+    average_rating = round(sum(rating_values) / rating_count, 2) if rating_count else 0
+
+    site_rating_distribution = Counter(map(str, Feedback.objects.values_list('rating', flat=True)))
+    site_average = Feedback.objects.aggregate(Avg('rating'))['rating__avg'] or 0
+
+    return {
+        'overall': {
+            'totalForms': len(forms),
+            'totalResponses': total_responses,
+            'anonymousResponses': anonymous_responses,
+            'identifiedResponses': identified_responses,
+            'totalQuestions': total_questions,
+            'questionTypeCounts': dict(question_type_counts),
+            'averageRating': average_rating,
+            'satisfactionPercentage': round((average_rating / 5) * 100) if average_rating else 0,
+            'ratingDistribution': dict(overall_rating_distribution),
+            'optionCounts': dict(overall_option_counts),
+            'textAnalysis': {
+                'totalTextResponses': len(overall_text_values),
+                **text_analysis_for_values(overall_text_values),
+            },
+            'siteFeedback': {
+                'total': Feedback.objects.count(),
+                'averageRating': round(site_average, 2),
+                'ratingDistribution': dict(site_rating_distribution),
+            },
+        },
+        'forms': form_overviews,
+    }
+
+
 class FeedbackFormDetailView(APIView):
     def get(self, request, form_id):
         try:
@@ -374,6 +461,8 @@ class FeedbackResponseCreateView(APIView):
 
 
 class FeedbackAnalyticsView(APIView):
+    permission_classes = [IsFeedbackAdmin]
+
     def get(self, request, form_id):
         try:
             form = FeedbackForm.objects.get(id=form_id)
@@ -383,6 +472,8 @@ class FeedbackAnalyticsView(APIView):
 
 
 class FeedbackTextAnalysisView(APIView):
+    permission_classes = [IsFeedbackAdmin]
+
     def get(self, request, form_id):
         try:
             form = FeedbackForm.objects.get(id=form_id)
@@ -417,6 +508,14 @@ class FeedbackTextAnalysisView(APIView):
             'questions': question_analyses,
             'generatedAt': timezone.now().isoformat(),
         }, 'Text feedback analysis fetched.')
+
+
+class FeedbackAdminOverviewView(APIView):
+    permission_classes = [IsFeedbackAdmin]
+
+    def get(self, request):
+        forms = list(FeedbackForm.objects.prefetch_related('responses').all())
+        return api_success(aggregate_feedback_overview(forms), 'Feedback overview fetched.')
 
 
 class FeedbackAdminFormsView(APIView):
