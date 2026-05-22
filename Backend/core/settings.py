@@ -7,11 +7,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY', 'labzero-local-dev-secret')
 
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -62,11 +62,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+DATABASE_URL = os.getenv(
+    'DATABASE_URL',
+    'postgresql://labzero:labzero@localhost:5432/labzero',
+)
+
+
+def database_requires_ssl(database_url):
+    if database_url.startswith('sqlite'):
+        return False
+    return os.getenv('DATABASE_SSL_REQUIRE', 'False').lower() in ('1', 'true', 'yes')
+
+
 DATABASES = {
     'default': dj_database_url.config(
-        default = os.getenv("DATABASE_URL"),
-        conn_max_age = int(os.getenv("DATABASE_CONN_MAX_AGE", 0)), 
-        ssl_require = not (os.getenv("DATABASE_URL") or "").startswith("sqlite"),
+        default=DATABASE_URL,
+        conn_max_age=int(os.getenv('DATABASE_CONN_MAX_AGE', 0)),
+        ssl_require=database_requires_ssl(DATABASE_URL),
     )
 }
 

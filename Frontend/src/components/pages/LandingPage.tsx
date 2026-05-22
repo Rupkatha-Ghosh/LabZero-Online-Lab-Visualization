@@ -359,6 +359,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
   const shouldLoadHeroWidgets = useDeferredHeroWidgets();
   const t = (key: string) => translations[key]?.[language] || key;
+  const feedbackCount = Math.max(0, Number(stats.feedback_count ?? 0));
+  const averageRating = Math.max(0, Math.min(5, Number(stats.average_rating ?? 0)));
+  const formattedRating = averageRating.toFixed(averageRating % 1 === 0 ? 0 : 1);
+  const lovedByLabel = feedbackCount === 1 ? 'student' : 'students';
 
   const [isModelReady, setIsModelReady] = React.useState(() => {
     return typeof window !== 'undefined' && (window as any).hero3DModelLoaded === true;
@@ -474,11 +478,14 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   <img src="https://i.pravatar.cc/100?img=47" alt="Student" className="w-10 h-10 rounded-full border-[3px] border-[var(--bg-deep)] shadow-sm" />
                 </div>
                 <div className="text-sm text-[var(--text-muted)] flex flex-col justify-center">
-                  <p>Loved by <strong className="text-[var(--text-primary)]">{stats.feedback_count ?? '1000+'}</strong> students</p>
+                  <p>
+                    Loved by{' '}
+                    <strong className="text-[var(--text-primary)]">{feedbackCount}</strong>{' '}
+                    {lovedByLabel}
+                  </p>
                   <div className="flex items-center gap-1 text-amber-400 mt-0.5 text-xs">
                     {[1, 2, 3, 4, 5].map((s) => {
-                      const rating = Number(stats.average_rating ?? 4.9);
-                      const isActive = s <= Math.round(rating);
+                      const isActive = s <= Math.round(averageRating);
                       return (
                         <Star
                           key={s}
@@ -489,7 +496,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                         />
                       );
                     })}
-                    <span className="text-[var(--text-muted)] ml-1 font-medium">{stats.average_rating ?? '4.9'}/5</span>
+                    <span className="text-[var(--text-muted)] ml-1 font-medium">{formattedRating}/5</span>
                   </div>
                 </div>
               </div>

@@ -13,8 +13,7 @@ from .serializers import (
 )
 from django.db.models import Avg
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework import status
+from rest_framework.permissions import SAFE_METHODS, AllowAny, BasePermission, IsAuthenticated
 
 class GlobalSettingsView(APIView):
     def get(self, request):
@@ -73,9 +72,8 @@ class PublicStatsView(APIView):
         from django.contrib.auth import get_user_model
         User = get_user_model()
         
-        # Calculate average rating
-        avg_rating = Feedback.objects.aggregate(Avg('rating'))['rating__avg'] or 5.0
         feedback_count = Feedback.objects.count()
+        avg_rating = Feedback.objects.aggregate(Avg('rating'))['rating__avg'] if feedback_count else 0.0
         
         return Response({
             "subjects": Subject.objects.count(),
@@ -85,16 +83,18 @@ class PublicStatsView(APIView):
             "feedback_count": feedback_count
         })
 
+class FeedbackListPermission(BasePermission):
+    def has_permission(self, request, view):
+        return request.method in SAFE_METHODS or bool(request.user and request.user.is_authenticated)
+
+
 class FeedbackList(generics.ListCreateAPIView):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [FeedbackListPermission]
     
     def perform_create(self, serializer):
-        if self.request.user.is_authenticated:
-            serializer.save(user=self.request.user)
-        else:
-            pass
+        serializer.save(user=self.request.user)
 
 
 class IsFeedbackAdmin(IsAuthenticated):
@@ -126,7 +126,7 @@ def parse_optional_datetime(value):
     parsed_date = parse_date(value)
     if parsed_date:
         return timezone.make_aware(datetime.combine(parsed_date, time.min))
-    return None
+    raise ValueError(f'Invalid date/time value: {value}')
 
 
 def user_payload(user):
@@ -147,6 +147,9 @@ def normalize_feedback_form_payload(payload, fallback_user=None):
     if not sections:
         raise ValueError('At least one feedback section is required.')
 
+    if payload.get('status', 'draft') not in ['draft', 'published', 'closed']:
+        raise ValueError('Invalid feedback form status.')
+
     normalized_sections = []
     for section_index, section in enumerate(sections):
         questions = section.get('questions') or []
@@ -164,6 +167,14 @@ def normalize_feedback_form_payload(payload, fallback_user=None):
                 raise ValueError('Every question needs a prompt.')
             if question_type in ['checkbox', 'radio', 'dropdown'] and len(question.get('options') or []) < 2:
                 raise ValueError('Choice questions need at least two options.')
+            if question_type == 'rating':
+                min_rating = question.get('minRating', 1)
+                max_rating = question.get('maxRating', 5)
+                if not isinstance(min_rating, int) or not isinstance(max_rating, int) or min_rating >= max_rating:
+                    raise ValueError('Rating questions need a valid minRating and maxRating.')
+            else:
+                min_rating = None
+                max_rating = None
 
             question_ids.append(question_id)
             normalized_questions.append({
@@ -174,8 +185,8 @@ def normalize_feedback_form_payload(payload, fallback_user=None):
                 'type': question_type,
                 'required': question.get('required', True),
                 'options': question.get('options') or [],
-                'minRating': question.get('minRating', 1 if question_type == 'rating' else None),
-                'maxRating': question.get('maxRating', 5 if question_type == 'rating' else None),
+                'minRating': min_rating,
+                'maxRating': max_rating,
                 'order': question.get('order', question_index),
             })
 
@@ -238,17 +249,71 @@ def validate_submission(form, payload):
     answers = payload.get('answers') or []
     answers_by_question = {str(answer.get('questionId')): answer.get('value') for answer in answers}
 
-    for question in all_questions(form):
+    questions_by_id = {str(question.get('_id')): question for question in all_questions(form)}
+
+    unknown_question_ids = [
+        str(answer.get('questionId')) for answer in answers
+        if str(answer.get('questionId')) not in questions_by_id
+    ]
+    if unknown_question_ids:
+        raise ValueError('Submission contains answers for unknown questions.')
+
+    for question in questions_by_id.values():
         question_id = str(question.get('_id'))
         value = answers_by_question.get(question_id)
         if question.get('required') and (value is None or value == '' or value == []):
             raise ValueError(f'Missing required answer for "{question.get("prompt")}".')
+        if value is None or value == '' or value == []:
+            continue
+        if question.get('type') == 'rating':
+            try:
+                numeric_value = float(value)
+            except (TypeError, ValueError):
+                raise ValueError(f'Invalid rating answer for "{question.get("prompt")}".')
+            if numeric_value < question.get('minRating', 1) or numeric_value > question.get('maxRating', 5):
+                raise ValueError(f'Rating answer is outside the allowed range for "{question.get("prompt")}".')
+        if question.get('type') in ['radio', 'dropdown']:
+            allowed_values = {str(option.get('value')) for option in question.get('options', [])}
+            if str(value) not in allowed_values:
+                raise ValueError(f'Invalid choice answer for "{question.get("prompt")}".')
+        if question.get('type') == 'checkbox':
+            if not isinstance(value, list):
+                raise ValueError(f'Checkbox answer must be a list for "{question.get("prompt")}".')
+            allowed_values = {str(option.get('value')) for option in question.get('options', [])}
+            if any(str(item) not in allowed_values for item in value):
+                raise ValueError(f'Invalid checkbox answer for "{question.get("prompt")}".')
 
     return answers
 
 
-def build_feedback_analytics(form):
-    responses = list(form.responses.all())
+def filtered_responses(form, filters=None):
+    responses = form.responses.all()
+    filters = filters or {}
+    start_date = parse_optional_datetime(filters.get('startDate') or filters.get('start_date')) if filters.get('startDate') or filters.get('start_date') else None
+    end_date = parse_optional_datetime(filters.get('endDate') or filters.get('end_date')) if filters.get('endDate') or filters.get('end_date') else None
+    if start_date:
+        responses = responses.filter(submitted_at__gte=start_date)
+    if end_date:
+        responses = responses.filter(submitted_at__lte=end_date)
+
+    response_list = list(responses)
+    metadata_filters = {
+        'classroomId': filters.get('classroomId') or filters.get('classroom_id'),
+        'teacherId': filters.get('teacherId') or filters.get('teacher_id'),
+        'department': filters.get('department'),
+    }
+    for key, expected in metadata_filters.items():
+        if expected:
+            response_list = [
+                response for response in response_list
+                if str(response.classroom_course_metadata.get(key, '')) == str(expected)
+                or (key == 'department' and str(response.classroom_course_metadata.get('subject', '')) == str(expected))
+            ]
+    return response_list
+
+
+def build_feedback_analytics(form, filters=None):
+    responses = filtered_responses(form, filters)
     question_stats = []
     for question in all_questions(form):
         question_id = str(question.get('_id'))
@@ -343,6 +408,8 @@ def text_analysis_for_values(values):
 
 
 class FeedbackFormDetailView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request, form_id):
         try:
             form = FeedbackForm.objects.get(id=form_id)
@@ -352,7 +419,7 @@ class FeedbackFormDetailView(APIView):
 
 
 class FeedbackResponseCreateView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         try:
@@ -374,22 +441,33 @@ class FeedbackResponseCreateView(APIView):
 
 
 class FeedbackAnalyticsView(APIView):
+    permission_classes = [IsFeedbackAdmin]
+
     def get(self, request, form_id):
         try:
             form = FeedbackForm.objects.get(id=form_id)
         except FeedbackForm.DoesNotExist:
             return api_error('Feedback form not found.', 404)
-        return api_success(build_feedback_analytics(form), 'Feedback analytics fetched.')
+        try:
+            analytics = build_feedback_analytics(form, request.query_params)
+        except ValueError as exc:
+            return api_error(str(exc), 400)
+        return api_success(analytics, 'Feedback analytics fetched.')
 
 
 class FeedbackTextAnalysisView(APIView):
+    permission_classes = [IsFeedbackAdmin]
+
     def get(self, request, form_id):
         try:
             form = FeedbackForm.objects.get(id=form_id)
         except FeedbackForm.DoesNotExist:
             return api_error('Feedback form not found.', 404)
 
-        responses = list(form.responses.all())
+        try:
+            responses = filtered_responses(form, request.query_params)
+        except ValueError as exc:
+            return api_error(str(exc), 400)
         question_analyses = []
         all_values = []
         for question in all_questions(form):
@@ -434,8 +512,11 @@ class FeedbackAdminFormsView(APIView):
         if department:
             forms = [form for form in forms if form.classroom_course_metadata.get('subject') == department]
 
-        page = max(int(request.query_params.get('page', 1)), 1)
-        limit = min(max(int(request.query_params.get('limit', 10)), 1), 50)
+        try:
+            page = max(int(request.query_params.get('page', 1)), 1)
+            limit = min(max(int(request.query_params.get('limit', 10)), 1), 50)
+        except ValueError:
+            return api_error('Page and limit must be numbers.', 400)
         total = len(forms) if isinstance(forms, list) else forms.count()
         items = list(forms)[(page - 1) * limit:page * limit]
         return api_success({

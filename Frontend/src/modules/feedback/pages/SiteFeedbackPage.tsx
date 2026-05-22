@@ -25,6 +25,7 @@ interface SiteFeedbackPageProps {
   theme: 'dark' | 'light';
   onBack: () => void;
   onLogin: () => void;
+  onSubmitted?: () => void;
 }
 
 const platformFeatures = [
@@ -582,6 +583,7 @@ const SiteFeedbackPage = ({
   theme,
   onBack,
   onLogin,
+  onSubmitted,
 }: SiteFeedbackPageProps) => {
   const feedbackRole = user?.role ?? 'student';
   const roleConfig = roleFeedbackConfig[feedbackRole];
@@ -828,6 +830,7 @@ const SiteFeedbackPage = ({
               : rating,
         comment: structuredComment,
       });
+      onSubmitted?.();
       setStatus('success');
       setComment('');
       if (isStudentFeedback) {

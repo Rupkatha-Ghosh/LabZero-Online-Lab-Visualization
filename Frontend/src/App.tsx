@@ -315,6 +315,12 @@ const AppContent: React.FC = () => {
     fetchAllData();
   }, [fetchAllData]);
 
+  useEffect(() => {
+    if (viewState !== ViewState.LANDING) return;
+    const refreshId = window.setInterval(fetchAllData, 15000);
+    return () => window.clearInterval(refreshId);
+  }, [fetchAllData, viewState]);
+
   // Lazy-load heavier datasets (Elements, Molecules) only when navigating away from the Landing Page
   useEffect(() => {
     if (viewState !== ViewState.LANDING) {
@@ -737,6 +743,7 @@ const AppContent: React.FC = () => {
                         theme={theme}
                         onBack={handleBackFromSiteFeedback}
                         onLogin={() => setShowAuth(true)}
+                        onSubmitted={fetchAllData}
                       />
                     </FeedbackModuleBoundary>
                   </div>

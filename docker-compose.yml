@@ -1,4 +1,20 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: labzero
+      POSTGRES_USER: labzero
+      POSTGRES_PASSWORD: labzero
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U labzero -d labzero"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build: 
       context: ./Backend
@@ -9,9 +25,13 @@ services:
       - ./Backend:/app
     environment:
       - DEBUG=1
+      - DATABASE_URL=postgresql://labzero:labzero@db:5432/labzero
     env_file:
       - ./Backend/.env
-    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
 
   frontend:
     build:
@@ -26,3 +46,6 @@ services:
     depends_on:
       - backend
     command: npm run dev -- --host
+
+volumes:
+  postgres_data:
