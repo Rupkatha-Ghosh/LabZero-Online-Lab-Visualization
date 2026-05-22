@@ -21,7 +21,8 @@ import {
   TrendingUp,
   Award,
   X,
-  Download
+  Download,
+  MessageSquareText
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
@@ -31,6 +32,7 @@ import DashboardLeaderboard from '../shared/DashboardLeaderboard';
 
 interface InstituteDashboardProps {
   onBack?: () => void;
+  onOpenFeedback?: () => void;
   skeletonDebug?: boolean;
 }
 
@@ -41,7 +43,7 @@ interface FacultyHighlight {
   performance: number;
 }
 
-const InstituteDashboard: React.FC<InstituteDashboardProps> = ({ onBack }) => {
+const InstituteDashboard: React.FC<InstituteDashboardProps> = ({ onBack, onOpenFeedback }) => {
   const { user } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -210,6 +212,15 @@ const InstituteDashboard: React.FC<InstituteDashboardProps> = ({ onBack }) => {
           >
             <Search size={18} />
           </button>
+          {onOpenFeedback && (
+            <button
+              onClick={onOpenFeedback}
+              className="px-5 py-3 rounded-xl border border-cyan-400/25 bg-cyan-500/10 text-cyan-200 text-[10px] font-mono uppercase tracking-widest hover:bg-cyan-500 hover:text-white transition-all shadow-inner flex items-center gap-2"
+            >
+              <MessageSquareText size={14} />
+              Feedback
+            </button>
+          )}
           <button
             onClick={() => setShowAttendancePortal(true)}
             className="px-5 py-3 rounded-xl border border-emerald-400/25 bg-emerald-500/10 text-emerald-200 text-[10px] font-mono uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all shadow-inner flex items-center gap-2"

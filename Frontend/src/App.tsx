@@ -718,7 +718,7 @@ const AppContent: React.FC = () => {
                 {viewState === ViewState.DASHBOARD && user && (
                   <div key="dashboard" className="h-full w-full">
                     <React.Suspense fallback={null}>
-                      {user.role === 'teacher' ? <TeacherDashboard onBack={handleBackToLanding} onStartMeeting={handleStartClassMeeting} /> : user.role === 'institute' ? <InstituteDashboard onBack={handleBackToLanding} /> : <StudentDashboard onBack={handleBackToLanding} onLaunchLab={handleLaunchSimulation} onStartMeeting={handleStartClassMeeting} />}
+                      {user.role === 'teacher' ? <TeacherDashboard onBack={handleBackToLanding} onStartMeeting={handleStartClassMeeting} onOpenFeedback={handleOpenSiteFeedback} /> : user.role === 'institute' ? <InstituteDashboard onBack={handleBackToLanding} onOpenFeedback={handleOpenSiteFeedback} /> : <StudentDashboard onBack={handleBackToLanding} onLaunchLab={handleLaunchSimulation} onStartMeeting={handleStartClassMeeting} onOpenFeedback={handleOpenSiteFeedback} />}
                     </React.Suspense>
                   </div>
                 )}
