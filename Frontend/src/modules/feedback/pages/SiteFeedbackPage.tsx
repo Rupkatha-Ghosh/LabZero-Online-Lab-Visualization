@@ -26,6 +26,7 @@ interface SiteFeedbackPageProps {
   theme: 'dark' | 'light';
   onBack: () => void;
   onLogin: () => void;
+  onSubmitted?: () => void;
 }
 
 const platformFeatures = [
@@ -575,6 +576,7 @@ const defaultInstituteRadioAnswers = Object.fromEntries(
 ) as Record<(typeof instituteRadioQuestions)[number]['id'], string>;
 
 type SiteFeedbackDraft = {
+  version: number;
   feedbackRole: UserRole;
   rating: number;
   comment: string;
@@ -601,6 +603,8 @@ type SiteFeedbackDraft = {
   instituteDropdownAnswers: typeof defaultInstituteDropdownAnswers;
 };
 
+const SITE_FEEDBACK_DRAFT_VERSION = 2;
+
 const defaultInstituteDropdownAnswers = Object.fromEntries(
   instituteDropdownQuestions.map((question) => [question.id, ''])
 ) as Record<(typeof instituteDropdownQuestions)[number]['id'], string>;
@@ -610,6 +614,7 @@ const SiteFeedbackPage = ({
   theme,
   onBack,
   onLogin,
+  onSubmitted,
 }: SiteFeedbackPageProps) => {
   const feedbackRole = user?.role ?? 'student';
   const roleConfig = roleFeedbackConfig[feedbackRole];
@@ -697,7 +702,11 @@ const SiteFeedbackPage = ({
 
     try {
       const draft = JSON.parse(rawDraft) as Partial<SiteFeedbackDraft>;
-      if (draft.feedbackRole !== feedbackRole) {
+      if (
+        draft.version !== SITE_FEEDBACK_DRAFT_VERSION ||
+        draft.feedbackRole !== feedbackRole
+      ) {
+        safeLocalStorage.removeItem(draftKey);
         setIsDraftReady(true);
         return;
       }
@@ -740,6 +749,7 @@ const SiteFeedbackPage = ({
     safeLocalStorage.setItem(
       draftKey,
       JSON.stringify({
+        version: SITE_FEEDBACK_DRAFT_VERSION,
         feedbackRole,
         rating,
         comment,
@@ -975,11 +985,8 @@ const SiteFeedbackPage = ({
         rating: selectedRating,
         comment: structuredComment,
       });
-<<<<<<< Updated upstream
-=======
       safeLocalStorage.removeItem(draftKey);
       onSubmitted?.();
->>>>>>> Stashed changes
       setStatus('success');
       setRating(0);
       setComment('');
