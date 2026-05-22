@@ -13,7 +13,8 @@ from .serializers import (
 )
 from django.db.models import Avg
 from rest_framework.response import Response
-from rest_framework.permissions import SAFE_METHODS, AllowAny, BasePermission, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework import status
 
 class GlobalSettingsView(APIView):
     def get(self, request):
@@ -341,6 +342,187 @@ def build_feedback_analytics(form, filters=None):
                 flattened.extend(value if isinstance(value, list) else [value])
             stat['optionCounts'] = dict(Counter(map(str, flattened)))
         else:
+            pass
+
+
+class IsFeedbackAdmin(IsAuthenticated):
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+        user = request.user
+        return bool(
+            getattr(user, 'is_staff', False)
+            or getattr(user, 'is_superuser', False)
+        )
+
+
+def api_success(data, message='Request completed successfully.', response_status=200):
+    return Response({'success': True, 'message': message, 'data': data}, status=response_status)
+
+
+def api_error(message, response_status=400):
+    return Response({'success': False, 'message': message}, status=response_status)
+
+
+def parse_optional_datetime(value):
+    if not value:
+        return None
+    parsed = parse_datetime(value)
+    if parsed:
+        return timezone.make_aware(parsed) if timezone.is_naive(parsed) else parsed
+    parsed_date = parse_date(value)
+    if parsed_date:
+        return timezone.make_aware(datetime.combine(parsed_date, time.min))
+    return None
+
+
+def user_payload(user):
+    if not getattr(user, 'is_authenticated', False):
+        return {}
+    return {
+        'userId': str(user.id),
+        'name': f'{user.first_name} {user.last_name}'.strip() or user.username,
+        'email': user.email,
+        'role': getattr(user, 'role', ''),
+    }
+
+
+def normalize_feedback_form_payload(payload, fallback_user=None):
+    sections = payload.get('sections') or []
+    if not payload.get('title'):
+        raise ValueError('Feedback form title is required.')
+    if not sections:
+        raise ValueError('At least one feedback section is required.')
+
+    normalized_sections = []
+    for section_index, section in enumerate(sections):
+        questions = section.get('questions') or []
+        if len(questions) < 3 or len(questions) > 5:
+            raise ValueError(f'Section "{section.get("title") or section_index + 1}" must contain 3 to 5 questions.')
+
+        normalized_questions = []
+        question_ids = []
+        for question_index, question in enumerate(questions):
+            question_id = str(question.get('_id') or question.get('id') or uuid.uuid4())
+            question_type = question.get('type')
+            if question_type not in ['text', 'rating', 'checkbox', 'radio', 'dropdown']:
+                raise ValueError('Unsupported question type.')
+            if not question.get('prompt'):
+                raise ValueError('Every question needs a prompt.')
+            if question_type in ['checkbox', 'radio', 'dropdown'] and len(question.get('options') or []) < 2:
+                raise ValueError('Choice questions need at least two options.')
+
+            question_ids.append(question_id)
+            normalized_questions.append({
+                '_id': question_id,
+                'id': question_id,
+                'sectionTitle': section.get('title', f'Section {section_index + 1}'),
+                'prompt': question.get('prompt'),
+                'type': question_type,
+                'required': question.get('required', True),
+                'options': question.get('options') or [],
+                'minRating': question.get('minRating', 1 if question_type == 'rating' else None),
+                'maxRating': question.get('maxRating', 5 if question_type == 'rating' else None),
+                'order': question.get('order', question_index),
+            })
+
+        normalized_sections.append({
+            'title': section.get('title', f'Section {section_index + 1}'),
+            'description': section.get('description', ''),
+            'questionIds': question_ids,
+            'order': section.get('order', section_index),
+            'questions': normalized_questions,
+        })
+
+    created_by = payload.get('createdBy') or payload.get('created_by') or fallback_user or {}
+    return {
+        'title': payload.get('title'),
+        'description': payload.get('description', ''),
+        'created_by': created_by,
+        'classroom_course_metadata': payload.get('classroomCourseMetadata') or payload.get('classroom_course_metadata') or {},
+        'anonymous_allowed': payload.get('anonymousAllowed', payload.get('anonymous_allowed', True)),
+        'starts_at': parse_optional_datetime(payload.get('startsAt') or payload.get('starts_at')),
+        'ends_at': parse_optional_datetime(payload.get('endsAt') or payload.get('ends_at')),
+        'sections': normalized_sections,
+        'status': payload.get('status', 'draft'),
+    }
+
+
+def serialize_feedback_form(form):
+    return {
+        '_id': str(form.id),
+        'id': form.id,
+        'title': form.title,
+        'description': form.description,
+        'createdBy': form.created_by,
+        'classroomCourseMetadata': form.classroom_course_metadata,
+        'anonymousAllowed': form.anonymous_allowed,
+        'startsAt': form.starts_at.isoformat() if form.starts_at else None,
+        'endsAt': form.ends_at.isoformat() if form.ends_at else None,
+        'sections': form.sections,
+        'status': form.status,
+        'createdAt': form.created_at.isoformat() if form.created_at else None,
+        'updatedAt': form.updated_at.isoformat() if form.updated_at else None,
+    }
+
+
+def all_questions(form):
+    return [question for section in form.sections for question in section.get('questions', [])]
+
+
+def validate_submission(form, payload):
+    if form.status != 'published':
+        raise ValueError('This feedback form is not accepting responses.')
+    if payload.get('anonymous') and not form.anonymous_allowed:
+        raise ValueError('Anonymous submissions are not allowed for this form.')
+
+    now = timezone.now()
+    if form.starts_at and now < form.starts_at:
+        raise ValueError('This feedback form is not open yet.')
+    if form.ends_at and now > form.ends_at:
+        raise ValueError('This feedback form is closed.')
+
+    answers = payload.get('answers') or []
+    answers_by_question = {str(answer.get('questionId')): answer.get('value') for answer in answers}
+
+    for question in all_questions(form):
+        question_id = str(question.get('_id'))
+        value = answers_by_question.get(question_id)
+        if question.get('required') and (value is None or value == '' or value == []):
+            raise ValueError(f'Missing required answer for "{question.get("prompt")}".')
+
+    return answers
+
+
+def build_feedback_analytics(form):
+    responses = list(form.responses.all())
+    question_stats = []
+    for question in all_questions(form):
+        question_id = str(question.get('_id'))
+        values = [
+            answer.get('value')
+            for response in responses
+            for answer in response.answers
+            if str(answer.get('questionId')) == question_id
+        ]
+        stat = {
+            'questionId': question_id,
+            'prompt': question.get('prompt'),
+            'type': question.get('type'),
+            'totalAnswers': len(values),
+        }
+        if question.get('type') == 'rating':
+            numeric_values = [float(value) for value in values if str(value).replace('.', '', 1).isdigit()]
+            distribution = Counter(str(int(value)) for value in numeric_values)
+            stat['ratingDistribution'] = dict(distribution)
+            stat['averageRating'] = round(sum(numeric_values) / len(numeric_values), 2) if numeric_values else 0
+            stat['ratingSum'] = sum(numeric_values)
+        elif question.get('type') in ['checkbox', 'radio', 'dropdown']:
+            flattened = []
+            for value in values:
+                flattened.extend(value if isinstance(value, list) else [value])
+            stat['optionCounts'] = dict(Counter(map(str, flattened)))
+        else:
             stat['textAnswerCount'] = len(values)
         question_stats.append(stat)
 
@@ -407,9 +589,95 @@ def text_analysis_for_values(values):
     }
 
 
-class FeedbackFormDetailView(APIView):
-    permission_classes = [AllowAny]
+def aggregate_feedback_overview(forms):
+    form_overviews = []
+    overall_rating_distribution = Counter()
+    overall_option_counts = Counter()
+    overall_text_values = []
+    total_responses = 0
+    anonymous_responses = 0
+    identified_responses = 0
+    total_questions = 0
+    question_type_counts = Counter()
 
+    for form in forms:
+        analytics = build_feedback_analytics(form)
+        responses = list(form.responses.all())
+        form_text_values = []
+
+        for question in all_questions(form):
+            total_questions += 1
+            question_type_counts[question.get('type')] += 1
+            if question.get('type') != 'text':
+                continue
+            question_id = str(question.get('_id'))
+            values = [
+                str(answer.get('value'))
+                for response in responses
+                for answer in response.answers
+                if str(answer.get('questionId')) == question_id and answer.get('value')
+            ]
+            form_text_values.extend(values)
+
+        for question_stat in analytics.get('questionStats', []):
+            if question_stat.get('ratingDistribution'):
+                overall_rating_distribution.update(question_stat.get('ratingDistribution'))
+            if question_stat.get('optionCounts'):
+                overall_option_counts.update(question_stat.get('optionCounts'))
+
+        overall_text_values.extend(form_text_values)
+        total_responses += analytics.get('totalResponses', 0)
+        anonymous_responses += analytics.get('anonymousResponses', 0)
+        identified_responses += analytics.get('identifiedResponses', 0)
+        form_overviews.append({
+            'form': serialize_feedback_form(form),
+            'analytics': analytics,
+            'textAnalysis': {
+                'totalTextResponses': len(form_text_values),
+                **text_analysis_for_values(form_text_values),
+            },
+        })
+
+    rating_values = [
+        int(rating) * count
+        for rating, count in overall_rating_distribution.items()
+        if str(rating).isdigit()
+    ]
+    rating_count = sum(
+        count for rating, count in overall_rating_distribution.items() if str(rating).isdigit()
+    )
+    average_rating = round(sum(rating_values) / rating_count, 2) if rating_count else 0
+
+    site_rating_distribution = Counter(map(str, Feedback.objects.values_list('rating', flat=True)))
+    site_average = Feedback.objects.aggregate(Avg('rating'))['rating__avg'] or 0
+
+    return {
+        'overall': {
+            'totalForms': len(forms),
+            'totalResponses': total_responses,
+            'anonymousResponses': anonymous_responses,
+            'identifiedResponses': identified_responses,
+            'totalQuestions': total_questions,
+            'questionTypeCounts': dict(question_type_counts),
+            'averageRating': average_rating,
+            'satisfactionPercentage': round((average_rating / 5) * 100) if average_rating else 0,
+            'ratingDistribution': dict(overall_rating_distribution),
+            'optionCounts': dict(overall_option_counts),
+            'textAnalysis': {
+                'totalTextResponses': len(overall_text_values),
+                **text_analysis_for_values(overall_text_values),
+            },
+            'siteFeedback': {
+                'total': Feedback.objects.count(),
+                'averageRating': round(site_average, 2),
+                'ratingDistribution': dict(site_rating_distribution),
+            },
+        },
+        'forms': form_overviews,
+    }
+
+
+class FeedbackFormDetailView(APIView):
     def get(self, request, form_id):
         try:
             form = FeedbackForm.objects.get(id=form_id)
@@ -419,7 +687,7 @@ class FeedbackFormDetailView(APIView):
 
 
 class FeedbackResponseCreateView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def post(self, request):
         try:
@@ -448,11 +716,7 @@ class FeedbackAnalyticsView(APIView):
             form = FeedbackForm.objects.get(id=form_id)
         except FeedbackForm.DoesNotExist:
             return api_error('Feedback form not found.', 404)
-        try:
-            analytics = build_feedback_analytics(form, request.query_params)
-        except ValueError as exc:
-            return api_error(str(exc), 400)
-        return api_success(analytics, 'Feedback analytics fetched.')
+        return api_success(build_feedback_analytics(form), 'Feedback analytics fetched.')
 
 
 class FeedbackTextAnalysisView(APIView):
@@ -464,10 +728,7 @@ class FeedbackTextAnalysisView(APIView):
         except FeedbackForm.DoesNotExist:
             return api_error('Feedback form not found.', 404)
 
-        try:
-            responses = filtered_responses(form, request.query_params)
-        except ValueError as exc:
-            return api_error(str(exc), 400)
+        responses = list(form.responses.all())
         question_analyses = []
         all_values = []
         for question in all_questions(form):
@@ -497,6 +758,14 @@ class FeedbackTextAnalysisView(APIView):
         }, 'Text feedback analysis fetched.')
 
 
+class FeedbackAdminOverviewView(APIView):
+    permission_classes = [IsFeedbackAdmin]
+
+    def get(self, request):
+        forms = list(FeedbackForm.objects.prefetch_related('responses').all())
+        return api_success(aggregate_feedback_overview(forms), 'Feedback overview fetched.')
+
+
 class FeedbackAdminFormsView(APIView):
     permission_classes = [IsFeedbackAdmin]
 
@@ -512,11 +781,8 @@ class FeedbackAdminFormsView(APIView):
         if department:
             forms = [form for form in forms if form.classroom_course_metadata.get('subject') == department]
 
-        try:
-            page = max(int(request.query_params.get('page', 1)), 1)
-            limit = min(max(int(request.query_params.get('limit', 10)), 1), 50)
-        except ValueError:
-            return api_error('Page and limit must be numbers.', 400)
+        page = max(int(request.query_params.get('page', 1)), 1)
+        limit = min(max(int(request.query_params.get('limit', 10)), 1), 50)
         total = len(forms) if isinstance(forms, list) else forms.count()
         items = list(forms)[(page - 1) * limit:page * limit]
         return api_success({
