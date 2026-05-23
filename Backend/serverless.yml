@@ -1,0 +1,45 @@
+org: ankan05
+app: labzero
+service: labzero-backend
+
+provider:
+  name: aws
+  runtime: python3.13
+  region: ap-southeast-2
+  stage: prod
+  
+  environment:
+    DEBUG: ${env:DEBUG}
+    SECRET_KEY: ${env:SECRET_KEY}
+    ALLOWED_HOSTS: ${env:ALLOWED_HOSTS}
+    DATABASE_URL: ${env:DATABASE_URL}
+    CORS_ALLOWED_ORIGINS: ${env:CORS_ALLOWED_ORIGINS}
+    DATABASE_CONN_MAX_AGE: ${env:DATABASE_CONN_MAX_AGE}
+    GOOGLE_CLIENT_ID: ${env:GOOGLE_CLIENT_ID}
+    GOOGLE_CLIENT_SECRET: ${env:GOOGLE_CLIENT_SECRET}
+    GOOGLE_REDIRECT_URI: ${env:GOOGLE_REDIRECT_URI}
+    FRONTEND_URL: ${env:FRONTEND_URL}
+    LIVEKIT_API_KEY: ${env:LIVEKIT_API_KEY}
+    LIVEKIT_API_SECRET: ${env:LIVEKIT_API_SECRET}
+
+custom:
+  pythonRequirements:
+    slim: true          
+    zip: false          
+
+package:
+  patterns:
+    - '!.env'
+    - '!venv/**'
+    - '!.venv/**'
+    - '!.git/**'
+    - '!**/__pycache__/**'
+    - '!*.db'
+    - '!*.sqlite3'
+    - '!staticfiles/**'
+
+functions:
+  api:
+    handler: core.asgi.handler
+    events:
+      - httpApi: '*'

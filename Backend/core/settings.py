@@ -11,10 +11,16 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = []
+for host in os.getenv('ALLOWED_HOSTS', '').split(','):
+    host = host.strip()
+    if host:
+        if '://' in host:
+            host = host.split('://')[-1]
+        host = host.split('/')[0]
+        ALLOWED_HOSTS.append(host)
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -28,11 +34,13 @@ INSTALLED_APPS = [
     'classrooms',
 ]
 
+if DEBUG:
+    INSTALLED_APPS.insert(0, 'django.contrib.admin')
+
 AUTH_USER_MODEL = 'users.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -40,6 +48,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
@@ -66,7 +77,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default = os.getenv("DATABASE_URL"),
         conn_max_age = int(os.getenv("DATABASE_CONN_MAX_AGE", 0)), 
-        ssl_require = not (os.getenv("DATABASE_URL") or "").startswith("sqlite"),
+        ssl_require = True,
     )
 }
 
@@ -95,7 +106,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
