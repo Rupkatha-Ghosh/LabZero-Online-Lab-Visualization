@@ -1,7 +1,0 @@
-{
-  "url": "http://localhost:3000",
-  "outputDir": "./src/bones",
-  "breakpoints": [375, 768, 1024, 1440],
-  "captureTimeout": 15000,
-  "routes": ["/", "/?auth=1"]
-}
