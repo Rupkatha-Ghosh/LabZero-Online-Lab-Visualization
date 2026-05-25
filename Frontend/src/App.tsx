@@ -159,8 +159,10 @@ import {
   LazyAnalyticsDashboardPage,
   LazyFeedbackAdminPage,
   LazyFeedbackFormPage,
+  LazyFeedbackThankYouPage,
   LazySiteFeedbackPage,
   LazyTextFeedbackAnalysisPage,
+  type FeedbackThankYouDetails,
 } from './modules/feedback';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -206,6 +208,8 @@ const AppContent: React.FC = () => {
   });
 
   const [viewState, setViewState] = useState<ViewState>(getInitialViewState);
+  const [feedbackThankYouDetails, setFeedbackThankYouDetails] =
+    useState<FeedbackThankYouDetails | undefined>();
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
@@ -368,7 +372,10 @@ const AppContent: React.FC = () => {
   }, [language]);
 
   useEffect(() => {
-    if (viewState === ViewState.FEEDBACK_FORM) {
+    if (
+      viewState === ViewState.FEEDBACK_FORM ||
+      viewState === ViewState.FEEDBACK_THANK_YOU
+    ) {
       setShowSettings(false);
       setIsGestureActive(false);
     }
@@ -379,6 +386,7 @@ const AppContent: React.FC = () => {
   const isFeedbackView = [
     ViewState.SITE_FEEDBACK,
     ViewState.FEEDBACK_FORM,
+    ViewState.FEEDBACK_THANK_YOU,
     ViewState.FEEDBACK_ADMIN,
     ViewState.FEEDBACK_ANALYTICS,
     ViewState.FEEDBACK_TEXT_ANALYSIS,
@@ -436,6 +444,7 @@ const AppContent: React.FC = () => {
       case ViewState.DASHBOARD: setViewState(ViewState.LANDING); break;
       case ViewState.SITE_FEEDBACK:
       case ViewState.FEEDBACK_FORM:
+      case ViewState.FEEDBACK_THANK_YOU:
       case ViewState.FEEDBACK_ADMIN:
       case ViewState.FEEDBACK_ANALYTICS:
       case ViewState.FEEDBACK_TEXT_ANALYSIS:
@@ -456,6 +465,16 @@ const AppContent: React.FC = () => {
 
   const handleBackFromSiteFeedback = () => {
     setViewState(feedbackReturnView.current || ViewState.LANDING);
+  };
+
+  const handleFeedbackSubmitted = (details?: FeedbackThankYouDetails) => {
+    fetchAllData();
+    setFeedbackThankYouDetails(details);
+    setViewState(ViewState.FEEDBACK_THANK_YOU);
+  };
+
+  const handleSubmitAnotherFeedback = () => {
+    setViewState(ViewState.SITE_FEEDBACK);
   };
 
   const handleOpenFeedbackAdmin = () => {
@@ -775,7 +794,22 @@ const AppContent: React.FC = () => {
                         theme={theme}
                         onBack={handleBackFromSiteFeedback}
                         onLogin={() => setShowAuth(true)}
-                        onSubmitted={fetchAllData}
+                        onSubmitted={handleFeedbackSubmitted}
+                      />
+                    </FeedbackModuleBoundary>
+                  </div>
+                )}
+                {viewState === ViewState.FEEDBACK_THANK_YOU && (
+                  <div key="feedback-thank-you" className="h-full w-full overflow-y-auto">
+                    <FeedbackModuleBoundary fallbackTitle="Feedback thank you page unavailable">
+                      <LazyFeedbackThankYouPage
+                        details={feedbackThankYouDetails}
+                        onBack={handleBack}
+                        onSubmitAnother={
+                          feedbackThankYouDetails?.secondaryActionLabel
+                            ? handleSubmitAnotherFeedback
+                            : undefined
+                        }
                       />
                     </FeedbackModuleBoundary>
                   </div>
@@ -790,7 +824,10 @@ const AppContent: React.FC = () => {
                 {viewState === ViewState.FEEDBACK_FORM && (
                   <div key="feedback-form" className="h-full w-full overflow-y-auto">
                     <FeedbackModuleBoundary fallbackTitle="Feedback form unavailable">
-                      <LazyFeedbackFormPage onBack={handleBack} />
+                      <LazyFeedbackFormPage
+                        onBack={handleBack}
+                        onSubmitted={handleFeedbackSubmitted}
+                      />
                     </FeedbackModuleBoundary>
                   </div>
                 )}
@@ -820,7 +857,7 @@ const AppContent: React.FC = () => {
             />
           )}
 
-          {viewState !== ViewState.FEEDBACK_FORM && (
+          {!isFeedbackView && (
             <button
               onClick={() => setShowSettings(!showSettings)}
               className={`fixed bottom-24 right-6 md:right-24 w-14 h-14 md:w-16 md:h-16 rounded-2xl hidden md:flex items-center justify-center transition-all duration-500 z-[110] ${showSettings ? 'bg-indigo-500 rotate-90' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
@@ -862,7 +899,7 @@ const AppContent: React.FC = () => {
             )}
           </>
 
-          {viewState !== ViewState.ADMIN && viewState !== ViewState.FEEDBACK_FORM && (
+          {viewState !== ViewState.ADMIN && !isFeedbackView && (
             <BottomNav
               currentView={viewState}
               onNavigate={setViewState}
@@ -896,7 +933,7 @@ const AppContent: React.FC = () => {
             )}
           </>
 
-          {viewState !== ViewState.FEEDBACK_FORM && (
+          {!isFeedbackView && (
             <React.Suspense fallback={null}>
               <GestureController
                 isActive={isGestureActive}
@@ -916,7 +953,7 @@ const AppContent: React.FC = () => {
             </React.Suspense>
           )}
 
-          {viewState !== ViewState.FEEDBACK_FORM && isGestureActive && gesturePos && user?.role !== 'student' && (
+          {!isFeedbackView && isGestureActive && gesturePos && user?.role !== 'student' && (
             <div
               className="fixed w-4 h-4 rounded-full bg-indigo-500 pointer-events-none z-[200] shadow-[0_0_20px_rgba(99,102,241,0.5)]"
               style={{

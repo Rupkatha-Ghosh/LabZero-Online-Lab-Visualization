@@ -105,6 +105,7 @@ export enum ViewState {
   ADMIN = 'admin',
   SITE_FEEDBACK = 'site_feedback',
   FEEDBACK_FORM = 'feedback_form',
+  FEEDBACK_THANK_YOU = 'feedback_thank_you',
   FEEDBACK_ADMIN = 'feedback_admin',
   FEEDBACK_ANALYTICS = 'feedback_analytics',
   FEEDBACK_TEXT_ANALYSIS = 'feedback_text_analysis',

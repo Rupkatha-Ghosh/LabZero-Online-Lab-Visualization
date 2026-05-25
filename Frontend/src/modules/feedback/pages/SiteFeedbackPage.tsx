@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   BarChart3,
   BookOpenCheck,
-  CheckCircle2,
   CheckSquare,
   FileText,
   ListChecks,
@@ -20,13 +19,14 @@ import { User, UserRole } from '../../../types/types';
 import { safeLocalStorage } from '../../../utils/safeStorage';
 import FeedbackPageShell from '../components/common/FeedbackPageShell';
 import { getFeedbackApiError, submitSiteFeedback } from '../services/feedbackApi';
+import type { FeedbackThankYouDetails } from './FeedbackThankYouPage';
 
 interface SiteFeedbackPageProps {
   user: User | null;
   theme: 'dark' | 'light';
   onBack: () => void;
   onLogin: () => void;
-  onSubmitted?: () => void;
+  onSubmitted?: (details?: FeedbackThankYouDetails) => void;
 }
 
 const platformFeatures = [
@@ -985,8 +985,13 @@ const SiteFeedbackPage = ({
         comment: structuredComment,
       });
       safeLocalStorage.removeItem(draftKey);
-      onSubmitted?.();
-      setStatus('success');
+      onSubmitted?.({
+        title: 'Thank you',
+        message: 'Your feedback has been submitted successfully.',
+        formTitle: roleConfig.title,
+        primaryActionLabel: 'Back to LabZero',
+        secondaryActionLabel: 'Submit another response',
+      });
       setRating(0);
       setComment('');
       setFeedbackType('');
@@ -1363,13 +1368,6 @@ const SiteFeedbackPage = ({
                   />
                 </div>
               </>
-            )}
-
-            {status === 'success' && (
-              <div className="mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-                <CheckCircle2 size={17} />
-                Feedback submitted. Thank you.
-              </div>
             )}
 
             {status === 'error' && (

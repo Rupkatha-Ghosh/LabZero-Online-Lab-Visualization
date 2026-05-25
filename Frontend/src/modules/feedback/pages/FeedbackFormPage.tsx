@@ -25,10 +25,12 @@ import {
   getDefaultAnswers,
 } from '../utils/feedbackValidation';
 import { safeLocalStorage } from '../../../utils/safeStorage';
+import type { FeedbackThankYouDetails } from './FeedbackThankYouPage';
 
 interface FeedbackFormPageProps {
   formId?: string;
   onBack?: () => void;
+  onSubmitted?: (details?: FeedbackThankYouDetails) => void;
 }
 
 const getFormIdFromUrl = () => {
@@ -88,7 +90,7 @@ const getDraftValues = (
   }
 };
 
-const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
+const FeedbackFormPage = ({ formId, onBack, onSubmitted }: FeedbackFormPageProps) => {
   const resolvedFormId = formId || getFormIdFromUrl();
   const {
     form,
@@ -206,6 +208,15 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
     await submitFeedback(values);
     safeLocalStorage.removeItem(draftKey);
     setShowConfirmation(false);
+    if (onSubmitted) {
+      onSubmitted({
+        title: 'Thank you',
+        message: 'Your feedback has been submitted successfully.',
+        formTitle: form?.title,
+        primaryActionLabel: 'Back to LabZero',
+      });
+      return;
+    }
     setHasSubmissionSuccess(true);
   });
 
