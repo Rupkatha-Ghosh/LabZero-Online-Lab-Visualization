@@ -247,6 +247,7 @@ def build_feedback_analytics(form):
         'anonymousResponses': len([response for response in responses if response.anonymous]),
         'identifiedResponses': len([response for response in responses if not response.anonymous]),
         'questionStats': question_stats,
+        'responses': [serialize_feedback_response(response, form) for response in responses],
         'summary': {
             'totalResponses': len(responses),
             'anonymousResponses': len([response for response in responses if response.anonymous]),
@@ -302,16 +303,203 @@ def text_analysis_for_values(values):
     }
 
 
+def display_answer_value(question, value):
+    if question.get('type') not in ['checkbox', 'radio', 'dropdown']:
+        return value
+
+    option_labels = {
+        str(option.get('value')): option.get('label') or option.get('value')
+        for option in question.get('options', [])
+    }
+    if isinstance(value, list):
+        return [option_labels.get(str(item), item) for item in value]
+    return option_labels.get(str(value), value)
+
+
+def analyze_response_answers(form, response):
+    questions_by_id = {str(question.get('_id')): question for question in all_questions(form)}
+    analyzed_answers = []
+    rating_values = []
+    text_values = []
+    choice_counts = Counter()
+
+    for answer in response.answers:
+        question_id = str(answer.get('questionId'))
+        question = questions_by_id.get(question_id)
+        if not question:
+            continue
+
+        value = answer.get('value')
+        if value is None or value == '' or value == []:
+            continue
+
+        answer_summary = {
+            'questionId': question_id,
+            'prompt': question.get('prompt'),
+            'type': question.get('type'),
+            'value': value,
+            'displayValue': display_answer_value(question, value),
+        }
+
+        if question.get('type') == 'rating':
+            try:
+                numeric_value = float(value)
+            except (TypeError, ValueError):
+                numeric_value = None
+            if numeric_value is not None:
+                rating_values.append(numeric_value)
+                answer_summary['rating'] = numeric_value
+
+        if question.get('type') == 'text':
+            text_values.append(str(value))
+
+        if question.get('type') in ['checkbox', 'radio', 'dropdown']:
+            selected_values = value if isinstance(value, list) else [value]
+            choice_counts.update(map(str, selected_values))
+
+        analyzed_answers.append(answer_summary)
+
+    average_rating = round(sum(rating_values) / len(rating_values), 2) if rating_values else 0
+    return {
+        'averageRating': average_rating,
+        'satisfactionPercentage': round((average_rating / 5) * 100) if average_rating else 0,
+        'ratingCount': len(rating_values),
+        'textResponseCount': len(text_values),
+        'choiceCounts': dict(choice_counts),
+        'textAnalysis': {
+            'totalTextResponses': len(text_values),
+            **text_analysis_for_values(text_values),
+        },
+        'answers': analyzed_answers,
+    }
+
+
+def serialize_feedback_response(response, form):
+    return {
+        'id': str(response.id),
+        'submittedAt': response.submitted_at.isoformat() if response.submitted_at else None,
+        'anonymous': response.anonymous,
+        'userDetails': response.user_details,
+        'classroomCourseMetadata': response.classroom_course_metadata,
+        'answers': response.answers,
+        'analysis': analyze_response_answers(form, response),
+    }
+
+
+def site_feedback_as_response(feedback):
+    values = [feedback.comment] if feedback.comment else []
+    average_rating = float(feedback.rating or 0)
+    return {
+        'id': str(feedback.id),
+        'submittedAt': feedback.created_at.isoformat() if feedback.created_at else None,
+        'anonymous': False,
+        'userDetails': user_payload(feedback.user),
+        'classroomCourseMetadata': {},
+        'answers': [
+            {
+                'questionId': 'site-rating',
+                'prompt': 'Overall rating',
+                'type': 'rating',
+                'value': feedback.rating,
+                'displayValue': feedback.rating,
+                'rating': feedback.rating,
+            },
+            {
+                'questionId': 'site-comment',
+                'prompt': 'Feedback',
+                'type': 'text',
+                'value': feedback.comment,
+                'displayValue': feedback.comment,
+            },
+        ],
+        'analysis': {
+            'averageRating': average_rating,
+            'satisfactionPercentage': round((average_rating / 5) * 100) if average_rating else 0,
+            'ratingCount': 1 if feedback.rating else 0,
+            'textResponseCount': len(values),
+            'choiceCounts': {},
+            'textAnalysis': {
+                'totalTextResponses': len(values),
+                **text_analysis_for_values(values),
+            },
+            'answers': [
+                {
+                    'questionId': 'site-rating',
+                    'prompt': 'Overall rating',
+                    'type': 'rating',
+                    'value': feedback.rating,
+                    'displayValue': feedback.rating,
+                    'rating': feedback.rating,
+                },
+                {
+                    'questionId': 'site-comment',
+                    'prompt': 'Feedback',
+                    'type': 'text',
+                    'value': feedback.comment,
+                    'displayValue': feedback.comment,
+                },
+            ],
+        },
+    }
+
+
+def build_site_feedback_analytics():
+    feedback_items = list(Feedback.objects.select_related('user').all())
+    ratings = [item.rating for item in feedback_items if item.rating]
+    comments = [item.comment for item in feedback_items if item.comment]
+    average_rating = round(sum(ratings) / len(ratings), 2) if ratings else 0
+    return {
+        'formId': 'site-feedback',
+        'totalResponses': len(feedback_items),
+        'anonymousResponses': 0,
+        'identifiedResponses': len(feedback_items),
+        'questionStats': [
+            {
+                'questionId': 'site-rating',
+                'prompt': 'Overall rating',
+                'type': 'rating',
+                'totalAnswers': len(ratings),
+                'ratingDistribution': dict(Counter(map(str, ratings))),
+                'averageRating': average_rating,
+                'ratingSum': sum(ratings),
+            },
+            {
+                'questionId': 'site-comment',
+                'prompt': 'Feedback',
+                'type': 'text',
+                'totalAnswers': len(comments),
+                'textAnswerCount': len(comments),
+            },
+        ],
+        'responses': [site_feedback_as_response(item) for item in feedback_items],
+        'summary': {
+            'totalResponses': len(feedback_items),
+            'anonymousResponses': 0,
+            'identifiedResponses': len(feedback_items),
+            'averageRating': average_rating,
+            'satisfactionPercentage': round((average_rating / 5) * 100) if average_rating else 0,
+        },
+        'lastCalculatedAt': timezone.now().isoformat(),
+    }
+
+
 def aggregate_feedback_overview(forms):
     form_overviews = []
     overall_rating_distribution = Counter()
     overall_option_counts = Counter()
     overall_text_values = []
-    total_responses = 0
+    form_responses = 0
     anonymous_responses = 0
     identified_responses = 0
     total_questions = 0
     question_type_counts = Counter()
+    site_analytics = build_site_feedback_analytics()
+    site_text_values = [
+        answer.get('value')
+        for response in site_analytics.get('responses', [])
+        for answer in response.get('analysis', {}).get('answers', [])
+        if answer.get('type') == 'text' and answer.get('value')
+    ]
 
     for form in forms:
         analytics = build_feedback_analytics(form)
@@ -339,7 +527,7 @@ def aggregate_feedback_overview(forms):
                 overall_option_counts.update(question_stat.get('optionCounts'))
 
         overall_text_values.extend(form_text_values)
-        total_responses += analytics.get('totalResponses', 0)
+        form_responses += analytics.get('totalResponses', 0)
         anonymous_responses += analytics.get('anonymousResponses', 0)
         identified_responses += analytics.get('identifiedResponses', 0)
         form_overviews.append({
@@ -350,6 +538,16 @@ def aggregate_feedback_overview(forms):
                 **text_analysis_for_values(form_text_values),
             },
         })
+
+    for question_stat in site_analytics.get('questionStats', []):
+        if question_stat.get('ratingDistribution'):
+            overall_rating_distribution.update(question_stat.get('ratingDistribution'))
+        question_type_counts[question_stat.get('type')] += 1
+        total_questions += 1
+
+    overall_text_values.extend(site_text_values)
+    total_responses = form_responses + site_analytics.get('totalResponses', 0)
+    identified_responses += site_analytics.get('identifiedResponses', 0)
 
     rating_values = [
         int(rating) * count
@@ -368,6 +566,7 @@ def aggregate_feedback_overview(forms):
         'overall': {
             'totalForms': len(forms),
             'totalResponses': total_responses,
+            'formResponses': form_responses,
             'anonymousResponses': anonymous_responses,
             'identifiedResponses': identified_responses,
             'totalQuestions': total_questions,
@@ -381,9 +580,14 @@ def aggregate_feedback_overview(forms):
                 **text_analysis_for_values(overall_text_values),
             },
             'siteFeedback': {
-                'total': Feedback.objects.count(),
+                'total': site_analytics.get('totalResponses', 0),
                 'averageRating': round(site_average, 2),
                 'ratingDistribution': dict(site_rating_distribution),
+                'analytics': site_analytics,
+                'textAnalysis': {
+                    'totalTextResponses': len(site_text_values),
+                    **text_analysis_for_values(site_text_values),
+                },
             },
         },
         'forms': form_overviews,

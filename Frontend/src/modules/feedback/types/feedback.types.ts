@@ -174,6 +174,38 @@ export interface FeedbackQuestionAnalytics {
   }>;
 }
 
+export interface FeedbackAnalyzedAnswer {
+  questionId: string;
+  prompt?: string;
+  type: FeedbackQuestionType;
+  value: FeedbackAnswerValue;
+  displayValue?: FeedbackAnswerValue;
+  rating?: number;
+}
+
+export interface FeedbackResponseAnalysis {
+  averageRating: number;
+  satisfactionPercentage: number;
+  ratingCount: number;
+  textResponseCount: number;
+  choiceCounts: Record<string, number>;
+  textAnalysis: Omit<TextFeedbackAnalysis, 'formId' | 'questions' | 'generatedAt'>;
+  answers: FeedbackAnalyzedAnswer[];
+}
+
+export interface FeedbackSubmittedResponse {
+  id: string;
+  submittedAt?: string;
+  anonymous: boolean;
+  userDetails?: FeedbackUserDetails;
+  classroomCourseMetadata?: ClassroomCourseMetadata;
+  answers: Array<{
+    questionId: string;
+    value: FeedbackAnswerValue;
+  }>;
+  analysis: FeedbackResponseAnalysis;
+}
+
 export interface FeedbackAnalyticsSummary {
   totalResponses: number;
   anonymousResponses: number;
@@ -188,6 +220,7 @@ export interface FeedbackAnalytics {
   anonymousResponses: number;
   identifiedResponses: number;
   questionStats: FeedbackQuestionAnalytics[];
+  responses?: FeedbackSubmittedResponse[];
   lastCalculatedAt?: string;
   summary?: Partial<FeedbackAnalyticsSummary>;
 }
@@ -247,6 +280,7 @@ export interface FeedbackAdminOverview {
   overall: {
     totalForms: number;
     totalResponses: number;
+    formResponses?: number;
     anonymousResponses: number;
     identifiedResponses: number;
     totalQuestions: number;
@@ -260,6 +294,8 @@ export interface FeedbackAdminOverview {
       total: number;
       averageRating: number;
       ratingDistribution: Record<string, number>;
+      analytics?: FeedbackAnalytics;
+      textAnalysis?: Omit<TextFeedbackAnalysis, 'formId' | 'questions' | 'generatedAt'>;
     };
   };
   forms: FeedbackAdminFormOverview[];

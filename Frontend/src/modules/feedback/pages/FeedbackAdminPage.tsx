@@ -29,6 +29,7 @@ import {
   FeedbackAnalytics,
   FeedbackForm,
   FeedbackFormDraft,
+  FeedbackSubmittedResponse,
   TextFeedbackAnalysis,
 } from '../types/feedback.types';
 
@@ -45,7 +46,10 @@ const FeedbackAdminPage = ({ onBack }: FeedbackAdminPageProps) => {
   const [editingForm, setEditingForm] = useState<FeedbackForm | null>(null);
   const [builderOpen, setBuilderOpen] = useState(false);
   const canAdmin = Boolean(
-    user?.is_staff || user?.is_superuser
+    user?.is_staff ||
+    user?.is_superuser ||
+    user?.role === 'teacher' ||
+    user?.role === 'institute'
   );
   const admin = useFeedbackAdmin(query, canAdmin);
   const [overview, setOverview] = useState<FeedbackAdminOverview | null>(null);
@@ -328,7 +332,7 @@ const FeedbackOverview = ({
     {overview && !isLoading && (
       <>
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <OverviewMetric label="All form responses" value={overview.overall.totalResponses} icon={Users} />
+          <OverviewMetric label="All responses" value={overview.overall.totalResponses} icon={Users} />
           <OverviewMetric label="Average rating" value={overview.overall.averageRating.toFixed(2)} icon={Star} />
           <OverviewMetric label="Satisfaction" value={`${overview.overall.satisfactionPercentage}%`} icon={BarChart3} />
           <OverviewMetric label="Text responses" value={overview.overall.textAnalysis.totalTextResponses} icon={MessageSquareText} />
@@ -357,9 +361,37 @@ const FeedbackOverview = ({
 
         <section className="space-y-4">
           <h3 className="text-lg font-black text-slate-950">
-            Each Feedback Overview
+            Submitted Feedback Analysis
           </h3>
           <div className="grid gap-4 lg:grid-cols-2">
+            {overview.overall.siteFeedback.analytics && (
+              <FormOverviewCard
+                form={{
+                  _id: 'site-feedback',
+                  title: 'Site feedback',
+                  description: 'Feedback submitted from the LabZero feedback page.',
+                  anonymousAllowed: false,
+                  sections: [],
+                  status: 'published',
+                }}
+                analytics={overview.overall.siteFeedback.analytics}
+                textAnalysis={
+                  overview.overall.siteFeedback.textAnalysis ??
+                  overview.overall.siteFeedback.analytics.responses?.[0]?.analysis.textAnalysis ?? {
+                    totalTextResponses: 0,
+                    keywords: [],
+                    wordFrequencies: [],
+                    sentiment: {
+                      positive: 0,
+                      neutral: 0,
+                      negative: 0,
+                      averageScore: 0,
+                      satisfactionPercentage: 0,
+                    },
+                  }
+                }
+              />
+            )}
             {overview.forms.map((item) => (
               <FormOverviewCard
                 key={item.form._id}
@@ -466,8 +498,105 @@ const FormOverviewCard = ({
           </div>
         </MiniPanel>
       </div>
+      <ResponseAnalysisList responses={analytics.responses ?? []} />
     </article>
   );
+};
+
+const ResponseAnalysisList = ({
+  responses,
+}: {
+  responses: FeedbackSubmittedResponse[];
+}) => {
+  if (!responses.length) {
+    return (
+      <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-5 text-sm font-medium text-slate-500">
+        No individual responses have been submitted for this form yet.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-5 space-y-3">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">
+        Individual response analysis
+      </p>
+      {responses.map((response, index) => (
+        <details
+          key={response.id}
+          className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm"
+        >
+          <summary className="flex cursor-pointer list-none flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              <span className="block text-sm font-black text-slate-950">
+                Response #{responses.length - index}
+              </span>
+              <span className="block text-xs text-slate-500">
+                {response.submittedAt
+                  ? new Date(response.submittedAt).toLocaleString()
+                  : 'Submission time unavailable'}
+                {' · '}
+                {response.anonymous
+                  ? 'Anonymous'
+                  : response.userDetails?.name || response.userDetails?.email || 'Identified'}
+              </span>
+            </span>
+            <span className="grid grid-cols-3 gap-2 text-center text-xs sm:min-w-72">
+              <span className="rounded-xl bg-amber-50 px-2 py-2 font-bold text-amber-700">
+                {response.analysis.averageRating.toFixed(2)} rating
+              </span>
+              <span className="rounded-xl bg-emerald-50 px-2 py-2 font-bold text-emerald-700">
+                {response.analysis.satisfactionPercentage}% satisfied
+              </span>
+              <span className="rounded-xl bg-cyan-50 px-2 py-2 font-bold text-cyan-700">
+                {response.analysis.textResponseCount} text
+              </span>
+            </span>
+          </summary>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_20rem]">
+            <div className="space-y-2">
+              {response.analysis.answers.map((answer) => (
+                <div
+                  key={`${response.id}-${answer.questionId}`}
+                  className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-3"
+                >
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    {answer.type}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                    {answer.prompt || answer.questionId}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {formatAnswerValue(answer.displayValue ?? answer.value)}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                Text sentiment
+              </p>
+              <SentimentSummary
+                sentiment={response.analysis.textAnalysis.sentiment}
+                totalResponses={response.analysis.textAnalysis.totalTextResponses}
+              />
+            </div>
+          </div>
+        </details>
+      ))}
+    </div>
+  );
+};
+
+const formatAnswerValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return value.join(', ');
+  }
+  if (value === null || value === undefined || value === '') {
+    return 'No answer';
+  }
+  return String(value);
 };
 
 const MiniPanel = ({
