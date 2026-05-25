@@ -20,7 +20,8 @@ import {
     X,
     ExternalLink,
     Video,
-    ChevronDown
+    ChevronDown,
+    MessageSquareText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
@@ -32,9 +33,10 @@ interface StudentDashboardProps {
     onBack?: () => void;
     onLaunchLab?: (topicId: string | number) => void;
     onStartMeeting?: (classroom: any) => void;
+    onOpenFeedback?: () => void;
 }
 
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab, onStartMeeting }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab, onStartMeeting, onOpenFeedback }) => {
     const { user } = useAuth();
     const [classes, setClasses] = React.useState<any[]>([]);
     const [upcomingTasks, setUpcomingTasks] = React.useState<any[]>([]);
@@ -155,6 +157,15 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab
                         <Bell size={20} />
                         <div className="absolute top-3.5 right-4 w-2 h-2 bg-rose-500 rounded-full border-2 border-[var(--bg-deep)] group-hover:scale-125 transition-transform" />
                     </button>
+                    {onOpenFeedback && (
+                        <button
+                            onClick={onOpenFeedback}
+                            className="flex items-center gap-2 rounded-2xl border border-cyan-500/25 bg-cyan-500/10 px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-widest text-cyan-500 shadow-lg transition-all hover:bg-cyan-500 hover:text-white"
+                        >
+                            <MessageSquareText size={16} />
+                            Feedback
+                        </button>
+                    )}
                     <button
                         onClick={() => setIsAttendancePortalOpen(true)}
                         className="flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500 shadow-lg transition-all hover:bg-emerald-500 hover:text-white"

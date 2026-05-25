@@ -17,6 +17,7 @@ import {
 import { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { User, UserRole } from '../../../types/types';
+import { safeLocalStorage } from '../../../utils/safeStorage';
 import FeedbackPageShell from '../components/common/FeedbackPageShell';
 import { getFeedbackApiError, submitSiteFeedback } from '../services/feedbackApi';
 
@@ -280,7 +281,7 @@ const defaultStudentTextAnswers = Object.fromEntries(
 ) as Record<(typeof studentTextQuestions)[number]['id'], string>;
 
 const defaultStudentRatings = Object.fromEntries(
-  studentRatingQuestions.map((question) => [question.id, 5])
+  studentRatingQuestions.map((question) => [question.id, 0])
 ) as Record<(typeof studentRatingQuestions)[number]['id'], number>;
 
 const defaultStudentCheckboxAnswers = Object.fromEntries(
@@ -288,7 +289,7 @@ const defaultStudentCheckboxAnswers = Object.fromEntries(
 ) as Record<(typeof studentCheckboxQuestions)[number]['id'], string[]>;
 
 const defaultStudentRadioAnswers = Object.fromEntries(
-  studentRadioQuestions.map((question) => [question.id, question.options[0]])
+  studentRadioQuestions.map((question) => [question.id, ''])
 ) as Record<(typeof studentRadioQuestions)[number]['id'], string>;
 
 const defaultStudentDropdownAnswers = Object.fromEntries(
@@ -427,7 +428,7 @@ const defaultTeacherTextAnswers = Object.fromEntries(
 ) as Record<(typeof teacherTextQuestions)[number]['id'], string>;
 
 const defaultTeacherRatings = Object.fromEntries(
-  teacherRatingQuestions.map((question) => [question.id, 5])
+  teacherRatingQuestions.map((question) => [question.id, 0])
 ) as Record<(typeof teacherRatingQuestions)[number]['id'], number>;
 
 const defaultTeacherCheckboxAnswers = Object.fromEntries(
@@ -435,7 +436,7 @@ const defaultTeacherCheckboxAnswers = Object.fromEntries(
 ) as Record<(typeof teacherCheckboxQuestions)[number]['id'], string[]>;
 
 const defaultTeacherRadioAnswers = Object.fromEntries(
-  teacherRadioQuestions.map((question) => [question.id, question.options[0]])
+  teacherRadioQuestions.map((question) => [question.id, ''])
 ) as Record<(typeof teacherRadioQuestions)[number]['id'], string>;
 
 const defaultTeacherDropdownAnswers = Object.fromEntries(
@@ -563,7 +564,7 @@ const defaultInstituteTextAnswers = Object.fromEntries(
 ) as Record<(typeof instituteTextQuestions)[number]['id'], string>;
 
 const defaultInstituteRatings = Object.fromEntries(
-  instituteRatingQuestions.map((question) => [question.id, 5])
+  instituteRatingQuestions.map((question) => [question.id, 0])
 ) as Record<(typeof instituteRatingQuestions)[number]['id'], number>;
 
 const defaultInstituteCheckboxAnswers = Object.fromEntries(
@@ -571,8 +572,38 @@ const defaultInstituteCheckboxAnswers = Object.fromEntries(
 ) as Record<(typeof instituteCheckboxQuestions)[number]['id'], string[]>;
 
 const defaultInstituteRadioAnswers = Object.fromEntries(
-  instituteRadioQuestions.map((question) => [question.id, question.options[0]])
+  instituteRadioQuestions.map((question) => [question.id, ''])
 ) as Record<(typeof instituteRadioQuestions)[number]['id'], string>;
+
+type SiteFeedbackDraft = {
+  version: number;
+  feedbackRole: UserRole;
+  rating: number;
+  comment: string;
+  feedbackType: string;
+  selectedAreas: string[];
+  course: string;
+  classroom: string;
+  teacher: string;
+  session: string;
+  studentTextAnswers: typeof defaultStudentTextAnswers;
+  studentRatings: typeof defaultStudentRatings;
+  studentCheckboxAnswers: typeof defaultStudentCheckboxAnswers;
+  studentRadioAnswers: typeof defaultStudentRadioAnswers;
+  studentDropdownAnswers: typeof defaultStudentDropdownAnswers;
+  teacherTextAnswers: typeof defaultTeacherTextAnswers;
+  teacherRatings: typeof defaultTeacherRatings;
+  teacherCheckboxAnswers: typeof defaultTeacherCheckboxAnswers;
+  teacherRadioAnswers: typeof defaultTeacherRadioAnswers;
+  teacherDropdownAnswers: typeof defaultTeacherDropdownAnswers;
+  instituteTextAnswers: typeof defaultInstituteTextAnswers;
+  instituteRatings: typeof defaultInstituteRatings;
+  instituteCheckboxAnswers: typeof defaultInstituteCheckboxAnswers;
+  instituteRadioAnswers: typeof defaultInstituteRadioAnswers;
+  instituteDropdownAnswers: typeof defaultInstituteDropdownAnswers;
+};
+
+const SITE_FEEDBACK_DRAFT_VERSION = 2;
 
 const defaultInstituteDropdownAnswers = Object.fromEntries(
   instituteDropdownQuestions.map((question) => [question.id, ''])
@@ -587,10 +618,11 @@ const SiteFeedbackPage = ({
 }: SiteFeedbackPageProps) => {
   const feedbackRole = user?.role ?? 'student';
   const roleConfig = roleFeedbackConfig[feedbackRole];
-  const [rating, setRating] = useState(5);
+  const draftKey = `labzero_site_feedback_draft_${user?.id ?? user?.email ?? feedbackRole}`;
+  const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
-  const [feedbackType, setFeedbackType] = useState(roleConfig.feedbackAreas[0]);
-  const [selectedAreas, setSelectedAreas] = useState<string[]>(roleConfig.feedbackAreas);
+  const [feedbackType, setFeedbackType] = useState('');
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [course, setCourse] = useState('');
   const [classroom, setClassroom] = useState('');
   const [teacher, setTeacher] = useState('');
@@ -613,6 +645,7 @@ const SiteFeedbackPage = ({
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [error, setError] = useState('Could not submit feedback. Please try again.');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDraftReady, setIsDraftReady] = useState(false);
   const isLight = theme === 'light';
   const isStudentFeedback = feedbackRole === 'student';
   const isTeacherFeedback = feedbackRole === 'teacher';
@@ -624,9 +657,9 @@ const SiteFeedbackPage = ({
     }`;
 
   useEffect(() => {
-    setFeedbackType(roleConfig.feedbackAreas[0]);
-    setSelectedAreas(roleConfig.feedbackAreas);
-  }, [feedbackRole, roleConfig.feedbackAreas]);
+    setFeedbackType('');
+    setSelectedAreas([]);
+  }, [feedbackRole]);
 
   useEffect(() => {
     if (isStudentFeedback) {
@@ -657,6 +690,120 @@ const SiteFeedbackPage = ({
       setInstituteDropdownAnswers(defaultInstituteDropdownAnswers);
     }
   }, [isInstituteFeedback]);
+
+  useEffect(() => {
+    setIsDraftReady(false);
+    const rawDraft = safeLocalStorage.getItem(draftKey);
+    if (!rawDraft) {
+      setIsDraftReady(true);
+      return;
+    }
+
+    try {
+      const draft = JSON.parse(rawDraft) as Partial<SiteFeedbackDraft>;
+      if (
+        draft.version !== SITE_FEEDBACK_DRAFT_VERSION ||
+        draft.feedbackRole !== feedbackRole
+      ) {
+        safeLocalStorage.removeItem(draftKey);
+        setIsDraftReady(true);
+        return;
+      }
+
+      setRating(Number(draft.rating ?? 0));
+      setComment(draft.comment ?? '');
+      setFeedbackType(draft.feedbackType ?? '');
+      setSelectedAreas(Array.isArray(draft.selectedAreas) ? draft.selectedAreas : []);
+      setCourse(draft.course ?? '');
+      setClassroom(draft.classroom ?? '');
+      setTeacher(draft.teacher ?? '');
+      setSession(draft.session ?? '');
+      setStudentTextAnswers({ ...defaultStudentTextAnswers, ...draft.studentTextAnswers });
+      setStudentRatings({ ...defaultStudentRatings, ...draft.studentRatings });
+      setStudentCheckboxAnswers({ ...defaultStudentCheckboxAnswers, ...draft.studentCheckboxAnswers });
+      setStudentRadioAnswers({ ...defaultStudentRadioAnswers, ...draft.studentRadioAnswers });
+      setStudentDropdownAnswers({ ...defaultStudentDropdownAnswers, ...draft.studentDropdownAnswers });
+      setTeacherTextAnswers({ ...defaultTeacherTextAnswers, ...draft.teacherTextAnswers });
+      setTeacherRatings({ ...defaultTeacherRatings, ...draft.teacherRatings });
+      setTeacherCheckboxAnswers({ ...defaultTeacherCheckboxAnswers, ...draft.teacherCheckboxAnswers });
+      setTeacherRadioAnswers({ ...defaultTeacherRadioAnswers, ...draft.teacherRadioAnswers });
+      setTeacherDropdownAnswers({ ...defaultTeacherDropdownAnswers, ...draft.teacherDropdownAnswers });
+      setInstituteTextAnswers({ ...defaultInstituteTextAnswers, ...draft.instituteTextAnswers });
+      setInstituteRatings({ ...defaultInstituteRatings, ...draft.instituteRatings });
+      setInstituteCheckboxAnswers({ ...defaultInstituteCheckboxAnswers, ...draft.instituteCheckboxAnswers });
+      setInstituteRadioAnswers({ ...defaultInstituteRadioAnswers, ...draft.instituteRadioAnswers });
+      setInstituteDropdownAnswers({ ...defaultInstituteDropdownAnswers, ...draft.instituteDropdownAnswers });
+    } catch {
+      safeLocalStorage.removeItem(draftKey);
+    } finally {
+      setIsDraftReady(true);
+    }
+  }, [draftKey, feedbackRole]);
+
+  useEffect(() => {
+    if (!isDraftReady || status === 'success') {
+      return;
+    }
+
+    safeLocalStorage.setItem(
+      draftKey,
+      JSON.stringify({
+        version: SITE_FEEDBACK_DRAFT_VERSION,
+        feedbackRole,
+        rating,
+        comment,
+        feedbackType,
+        selectedAreas,
+        course,
+        classroom,
+        teacher,
+        session,
+        studentTextAnswers,
+        studentRatings,
+        studentCheckboxAnswers,
+        studentRadioAnswers,
+        studentDropdownAnswers,
+        teacherTextAnswers,
+        teacherRatings,
+        teacherCheckboxAnswers,
+        teacherRadioAnswers,
+        teacherDropdownAnswers,
+        instituteTextAnswers,
+        instituteRatings,
+        instituteCheckboxAnswers,
+        instituteRadioAnswers,
+        instituteDropdownAnswers,
+      } satisfies SiteFeedbackDraft)
+    );
+  }, [
+    classroom,
+    comment,
+    course,
+    draftKey,
+    feedbackRole,
+    feedbackType,
+    instituteCheckboxAnswers,
+    instituteDropdownAnswers,
+    instituteRadioAnswers,
+    instituteRatings,
+    instituteTextAnswers,
+    isDraftReady,
+    rating,
+    selectedAreas,
+    session,
+    status,
+    studentCheckboxAnswers,
+    studentDropdownAnswers,
+    studentRadioAnswers,
+    studentRatings,
+    studentTextAnswers,
+    teacher,
+    teacherCheckboxAnswers,
+    teacherDropdownAnswers,
+    teacherRadioAnswers,
+    teacherRatings,
+    teacherTextAnswers,
+  ]);
 
   const toggleArea = (area: string) => {
     setSelectedAreas((current) =>
@@ -716,6 +863,20 @@ const SiteFeedbackPage = ({
 
     if (!user) {
       onLogin();
+      return;
+    }
+
+    const selectedRating = isStudentFeedback
+      ? studentRatings.overallLearning
+      : isTeacherFeedback
+        ? teacherRatings.overallTeachingExperience
+        : isInstituteFeedback
+          ? instituteRatings.overallInstitutionalUsefulness
+          : rating;
+
+    if (!selectedRating || selectedRating < 1) {
+      setError('Please select a star rating before submitting feedback.');
+      setStatus('error');
       return;
     }
 
@@ -820,18 +981,20 @@ const SiteFeedbackPage = ({
       ].join('\n');
 
       await submitSiteFeedback({
-        rating: isStudentFeedback
-          ? studentRatings.overallLearning
-          : isTeacherFeedback
-            ? teacherRatings.overallTeachingExperience
-            : isInstituteFeedback
-              ? instituteRatings.overallInstitutionalUsefulness
-              : rating,
+        rating: selectedRating,
         comment: structuredComment,
       });
+      safeLocalStorage.removeItem(draftKey);
       onSubmitted?.();
       setStatus('success');
+      setRating(0);
       setComment('');
+      setFeedbackType('');
+      setSelectedAreas([]);
+      setCourse('');
+      setClassroom('');
+      setTeacher('');
+      setSession('');
       if (isStudentFeedback) {
         setStudentTextAnswers(defaultStudentTextAnswers);
         setStudentRatings(defaultStudentRatings);

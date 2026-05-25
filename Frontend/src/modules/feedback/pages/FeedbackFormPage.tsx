@@ -16,6 +16,7 @@ import {
   getAllQuestions,
   getDefaultAnswers,
 } from '../utils/feedbackValidation';
+import { safeLocalStorage } from '../../../utils/safeStorage';
 
 interface FeedbackFormPageProps {
   formId?: string;
@@ -39,6 +40,46 @@ const isAnswered = (value: unknown) => {
   return typeof value === 'string' && value.trim().length > 0;
 };
 
+const getDraftValues = (
+  draftKey: string,
+  defaultValues: FeedbackFormValues,
+  maxSectionIndex: number
+) => {
+  const rawDraft = safeLocalStorage.getItem(draftKey);
+  if (!rawDraft) {
+    return { values: defaultValues, activeSectionIndex: 0 };
+  }
+
+  try {
+    const draft = JSON.parse(rawDraft) as {
+      values?: FeedbackFormValues;
+      activeSectionIndex?: number;
+    };
+    const draftAnswers = draft.values?.answers ?? {};
+
+    return {
+      values: {
+        anonymous: Boolean(draft.values?.anonymous),
+        answers: Object.fromEntries(
+          Object.entries(defaultValues.answers).map(([questionId, fallback]) => [
+            questionId,
+            Object.prototype.hasOwnProperty.call(draftAnswers, questionId)
+              ? draftAnswers[questionId]
+              : fallback,
+          ])
+        ) as FeedbackFormValues['answers'],
+      },
+      activeSectionIndex: Math.min(
+        Math.max(Number(draft.activeSectionIndex ?? 0), 0),
+        maxSectionIndex
+      ),
+    };
+  } catch {
+    safeLocalStorage.removeItem(draftKey);
+    return { values: defaultValues, activeSectionIndex: 0 };
+  }
+};
+
 const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
   const resolvedFormId = formId || getFormIdFromUrl();
   const {
@@ -54,6 +95,8 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
   } = useFeedbackForm(resolvedFormId);
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isDraftReady, setIsDraftReady] = useState(false);
+  const draftKey = `labzero_feedback_form_draft_${resolvedFormId}`;
 
   const schema = useMemo(
     () => (form ? buildFeedbackSchema(form) : undefined),
@@ -61,7 +104,7 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
   );
   const defaultValues = useMemo<FeedbackFormValues>(
     () => ({
-      anonymous: form?.anonymousAllowed ?? false,
+      anonymous: false,
       answers: form ? getDefaultAnswers(form) : {},
     }),
     [form]
@@ -82,19 +125,6 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
     mode: 'onBlur',
   });
 
-  useEffect(() => {
-    reset(defaultValues);
-  }, [defaultValues, reset]);
-
-  useEffect(() => {
-    if (!successMessage) {
-      return;
-    }
-
-    const timeout = window.setTimeout(clearSuccess, 2600);
-    return () => window.clearTimeout(timeout);
-  }, [clearSuccess, successMessage]);
-
   const watchedValues = watch();
   const sections = useMemo(
     () => form?.sections.slice().sort((a, b) => a.order - b.order) ?? [],
@@ -105,6 +135,46 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
   const answeredCount = allQuestions.filter((question) =>
     isAnswered(watchedValues.answers?.[question._id])
   ).length;
+
+  useEffect(() => {
+    if (!form) {
+      return;
+    }
+
+    setIsDraftReady(false);
+    const draft = getDraftValues(
+      draftKey,
+      defaultValues,
+      Math.max(sections.length - 1, 0)
+    );
+    reset(draft.values);
+    setActiveSectionIndex(draft.activeSectionIndex);
+    setIsDraftReady(true);
+  }, [defaultValues, draftKey, form, reset, sections.length]);
+
+  useEffect(() => {
+    if (!form || !isDraftReady || successMessage) {
+      return;
+    }
+
+    safeLocalStorage.setItem(
+      draftKey,
+      JSON.stringify({
+        values: watchedValues,
+        activeSectionIndex,
+      })
+    );
+  }, [activeSectionIndex, draftKey, form, isDraftReady, successMessage, watchedValues]);
+
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    safeLocalStorage.removeItem(draftKey);
+    const timeout = window.setTimeout(clearSuccess, 2600);
+    return () => window.clearTimeout(timeout);
+  }, [clearSuccess, draftKey, successMessage]);
 
   const validateActiveSection = async () => {
     if (!activeSection) {
@@ -128,6 +198,7 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
 
   const confirmSubmit = handleSubmit(async (values) => {
     await submitFeedback(values);
+    safeLocalStorage.removeItem(draftKey);
     setShowConfirmation(false);
   });
 

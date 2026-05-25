@@ -236,3 +236,31 @@ export interface TextFeedbackAnalysis {
   questions: TextFeedbackQuestionAnalysis[];
   generatedAt: string;
 }
+
+export interface FeedbackAdminFormOverview {
+  form: FeedbackForm;
+  analytics: FeedbackAnalytics;
+  textAnalysis: Omit<TextFeedbackAnalysis, 'formId' | 'questions' | 'generatedAt'>;
+}
+
+export interface FeedbackAdminOverview {
+  overall: {
+    totalForms: number;
+    totalResponses: number;
+    anonymousResponses: number;
+    identifiedResponses: number;
+    totalQuestions: number;
+    questionTypeCounts: Record<string, number>;
+    averageRating: number;
+    satisfactionPercentage: number;
+    ratingDistribution: Record<string, number>;
+    optionCounts: Record<string, number>;
+    textAnalysis: Omit<TextFeedbackAnalysis, 'formId' | 'questions' | 'generatedAt'>;
+    siteFeedback: {
+      total: number;
+      averageRating: number;
+      ratingDistribution: Record<string, number>;
+    };
+  };
+  forms: FeedbackAdminFormOverview[];
+}

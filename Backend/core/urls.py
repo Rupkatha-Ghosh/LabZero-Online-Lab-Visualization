@@ -15,4 +15,5 @@ if 'django.contrib.admin' in settings.INSTALLED_APPS:
     urlpatterns.insert(0, path('admin/', admin.site.urls))
 
 if settings.DEBUG:
+    urlpatterns.insert(0, path('admin/', admin.site.urls))
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

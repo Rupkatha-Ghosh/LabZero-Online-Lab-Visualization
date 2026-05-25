@@ -4,6 +4,7 @@ import {
   ApiEnvelope,
   FeedbackAdminListQuery,
   FeedbackAdminListResponse,
+  FeedbackAdminOverview,
   FeedbackAnalytics,
   FeedbackAnalyticsFilters,
   FeedbackForm,
@@ -69,6 +70,13 @@ export const fetchAdminFeedbackForms = async (
     api.get<ApiEnvelope<FeedbackAdminListResponse>>('/feedback/admin/forms/', {
       params: query,
     })
+  );
+  return response.data.data;
+};
+
+export const fetchAdminFeedbackOverview = async () => {
+  const response = await withRetry(() =>
+    api.get<ApiEnvelope<FeedbackAdminOverview>>('/feedback/admin/overview/')
   );
   return response.data.data;
 };

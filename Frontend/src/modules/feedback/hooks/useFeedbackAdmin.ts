@@ -24,13 +24,23 @@ const defaultList: FeedbackAdminListResponse = {
   },
 };
 
-export const useFeedbackAdmin = (query: FeedbackAdminListQuery) => {
+export const useFeedbackAdmin = (
+  query: FeedbackAdminListQuery,
+  enabled = true
+) => {
   const [data, setData] = useState<FeedbackAdminListResponse>(defaultList);
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadForms = useCallback(async () => {
+    if (!enabled) {
+      setData(defaultList);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -42,7 +52,7 @@ export const useFeedbackAdmin = (query: FeedbackAdminListQuery) => {
     } finally {
       setIsLoading(false);
     }
-  }, [query]);
+  }, [enabled, query]);
 
   useEffect(() => {
     loadForms();

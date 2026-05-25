@@ -21,7 +21,8 @@ import {
   X,
   FileText,
   Video,
-  ChevronDown
+  ChevronDown,
+  MessageSquareText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
@@ -34,10 +35,11 @@ import DashboardLeaderboard from '../shared/DashboardLeaderboard';
 interface TeacherDashboardProps {
   onBack?: () => void;
   onStartMeeting?: (classroom: any) => void;
+  onOpenFeedback?: () => void;
   skeletonDebug?: boolean;
 }
 
-const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeeting }) => {
+const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeeting, onOpenFeedback }) => {
   const { user } = useAuth();
   const [classes, setClasses] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -233,6 +235,15 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {onOpenFeedback && (
+            <button
+              onClick={onOpenFeedback}
+              className="teacher-secondary-button flex items-center gap-2 rounded-2xl bg-white/90 border border-slate-200 px-5 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
+            >
+              <MessageSquareText size={16} />
+              Feedback
+            </button>
+          )}
           <button
             onClick={() => setIsAttendancePortalOpen(true)}
             className="teacher-secondary-button flex items-center gap-2 rounded-2xl bg-white/90 border border-slate-200 px-5 py-3 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
