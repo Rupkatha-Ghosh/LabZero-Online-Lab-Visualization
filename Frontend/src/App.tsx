@@ -451,6 +451,15 @@ const AppContent: React.FC = () => {
     setViewState(feedbackReturnView.current || ViewState.LANDING);
   };
 
+  const handleOpenFeedbackAdmin = () => {
+    feedbackReturnView.current = viewState;
+    setViewState(ViewState.FEEDBACK_ADMIN);
+  };
+
+  const handleBackFromFeedbackAdmin = () => {
+    setViewState(feedbackReturnView.current || ViewState.LANDING);
+  };
+
   const handleBackToSubject = () => {
     setViewState(ViewState.SUBJECT);
     setSelectedClass(null);
@@ -657,6 +666,7 @@ const AppContent: React.FC = () => {
                         onOpenGlossary={() => setShowGlossary(true)}
                         onDashboardClick={() => setViewState(ViewState.DASHBOARD)}
                         onAdminClick={() => setViewState(ViewState.ADMIN)}
+                        onFeedbackAdminClick={handleOpenFeedbackAdmin}
                         onLaunchSimulation={handleLaunchSimulation}
                         subjects={subjects}
                         stats={publicStats}
@@ -724,7 +734,22 @@ const AppContent: React.FC = () => {
                 {viewState === ViewState.DASHBOARD && user && (
                   <div key="dashboard" className="h-full w-full">
                     <React.Suspense fallback={null}>
-                      {user.role === 'teacher' ? <TeacherDashboard onBack={handleBackToLanding} onStartMeeting={handleStartClassMeeting} /> : user.role === 'institute' ? <InstituteDashboard onBack={handleBackToLanding} /> : <StudentDashboard onBack={handleBackToLanding} onLaunchLab={handleLaunchSimulation} onStartMeeting={handleStartClassMeeting} />}
+                       {user.role === 'teacher' ? (
+                        <TeacherDashboard
+                          onBack={handleBackToLanding}
+                          onStartMeeting={handleStartClassMeeting}
+                        />
+                      ) : user.role === 'institute' ? (
+                        <InstituteDashboard
+                          onBack={handleBackToLanding}
+                        />
+                      ) : (
+                        <StudentDashboard
+                          onBack={handleBackToLanding}
+                          onLaunchLab={handleLaunchSimulation}
+                          onStartMeeting={handleStartClassMeeting}
+                        />
+                      )}
                     </React.Suspense>
                   </div>
                 )}
@@ -751,7 +776,7 @@ const AppContent: React.FC = () => {
                 {viewState === ViewState.FEEDBACK_ADMIN && (
                   <div key="feedback-admin" className="h-full w-full overflow-y-auto">
                     <FeedbackModuleBoundary fallbackTitle="Feedback admin unavailable">
-                      <LazyFeedbackAdminPage />
+                      <LazyFeedbackAdminPage onBack={handleBackFromFeedbackAdmin} />
                     </FeedbackModuleBoundary>
                   </div>
                 )}

@@ -1,4 +1,4 @@
-import { AlertCircle, FilePlus2, LayoutDashboard, Loader2 } from 'lucide-react';
+import { AlertCircle, FilePlus2, LayoutDashboard, Loader2, ArrowLeft } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import AdminFilterBar from '../components/admin/AdminFilterBar';
@@ -13,7 +13,11 @@ import {
   FeedbackFormDraft,
 } from '../types/feedback.types';
 
-const FeedbackAdminPage = () => {
+interface FeedbackAdminPageProps {
+  onBack?: () => void;
+}
+
+const FeedbackAdminPage = ({ onBack }: FeedbackAdminPageProps) => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [query, setQuery] = useState<FeedbackAdminListQuery>({
     page: 1,
@@ -90,14 +94,26 @@ const FeedbackAdminPage = () => {
                 windows, and jump into analytics from one workspace.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={openCreate}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
-            >
-              <FilePlus2 size={17} />
-              Create form
-            </button>
+            <div className="flex items-center gap-2">
+              {onBack && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <ArrowLeft size={16} />
+                  Back
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={openCreate}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                <FilePlus2 size={17} />
+                Create form
+              </button>
+            </div>
           </div>
         </header>
 

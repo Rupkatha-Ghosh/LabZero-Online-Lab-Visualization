@@ -618,11 +618,10 @@ const SiteFeedbackPage = ({
   const isTeacherFeedback = feedbackRole === 'teacher';
   const isInstituteFeedback = feedbackRole === 'institute';
 
-  const inputClass = `mt-2 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
-    isLight
+  const inputClass = `mt-2 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${isLight
       ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
       : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
-  }`;
+    }`;
 
   useEffect(() => {
     setFeedbackType(roleConfig.feedbackAreas[0]);
@@ -726,88 +725,88 @@ const SiteFeedbackPage = ({
     try {
       const studentFeedbackDetails = isStudentFeedback
         ? [
-            'Student Text Feedback:',
-            ...studentTextQuestions.map(
-              (question) =>
-                `- ${question.label}: ${studentTextAnswers[question.id].trim() || 'Not provided'}`
-            ),
-            'Student Ratings:',
-            ...studentRatingQuestions.map(
-              (question) => `- ${question.label}: ${studentRatings[question.id]}/5`
-            ),
-            'Student Multiple Choice:',
-            ...studentCheckboxQuestions.map((question) => {
-              const selected = studentCheckboxAnswers[question.id];
-              return `- ${question.label}: ${selected.length ? selected.join(', ') : 'Not selected'}`;
-            }),
-            'Student Single Choice:',
-            ...studentRadioQuestions.map(
-              (question) => `- ${question.label}: ${studentRadioAnswers[question.id]}`
-            ),
-            'Student Dropdown Details:',
-            ...studentDropdownQuestions.map(
-              (question) =>
-                `- ${question.label}: ${studentDropdownAnswers[question.id] || 'Not selected'}`
-            ),
-          ]
+          'Student Text Feedback:',
+          ...studentTextQuestions.map(
+            (question) =>
+              `- ${question.label}: ${studentTextAnswers[question.id].trim() || 'Not provided'}`
+          ),
+          'Student Ratings:',
+          ...studentRatingQuestions.map(
+            (question) => `- ${question.label}: ${studentRatings[question.id]}/5`
+          ),
+          'Student Multiple Choice:',
+          ...studentCheckboxQuestions.map((question) => {
+            const selected = studentCheckboxAnswers[question.id];
+            return `- ${question.label}: ${selected.length ? selected.join(', ') : 'Not selected'}`;
+          }),
+          'Student Single Choice:',
+          ...studentRadioQuestions.map(
+            (question) => `- ${question.label}: ${studentRadioAnswers[question.id]}`
+          ),
+          'Student Dropdown Details:',
+          ...studentDropdownQuestions.map(
+            (question) =>
+              `- ${question.label}: ${studentDropdownAnswers[question.id] || 'Not selected'}`
+          ),
+        ]
         : [
-            `Feedback Type: ${feedbackType}`,
-            `Covered Areas: ${selectedAreas.length ? selectedAreas.join(', ') : 'Not specified'}`,
-            `Comment: ${comment.trim() || 'No written comment provided.'}`,
-          ];
+          `Feedback Type: ${feedbackType}`,
+          `Covered Areas: ${selectedAreas.length ? selectedAreas.join(', ') : 'Not specified'}`,
+          `Comment: ${comment.trim() || 'No written comment provided.'}`,
+        ];
       const teacherFeedbackDetails = isTeacherFeedback
         ? [
-            'Teacher Text Feedback:',
-            ...teacherTextQuestions.map(
-              (question) =>
-                `- ${question.label}: ${teacherTextAnswers[question.id].trim() || 'Not provided'}`
-            ),
-            'Teacher Ratings:',
-            ...teacherRatingQuestions.map(
-              (question) => `- ${question.label}: ${teacherRatings[question.id]}/5`
-            ),
-            'Teacher Multiple Choice:',
-            ...teacherCheckboxQuestions.map((question) => {
-              const selected = teacherCheckboxAnswers[question.id];
-              return `- ${question.label}: ${selected.length ? selected.join(', ') : 'Not selected'}`;
-            }),
-            'Teacher Single Choice:',
-            ...teacherRadioQuestions.map(
-              (question) => `- ${question.label}: ${teacherRadioAnswers[question.id]}`
-            ),
-            'Teacher Dropdown Details:',
-            ...teacherDropdownQuestions.map(
-              (question) =>
-                `- ${question.label}: ${teacherDropdownAnswers[question.id] || 'Not selected'}`
-            ),
-          ]
+          'Teacher Text Feedback:',
+          ...teacherTextQuestions.map(
+            (question) =>
+              `- ${question.label}: ${teacherTextAnswers[question.id].trim() || 'Not provided'}`
+          ),
+          'Teacher Ratings:',
+          ...teacherRatingQuestions.map(
+            (question) => `- ${question.label}: ${teacherRatings[question.id]}/5`
+          ),
+          'Teacher Multiple Choice:',
+          ...teacherCheckboxQuestions.map((question) => {
+            const selected = teacherCheckboxAnswers[question.id];
+            return `- ${question.label}: ${selected.length ? selected.join(', ') : 'Not selected'}`;
+          }),
+          'Teacher Single Choice:',
+          ...teacherRadioQuestions.map(
+            (question) => `- ${question.label}: ${teacherRadioAnswers[question.id]}`
+          ),
+          'Teacher Dropdown Details:',
+          ...teacherDropdownQuestions.map(
+            (question) =>
+              `- ${question.label}: ${teacherDropdownAnswers[question.id] || 'Not selected'}`
+          ),
+        ]
         : studentFeedbackDetails;
       const instituteFeedbackDetails = isInstituteFeedback
         ? [
-            'Institute Text Feedback:',
-            ...instituteTextQuestions.map(
-              (question) =>
-                `- ${question.label}: ${instituteTextAnswers[question.id].trim() || 'Not provided'}`
-            ),
-            'Institute Ratings:',
-            ...instituteRatingQuestions.map(
-              (question) => `- ${question.label}: ${instituteRatings[question.id]}/5`
-            ),
-            'Institute Multiple Choice:',
-            ...instituteCheckboxQuestions.map((question) => {
-              const selected = instituteCheckboxAnswers[question.id];
-              return `- ${question.label}: ${selected.length ? selected.join(', ') : 'Not selected'}`;
-            }),
-            'Institute Single Choice:',
-            ...instituteRadioQuestions.map(
-              (question) => `- ${question.label}: ${instituteRadioAnswers[question.id]}`
-            ),
-            'Institute Dropdown Details:',
-            ...instituteDropdownQuestions.map(
-              (question) =>
-                `- ${question.label}: ${instituteDropdownAnswers[question.id] || 'Not selected'}`
-            ),
-          ]
+          'Institute Text Feedback:',
+          ...instituteTextQuestions.map(
+            (question) =>
+              `- ${question.label}: ${instituteTextAnswers[question.id].trim() || 'Not provided'}`
+          ),
+          'Institute Ratings:',
+          ...instituteRatingQuestions.map(
+            (question) => `- ${question.label}: ${instituteRatings[question.id]}/5`
+          ),
+          'Institute Multiple Choice:',
+          ...instituteCheckboxQuestions.map((question) => {
+            const selected = instituteCheckboxAnswers[question.id];
+            return `- ${question.label}: ${selected.length ? selected.join(', ') : 'Not selected'}`;
+          }),
+          'Institute Single Choice:',
+          ...instituteRadioQuestions.map(
+            (question) => `- ${question.label}: ${instituteRadioAnswers[question.id]}`
+          ),
+          'Institute Dropdown Details:',
+          ...instituteDropdownQuestions.map(
+            (question) =>
+              `- ${question.label}: ${instituteDropdownAnswers[question.id] || 'Not selected'}`
+          ),
+        ]
         : teacherFeedbackDetails;
 
       const structuredComment = [
@@ -963,11 +962,10 @@ const SiteFeedbackPage = ({
 
           <form
             onSubmit={handleSubmit}
-            className={`rounded-3xl border p-5 shadow-sm backdrop-blur sm:p-6 ${
-              isLight
+            className={`rounded-3xl border p-5 shadow-sm backdrop-blur sm:p-6 ${isLight
                 ? 'border-slate-200/80 bg-white/90 text-slate-950'
                 : 'border-slate-700/70 bg-slate-950/90 text-slate-50'
-            }`}
+              }`}
           >
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
@@ -1111,13 +1109,12 @@ const SiteFeedbackPage = ({
                         key={area}
                         type="button"
                         onClick={() => setFeedbackType(area)}
-                        className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
-                          feedbackType === area
+                        className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${feedbackType === area
                             ? 'border-indigo-500 bg-indigo-600 text-white'
                             : isLight
                               ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
                               : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
-                        }`}
+                          }`}
                       >
                         {area}
                       </button>
@@ -1133,13 +1130,12 @@ const SiteFeedbackPage = ({
                     {roleConfig.feedbackAreas.map((area) => (
                       <label
                         key={area}
-                        className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                          selectedAreas.includes(area)
+                        className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${selectedAreas.includes(area)
                             ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
                             : isLight
                               ? 'border-slate-200 bg-white text-slate-600'
                               : 'border-white/10 bg-white/5 text-slate-300'
-                        }`}
+                          }`}
                       >
                         <input
                           type="checkbox"
@@ -1155,9 +1151,8 @@ const SiteFeedbackPage = ({
 
                 <div>
                   <label
-                    className={`text-sm font-semibold ${
-                      isLight ? 'text-slate-700' : 'text-slate-200'
-                    }`}
+                    className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'
+                      }`}
                   >
                     Overall rating
                   </label>
@@ -1168,13 +1163,12 @@ const SiteFeedbackPage = ({
                         type="button"
                         onClick={() => setRating(value)}
                         aria-label={`Rate ${value} out of 5`}
-                        className={`flex h-11 w-11 items-center justify-center rounded-xl border transition ${
-                          value <= rating
+                        className={`flex h-11 w-11 items-center justify-center rounded-xl border transition ${value <= rating
                             ? 'border-amber-400 bg-amber-400 text-slate-950'
                             : isLight
                               ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
                               : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
-                        }`}
+                          }`}
                       >
                         <Star
                           size={19}
@@ -1188,9 +1182,8 @@ const SiteFeedbackPage = ({
                 <div className="mt-5">
                   <label
                     htmlFor="site-feedback-comment"
-                    className={`text-sm font-semibold ${
-                      isLight ? 'text-slate-700' : 'text-slate-200'
-                    }`}
+                    className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'
+                      }`}
                   >
                     Feedback
                   </label>
@@ -1200,11 +1193,10 @@ const SiteFeedbackPage = ({
                     onChange={(event) => setComment(event.target.value)}
                     rows={7}
                     placeholder="Tell us what worked well or what should be improved."
-                    className={`mt-2 w-full resize-none rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
-                      isLight
+                    className={`mt-2 w-full resize-none rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${isLight
                         ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
                         : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
-                    }`}
+                      }`}
                   />
                 </div>
               </>
@@ -1323,9 +1315,8 @@ const StudentFeedbackQuestions = ({
   onDropdownChange,
 }: StudentFeedbackQuestionsProps) => {
   const labelClass = `text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`;
-  const panelClass = `mt-5 rounded-3xl border p-4 sm:p-5 ${
-    isLight ? 'border-slate-200 bg-slate-50/80' : 'border-white/10 bg-white/5'
-  }`;
+  const panelClass = `mt-5 rounded-3xl border p-4 sm:p-5 ${isLight ? 'border-slate-200 bg-slate-50/80' : 'border-white/10 bg-white/5'
+    }`;
   const panelTitleClass = `text-base font-black ${isLight ? 'text-slate-950' : 'text-slate-50'}`;
   const panelHintClass = `mt-1 text-xs leading-5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`;
 
@@ -1364,9 +1355,8 @@ const StudentFeedbackQuestions = ({
           {studentRatingQuestions.map((question) => (
             <div
               key={question.id}
-              className={`rounded-2xl border px-4 py-4 ${
-                isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
-              }`}
+              className={`rounded-2xl border px-4 py-4 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
+                }`}
             >
               <p className={labelClass}>{question.label}</p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -1376,13 +1366,12 @@ const StudentFeedbackQuestions = ({
                     type="button"
                     onClick={() => onRatingChange(question.id, value)}
                     aria-label={`${question.label} ${value} out of 5`}
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${
-                      value <= ratings[question.id]
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${value <= ratings[question.id]
                         ? 'border-amber-400 bg-amber-400 text-slate-950'
                         : isLight
                           ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
                           : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
-                    }`}
+                      }`}
                   >
                     {value}
                   </button>
@@ -1406,13 +1395,12 @@ const StudentFeedbackQuestions = ({
                 {question.options.map((option) => (
                   <label
                     key={option}
-                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                      checkboxAnswers[question.id].includes(option)
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${checkboxAnswers[question.id].includes(option)
                         ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
                         : isLight
                           ? 'border-slate-200 bg-white text-slate-600'
                           : 'border-white/10 bg-white/5 text-slate-300'
-                    }`}
+                      }`}
                   >
                     <input
                       type="checkbox"
@@ -1439,13 +1427,12 @@ const StudentFeedbackQuestions = ({
                 {question.options.map((option) => (
                   <label
                     key={option}
-                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                      radioAnswers[question.id] === option
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${radioAnswers[question.id] === option
                         ? 'border-indigo-500 bg-indigo-600 text-white'
                         : isLight
                           ? 'border-slate-200 bg-white text-slate-600'
                           : 'border-white/10 bg-white/5 text-slate-300'
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -1522,9 +1509,8 @@ const TeacherFeedbackQuestions = ({
   onDropdownChange,
 }: TeacherFeedbackQuestionsProps) => {
   const labelClass = `text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`;
-  const panelClass = `mt-5 rounded-3xl border p-4 sm:p-5 ${
-    isLight ? 'border-slate-200 bg-slate-50/80' : 'border-white/10 bg-white/5'
-  }`;
+  const panelClass = `mt-5 rounded-3xl border p-4 sm:p-5 ${isLight ? 'border-slate-200 bg-slate-50/80' : 'border-white/10 bg-white/5'
+    }`;
   const panelTitleClass = `text-base font-black ${isLight ? 'text-slate-950' : 'text-slate-50'}`;
   const panelHintClass = `mt-1 text-xs leading-5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`;
 
@@ -1563,9 +1549,8 @@ const TeacherFeedbackQuestions = ({
           {teacherRatingQuestions.map((question) => (
             <div
               key={question.id}
-              className={`rounded-2xl border px-4 py-4 ${
-                isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
-              }`}
+              className={`rounded-2xl border px-4 py-4 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
+                }`}
             >
               <p className={labelClass}>{question.label}</p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -1575,13 +1560,12 @@ const TeacherFeedbackQuestions = ({
                     type="button"
                     onClick={() => onRatingChange(question.id, value)}
                     aria-label={`${question.label} ${value} out of 5`}
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${
-                      value <= ratings[question.id]
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${value <= ratings[question.id]
                         ? 'border-amber-400 bg-amber-400 text-slate-950'
                         : isLight
                           ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
                           : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
-                    }`}
+                      }`}
                   >
                     {value}
                   </button>
@@ -1605,13 +1589,12 @@ const TeacherFeedbackQuestions = ({
                 {question.options.map((option) => (
                   <label
                     key={option}
-                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                      checkboxAnswers[question.id].includes(option)
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${checkboxAnswers[question.id].includes(option)
                         ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
                         : isLight
                           ? 'border-slate-200 bg-white text-slate-600'
                           : 'border-white/10 bg-white/5 text-slate-300'
-                    }`}
+                      }`}
                   >
                     <input
                       type="checkbox"
@@ -1638,13 +1621,12 @@ const TeacherFeedbackQuestions = ({
                 {question.options.map((option) => (
                   <label
                     key={option}
-                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                      radioAnswers[question.id] === option
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${radioAnswers[question.id] === option
                         ? 'border-indigo-500 bg-indigo-600 text-white'
                         : isLight
                           ? 'border-slate-200 bg-white text-slate-600'
                           : 'border-white/10 bg-white/5 text-slate-300'
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -1721,9 +1703,8 @@ const InstituteFeedbackQuestions = ({
   onDropdownChange,
 }: InstituteFeedbackQuestionsProps) => {
   const labelClass = `text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`;
-  const panelClass = `mt-5 rounded-3xl border p-4 sm:p-5 ${
-    isLight ? 'border-slate-200 bg-slate-50/80' : 'border-white/10 bg-white/5'
-  }`;
+  const panelClass = `mt-5 rounded-3xl border p-4 sm:p-5 ${isLight ? 'border-slate-200 bg-slate-50/80' : 'border-white/10 bg-white/5'
+    }`;
   const panelTitleClass = `text-base font-black ${isLight ? 'text-slate-950' : 'text-slate-50'}`;
   const panelHintClass = `mt-1 text-xs leading-5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`;
 
@@ -1762,9 +1743,8 @@ const InstituteFeedbackQuestions = ({
           {instituteRatingQuestions.map((question) => (
             <div
               key={question.id}
-              className={`rounded-2xl border px-4 py-4 ${
-                isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
-              }`}
+              className={`rounded-2xl border px-4 py-4 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
+                }`}
             >
               <p className={labelClass}>{question.label}</p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -1774,13 +1754,12 @@ const InstituteFeedbackQuestions = ({
                     type="button"
                     onClick={() => onRatingChange(question.id, value)}
                     aria-label={`${question.label} ${value} out of 5`}
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${
-                      value <= ratings[question.id]
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${value <= ratings[question.id]
                         ? 'border-amber-400 bg-amber-400 text-slate-950'
                         : isLight
                           ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
                           : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
-                    }`}
+                      }`}
                   >
                     {value}
                   </button>
@@ -1804,13 +1783,12 @@ const InstituteFeedbackQuestions = ({
                 {question.options.map((option) => (
                   <label
                     key={option}
-                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                      checkboxAnswers[question.id].includes(option)
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${checkboxAnswers[question.id].includes(option)
                         ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
                         : isLight
                           ? 'border-slate-200 bg-white text-slate-600'
                           : 'border-white/10 bg-white/5 text-slate-300'
-                    }`}
+                      }`}
                   >
                     <input
                       type="checkbox"
@@ -1837,13 +1815,12 @@ const InstituteFeedbackQuestions = ({
                 {question.options.map((option) => (
                   <label
                     key={option}
-                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                      radioAnswers[question.id] === option
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${radioAnswers[question.id] === option
                         ? 'border-indigo-500 bg-indigo-600 text-white'
                         : isLight
                           ? 'border-slate-200 bg-white text-slate-600'
                           : 'border-white/10 bg-white/5 text-slate-300'
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"

@@ -7,14 +7,20 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'labzero-local-dev-secret')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
+ALLOWED_HOSTS = []
+for host in os.getenv('ALLOWED_HOSTS', '').split(','):
+    host = host.strip()
+    if host:
+        if '://' in host:
+            host = host.split('://')[-1]
+        host = host.split('/')[0]
+        ALLOWED_HOSTS.append(host)
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -26,13 +32,16 @@ INSTALLED_APPS = [
     'users',
     'glossary',
     'classrooms',
+    'feedback',
 ]
+
+if DEBUG:
+    INSTALLED_APPS.insert(0, 'django.contrib.admin')
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -40,6 +49,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
@@ -62,24 +74,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-DATABASE_URL = os.getenv(
-    'DATABASE_URL',
-    'postgresql://labzero:labzero@localhost:5432/labzero',
-)
-
-
-def database_requires_ssl(database_url):
-    if database_url.startswith('sqlite'):
-        return False
-    return os.getenv('DATABASE_SSL_REQUIRE', 'False').lower() in ('1', 'true', 'yes')
-
-
 DATABASES = {
     'default': dj_database_url.config(
-        default=DATABASE_URL,
-        conn_max_age=int(os.getenv('DATABASE_CONN_MAX_AGE', 0)),
-        ssl_require=database_requires_ssl(DATABASE_URL),
+        default = os.getenv("DATABASE_URL"),
+        conn_max_age = int(os.getenv("DATABASE_CONN_MAX_AGE", 0)), 
+        ssl_require = True,
     )
+}
+DATABASES['default']['TEST'] = {
+    'NAME': 'test_labzero_feedback',
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -107,7 +110,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -335,6 +335,7 @@ interface LandingPageProps {
   onOpenGlossary?: () => void;
   onDashboardClick?: () => void;
   onAdminClick?: () => void;
+  onFeedbackAdminClick?: () => void;
   subjects: Subject[];
   selectedClass?: string | null;
   onSelectClass?: (cls: string | null) => void;
@@ -349,6 +350,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
   onProfileClick,
   onDashboardClick,
   onAdminClick,
+  onFeedbackAdminClick,
   language,
   theme,
   subjects,
@@ -419,6 +421,14 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   className="hidden md:block px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-[13px] font-bold uppercase tracking-tight transition-all shadow-md shadow-indigo-500/25 border border-indigo-400/20"
                 >
                   Admin Panel
+                </button>
+              )}
+              {(user.role === 'teacher' || user.role === 'institute' || user.is_staff || user.is_superuser) && (
+                <button
+                  onClick={onFeedbackAdminClick}
+                  className="hidden md:block px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full text-[13px] font-bold uppercase tracking-tight transition-all shadow-md shadow-cyan-500/25 border border-cyan-400/20"
+                >
+                  Feedback Admin
                 </button>
               )}
               {user.role && (
