@@ -1,4 +1,4 @@
-import { AlertCircle, BarChart3, FilePlus2, LayoutDashboard, Loader2, MessageSquareText, PieChart as PieChartIcon, RefreshCw, Star, Users } from 'lucide-react';
+import { AlertCircle, ArrowLeft, BarChart3, FilePlus2, LayoutDashboard, Loader2, MessageSquareText, PieChart as PieChartIcon, RefreshCw, Star, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Bar,

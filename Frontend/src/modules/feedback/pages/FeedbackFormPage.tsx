@@ -1,6 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence } from 'motion/react';
-import { AlertCircle, ArrowLeft, ArrowRight, Loader2, Send } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Home,
+  Loader2,
+  Send,
+  Sparkles,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, Resolver, useForm } from 'react-hook-form';
 import FeedbackPageShell from '../components/common/FeedbackPageShell';
@@ -8,7 +17,6 @@ import FeedbackSkeleton from '../components/common/FeedbackSkeleton';
 import FeedbackSection from '../components/FeedbackSection';
 import ProgressBar from '../components/ProgressBar';
 import SubmitConfirmationModal from '../components/SubmitConfirmationModal';
-import SuccessNotification from '../components/SuccessNotification';
 import { useFeedbackForm } from '../hooks/useFeedbackForm';
 import { FeedbackFormValues } from '../types/feedback.types';
 import {
@@ -91,11 +99,11 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
     successMessage,
     reload,
     submitFeedback,
-    clearSuccess,
   } = useFeedbackForm(resolvedFormId);
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isDraftReady, setIsDraftReady] = useState(false);
+  const [hasSubmissionSuccess, setHasSubmissionSuccess] = useState(false);
   const draftKey = `labzero_feedback_form_draft_${resolvedFormId}`;
 
   const schema = useMemo(
@@ -172,9 +180,7 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
     }
 
     safeLocalStorage.removeItem(draftKey);
-    const timeout = window.setTimeout(clearSuccess, 2600);
-    return () => window.clearTimeout(timeout);
-  }, [clearSuccess, draftKey, successMessage]);
+  }, [draftKey, successMessage]);
 
   const validateActiveSection = async () => {
     if (!activeSection) {
@@ -200,6 +206,7 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
     await submitFeedback(values);
     safeLocalStorage.removeItem(draftKey);
     setShowConfirmation(false);
+    setHasSubmissionSuccess(true);
   });
 
   if (!resolvedFormId) {
@@ -234,9 +241,23 @@ const FeedbackFormPage = ({ formId, onBack }: FeedbackFormPageProps) => {
     );
   }
 
+  if (hasSubmissionSuccess) {
+    return (
+      <FeedbackPageShell tone="emerald">
+        <ThankYouState
+          formTitle={form.title}
+          message={successMessage}
+          anonymous={watchedValues.anonymous}
+          answeredCount={answeredCount}
+          totalQuestions={questionCount}
+          onBack={onBack}
+        />
+      </FeedbackPageShell>
+    );
+  }
+
   return (
     <FeedbackPageShell>
-      <SuccessNotification message={successMessage} />
       <form
         onSubmit={openConfirmation}
         className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8"
@@ -412,5 +433,89 @@ const ErrorState = ({
     </div>
   </div>
 );
+
+const ThankYouState = ({
+  formTitle,
+  message,
+  anonymous,
+  answeredCount,
+  totalQuestions,
+  onBack,
+}: {
+  formTitle: string;
+  message: string | null;
+  anonymous: boolean;
+  answeredCount: number;
+  totalQuestions: number;
+  onBack?: () => void;
+}) => {
+  const completion =
+    totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 100;
+
+  return (
+    <div className="relative mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center overflow-hidden px-4 py-10 sm:px-6 lg:px-8">
+      <div className="absolute inset-x-6 top-8 h-2 rounded-full bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-amber-300 opacity-80" />
+      <div className="absolute left-8 top-24 h-5 w-5 rotate-12 rounded-md bg-amber-300 shadow-lg shadow-amber-200/70" />
+      <div className="absolute right-10 top-32 h-6 w-6 -rotate-12 rounded-md bg-cyan-400 shadow-lg shadow-cyan-200/70" />
+      <div className="absolute bottom-16 left-12 h-6 w-6 rotate-45 rounded-md bg-emerald-400 shadow-lg shadow-emerald-200/70" />
+      <div className="absolute bottom-20 right-16 h-5 w-5 -rotate-6 rounded-md bg-fuchsia-400 shadow-lg shadow-fuchsia-200/70" />
+
+      <section className="relative w-full overflow-hidden rounded-[2rem] border border-white/80 bg-white/90 p-6 text-center shadow-2xl shadow-emerald-100/70 backdrop-blur sm:p-10">
+        <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-emerald-400 via-cyan-400 to-indigo-500" />
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-emerald-400 via-cyan-400 to-indigo-500 text-white shadow-xl shadow-emerald-200/80">
+          <CheckCircle2 size={42} />
+        </div>
+
+        <div className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-emerald-700">
+          <Sparkles size={14} />
+          Response Received
+        </div>
+
+        <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-black leading-tight text-slate-950 sm:text-6xl">
+          Thank You!
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+          {message || 'Your feedback has been submitted successfully.'} Your
+          thoughtful response to <span className="font-bold text-slate-900">{formTitle}</span>{' '}
+          will help us improve LabZero for every learner, teacher, and institute.
+        </p>
+
+        <div className="mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-4">
+            <p className="text-2xl font-black text-cyan-700">{answeredCount}</p>
+            <p className="mt-1 text-xs font-bold uppercase tracking-wider text-cyan-800/70">
+              Answers Shared
+            </p>
+          </div>
+          <div className="rounded-2xl border border-fuchsia-100 bg-fuchsia-50 px-4 py-4">
+            <p className="text-2xl font-black text-fuchsia-700">{completion}%</p>
+            <p className="mt-1 text-xs font-bold uppercase tracking-wider text-fuchsia-800/70">
+              Form Complete
+            </p>
+          </div>
+          <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4">
+            <p className="text-2xl font-black text-amber-700">
+              {anonymous ? 'Private' : 'Profile'}
+            </p>
+            <p className="mt-1 text-xs font-bold uppercase tracking-wider text-amber-800/70">
+              Submission Mode
+            </p>
+          </div>
+        </div>
+
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 text-sm font-bold text-white shadow-lg shadow-slate-300/80 transition hover:-translate-y-0.5 hover:bg-slate-800"
+          >
+            <Home size={17} />
+            Back to LabZero
+          </button>
+        )}
+      </section>
+    </div>
+  );
+};
 
 export default FeedbackFormPage;
