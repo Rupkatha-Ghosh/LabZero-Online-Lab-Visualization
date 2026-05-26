@@ -15,9 +15,17 @@ interface TourStep {
 
 const requestedTourSteps: TourStep[] = [
   {
-    element: '[data-tour="login"]',
+    element: '[data-tour="onboarding"]',
     popover: {
       title: 'Onboarding',
+      description: 'Follow this short guided tour to understand each evaluation checkpoint.',
+      side: 'left',
+    },
+  },
+  {
+    element: '[data-tour="login"]',
+    popover: {
+      title: 'Login',
       description: 'Log in to start the guided evaluation and save your LabZero progress.',
       side: 'bottom',
     },
@@ -48,8 +56,28 @@ const requestedTourSteps: TourStep[] = [
   },
 ];
 
+const isVisibleTourTarget = (element: Element) => {
+  const rect = element.getBoundingClientRect();
+  const style = window.getComputedStyle(element);
+
+  return (
+    rect.width > 0 &&
+    rect.height > 0 &&
+    style.visibility !== 'hidden' &&
+    style.display !== 'none'
+  );
+};
+
+const getVisibleTourElement = (selector: string) =>
+  Array.from(document.querySelectorAll(selector)).find(isVisibleTourTarget);
+
 const getAvailableSteps = () =>
-  requestedTourSteps.filter((step) => document.querySelector(step.element));
+  requestedTourSteps
+    .map((step) => {
+      const element = getVisibleTourElement(step.element);
+      return element ? { ...step, element } : null;
+    })
+    .filter(Boolean) as Array<Omit<TourStep, 'element'> & { element: Element }>;
 
 const OnboardingTour = () => {
   const { progress, startOnboarding, completeOnboarding, notify } = useEvaluationProgress();
@@ -74,7 +102,7 @@ const OnboardingTour = () => {
       const tour = driver({
         allowClose: false,
         animate: true,
-        disableActiveInteraction: true,
+        disableActiveInteraction: false,
         overlayOpacity: 0.72,
         showButtons: ['previous', 'next'],
         showProgress: true,

@@ -19,6 +19,9 @@ import EvaluationFeedbackForm from './EvaluationFeedbackForm';
 interface EvaluationProgressWidgetProps {
   theme: 'dark' | 'light';
   userRole?: UserRole;
+  onOpenLogin?: () => void;
+  onOpenDashboard?: () => void;
+  onOpenSubjects?: () => void;
 }
 
 const buildChecklist = (userRole?: UserRole): Array<{
@@ -53,7 +56,13 @@ const getTaskFallbackLabel = (
   return labels[task];
 };
 
-const EvaluationProgressWidget = ({ theme, userRole }: EvaluationProgressWidgetProps) => {
+const EvaluationProgressWidget = ({
+  theme,
+  userRole,
+  onOpenLogin,
+  onOpenDashboard,
+  onOpenSubjects,
+}: EvaluationProgressWidgetProps) => {
   const { progress, completionPercentage, feedbackUnlocked, notify } = useEvaluationProgress();
   const [expanded, setExpanded] = useState(true);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -71,6 +80,13 @@ const EvaluationProgressWidget = ({ theme, userRole }: EvaluationProgressWidgetP
       notify('Complete the guided evaluation checklist to unlock feedback.', 'warning');
     }
     setFeedbackOpen(true);
+  };
+
+  const getChecklistAction = (key: keyof EvaluationProgressState) => {
+    if (key === 'loginCompleted') return onOpenLogin;
+    if (key === 'dashboardVisited') return onOpenDashboard;
+    if (key === 'subjectsChecked') return onOpenSubjects;
+    return undefined;
   };
 
   return (
@@ -118,20 +134,28 @@ const EvaluationProgressWidget = ({ theme, userRole }: EvaluationProgressWidgetP
               {checklist.map((item) => {
                 const Icon = item.icon;
                 const complete = progress[item.key];
+                const action = getChecklistAction(item.key);
+                const ChecklistItem = action ? 'button' : 'div';
 
                 return (
-                  <div
+                  <ChecklistItem
                     key={item.key}
+                    type={action ? 'button' : undefined}
+                    onClick={action}
                     data-tour={
-                      item.key === 'loginCompleted'
+                      item.key === 'tourCompleted'
+                        ? 'onboarding'
+                        : item.key === 'loginCompleted'
                         ? 'login'
+                        : item.key === 'dashboardVisited'
+                          ? 'dashboard'
                         : item.key === 'uploadDone'
                         ? 'upload'
                         : item.key === 'subjectsChecked'
                           ? 'subjects'
                           : undefined
                     }
-                    className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm transition ${
+                    className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left text-sm transition ${
                       complete
                         ? isLight
                           ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
@@ -139,12 +163,12 @@ const EvaluationProgressWidget = ({ theme, userRole }: EvaluationProgressWidgetP
                         : isLight
                           ? 'border-slate-200 bg-slate-50 text-slate-600'
                           : 'border-white/10 bg-white/5 text-slate-300'
-                    }`}
+                    } ${action ? 'cursor-pointer hover:-translate-y-0.5' : ''}`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     <span className="min-w-0 flex-1 font-semibold">{item.label}</span>
                     {complete ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <span className="h-2 w-2 shrink-0 rounded-full bg-current opacity-40" />}
-                  </div>
+                  </ChecklistItem>
                 );
               })}
             </div>

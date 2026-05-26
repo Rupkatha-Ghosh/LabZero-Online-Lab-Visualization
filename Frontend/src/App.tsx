@@ -478,6 +478,27 @@ const AppContent: React.FC = () => {
     setViewState(ViewState.DASHBOARD);
   };
 
+  const handleEvaluationLoginClick = () => {
+    setShowAuth(true);
+  };
+
+  const handleEvaluationDashboardClick = () => {
+    if (!user) {
+      setShowAuth(true);
+      notify('Log in before opening the dashboard checkpoint.', 'warning');
+      return;
+    }
+
+    setViewState(ViewState.DASHBOARD);
+  };
+
+  const handleEvaluationSubjectsClick = () => {
+    setViewState(ViewState.LANDING);
+    window.setTimeout(() => {
+      document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  };
+
   const handleOpenSiteFeedback = () => {
     if (!feedbackUnlocked) {
       notify('Complete the guided evaluation checklist to unlock feedback.', 'warning');
@@ -993,7 +1014,13 @@ const AppContent: React.FC = () => {
           {!isFeedbackView && (
             <>
               <OnboardingTour />
-              <EvaluationProgressWidget theme={theme} userRole={user?.role} />
+              <EvaluationProgressWidget
+                theme={theme}
+                userRole={user?.role}
+                onOpenLogin={handleEvaluationLoginClick}
+                onOpenDashboard={handleEvaluationDashboardClick}
+                onOpenSubjects={handleEvaluationSubjectsClick}
+              />
               <EvaluationToasts />
             </>
           )}
