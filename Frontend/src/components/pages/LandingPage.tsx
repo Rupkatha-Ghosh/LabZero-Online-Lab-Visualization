@@ -381,6 +381,11 @@ const LandingPage: React.FC<LandingPageProps> = ({
   const displayedSubjects = selectedClass
     ? subjects.filter(sub => !sub.targetClass || sub.targetClass.includes(selectedClass))
     : subjects;
+
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent('labzero:subjects-rendered'));
+  }, [displayedSubjects.length]);
+
   return (
     <div className={`relative min-h-screen bg-[var(--bg-deep)] text-[var(--text-primary)] font-sans selection:bg-[#7DD3FC]/30 overflow-hidden transition-colors duration-500 ${theme === 'light' ? 'light-mode' : ''}`}>
 
@@ -403,11 +408,12 @@ const LandingPage: React.FC<LandingPageProps> = ({
         <div className="flex min-w-0 items-center gap-2 sm:gap-4">
           {!user ? (
             <>
-              <button onClick={onLoginClick} className="hidden md:block px-5 py-2 text-[15px] font-medium text-[var(--text-primary)] border border-[var(--border-glass)] hover:bg-[var(--bg-panel)] rounded-full transition-all bg-white/5 shadow-sm">
+              <button onClick={onLoginClick} data-tour="login" className="hidden md:block px-5 py-2 text-[15px] font-medium text-[var(--text-primary)] border border-[var(--border-glass)] hover:bg-[var(--bg-panel)] rounded-full transition-all bg-white/5 shadow-sm">
                 Log in
               </button>
               <button
                 onClick={onLoginClick}
+                data-tour="login"
                 className="px-4 sm:px-6 py-2 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/90 text-white rounded-full text-sm sm:text-[15px] font-medium transition-all shadow-md shadow-[var(--color-secondary)]/20 whitespace-nowrap"
               >
                 Get Started
@@ -432,11 +438,11 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 </button>
               )}
               {user.role && (
-                <button onClick={onDashboardClick} className="px-5 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-white rounded-full text-[15px] font-medium transition-all shadow-sm hidden md:block">
+                <button onClick={onDashboardClick} data-tour="dashboard" className="px-5 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-white rounded-full text-[15px] font-medium transition-all shadow-sm hidden md:block">
                   {user.role === 'teacher' ? 'Teacher Dashboard' : user.role === 'student' ? 'My Dashboard' : 'Institute Dashboard'}
                 </button>
               )}
-              <button onClick={onProfileClick} className="max-w-[44vw] truncate px-3 sm:px-4 py-2 border border-[var(--border-glass)] bg-white/5 hover:bg-[var(--bg-panel)] rounded-full text-sm sm:text-[15px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all">
+              <button onClick={onProfileClick} data-tour="login" className="max-w-[44vw] truncate px-3 sm:px-4 py-2 border border-[var(--border-glass)] bg-white/5 hover:bg-[var(--bg-panel)] rounded-full text-sm sm:text-[15px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all">
                 Hello, {user.first_name || user.username}
               </button>
             </div>
@@ -612,6 +618,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     <div
                       key={subject.id}
                       onClick={() => onSelectSubject(subject)}
+                      data-tour={i === 0 ? 'subjects' : undefined}
+                      data-evaluation-subject-card={String(subject.id)}
                       className="bg-[var(--bg-panel)] rounded-[32px] p-5 sm:p-6 border border-[var(--border-glass)] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col cursor-pointer group hover:-translate-y-1 h-auto sm:h-[440px]"
                     >
                       <div className={`w-full h-48 rounded-[24px] bg-white/[0.03] mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-white/[0.08] transition-all duration-500`}>

@@ -656,6 +656,10 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab
                                                                     href={task.file_url} 
                                                                     target="_blank" 
                                                                     rel="noopener noreferrer"
+                                                                    data-tour="upload"
+                                                                    onClick={() => {
+                                                                        window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'uploadDone' }));
+                                                                    }}
                                                                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-[10px] font-mono uppercase tracking-widest hover:bg-white/10 transition-all"
                                                                 >
                                                                     <Download size={14} /> Material

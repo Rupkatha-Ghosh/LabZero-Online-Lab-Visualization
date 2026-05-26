@@ -858,7 +858,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-2">Attachment (PDF/Doc)</label>
-                    <div className="relative group">
+                    <div className="relative group" data-tour="upload">
                       <input
                         type="file"
                         onChange={(e) => setNewAssignment({ ...newAssignment, file: e.target.files?.[0] || null })}

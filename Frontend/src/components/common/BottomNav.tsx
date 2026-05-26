@@ -60,6 +60,7 @@ const BottomNav: React.FC<BottomNavProps> = ({
           <button
             key={item.id}
             onClick={item.action}
+            data-tour={item.id === 'dash' ? 'dashboard' : undefined}
             className="relative flex flex-col items-center justify-center w-12 h-12 transition-all outline-none group"
           >
             {/* Active Highlight Background */}

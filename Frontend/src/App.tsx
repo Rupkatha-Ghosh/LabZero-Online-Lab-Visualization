@@ -151,8 +151,14 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { getSubjects } from './services/subjectsService';
 import { SIMULATION_REGISTRY } from './simulations/registry';
 import { usePWAInstall } from './hooks/usePWAInstall';
+import { useEvaluationProgress } from './hooks/useEvaluationProgress';
+import { useEvaluationTaskTracking } from './hooks/useEvaluationTaskTracking';
 import { MeetingConfig } from './context/MeetingContext';
 import { getDefaultSignalingUrl } from './utils/urlUtils';
+import { EvaluationProvider } from './store/evaluationStore';
+import OnboardingTour from './components/onboarding/OnboardingTour';
+import EvaluationProgressWidget from './components/evaluation/EvaluationProgressWidget';
+import EvaluationToasts from './components/evaluation/EvaluationToasts';
 import {
   FeedbackButton,
   FeedbackModuleBoundary,
@@ -193,6 +199,8 @@ const AppContent: React.FC = () => {
   useAnimatedFavicon();
   const { user, isLoading, logout, handleGoogleCallback } = useAuth();
   const { isInstallable, handleInstallClick } = usePWAInstall();
+  const { feedbackUnlocked, markTaskComplete, notify } = useEvaluationProgress();
+  useEvaluationTaskTracking();
 
   useEffect(() => {
     handleGoogleCallback();
@@ -381,6 +389,18 @@ const AppContent: React.FC = () => {
     }
   }, [viewState]);
 
+  useEffect(() => {
+    if (user) {
+      markTaskComplete('loginCompleted');
+    }
+  }, [markTaskComplete, user]);
+
+  useEffect(() => {
+    if (viewState === ViewState.DASHBOARD) {
+      markTaskComplete('dashboardVisited');
+    }
+  }, [markTaskComplete, viewState]);
+
 
   const t = (key: string) => translations[key]?.[language] || key;
   const isFeedbackView = [
@@ -459,6 +479,11 @@ const AppContent: React.FC = () => {
   };
 
   const handleOpenSiteFeedback = () => {
+    if (!feedbackUnlocked) {
+      notify('Complete the guided evaluation checklist to unlock feedback.', 'warning');
+      return;
+    }
+
     feedbackReturnView.current = viewState;
     setViewState(ViewState.SITE_FEEDBACK);
   };
@@ -758,7 +783,7 @@ const AppContent: React.FC = () => {
                   </div>
                 )}
                 {viewState === ViewState.DASHBOARD && user && (
-                  <div key="dashboard" className="h-full w-full">
+                  <div key="dashboard" data-tour="dashboard" className="h-full w-full">
                     <React.Suspense fallback={null}>
                       {user.role === 'teacher' ? (
                         <TeacherDashboard
@@ -964,6 +989,14 @@ const AppContent: React.FC = () => {
               }}
             />
           )}
+
+          {!isFeedbackView && (
+            <>
+              <OnboardingTour />
+              <EvaluationProgressWidget theme={theme} userRole={user?.role} />
+              <EvaluationToasts />
+            </>
+          )}
         </>
       )}
     </div>
@@ -972,7 +1005,9 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => (
   <AuthProvider>
-    <AppContent />
+    <EvaluationProvider>
+      <AppContent />
+    </EvaluationProvider>
   </AuthProvider>
 );
 
