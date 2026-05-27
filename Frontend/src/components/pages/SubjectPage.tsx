@@ -150,6 +150,7 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => onSelectTopic(topic)}
+                data-tour={index === 0 ? 'topic-card' : undefined}
                 className={`group relative p-6 sm:p-8 border rounded-[32px] sm:rounded-[40px] transition-all duration-500 text-left flex flex-col gap-6 sm:gap-8 overflow-hidden min-h-[300px] sm:min-h-[340px] backdrop-blur-xl shadow-2xl ${isDark
                   ? 'bg-white/5 hover:bg-white/[0.08] border-white/10'
                   : 'bg-white/70 hover:bg-white/90 border-slate-200'

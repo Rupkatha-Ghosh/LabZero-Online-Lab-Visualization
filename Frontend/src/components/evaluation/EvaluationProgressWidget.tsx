@@ -8,10 +8,11 @@ import {
   Lock,
   LogIn,
   MessageSquareText,
+  MonitorPlay,
   Route,
   Sparkles,
+  Video,
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 import { useEvaluationProgress } from '../../hooks/useEvaluationProgress';
 import type { EvaluationProgressState } from '../../store/evaluationStore';
 
@@ -23,33 +24,26 @@ const checklist: Array<{
   { key: 'tourCompleted', label: 'Onboarding', icon: Sparkles },
   { key: 'loginCompleted', label: 'Login', icon: LogIn },
   { key: 'dashboardVisited', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'subjectsChecked', label: 'Subjects', icon: BookOpenCheck },
+  { key: 'videoCallViewed', label: 'Video Calling', icon: Video },
+  { key: 'subjectViewed', label: 'Subject View', icon: BookOpenCheck },
+  { key: 'simulationViewed', label: 'Simulation View', icon: MonitorPlay },
 ];
 
 interface EvaluationProgressWidgetProps {
   theme: 'dark' | 'light';
-  onOpenLogin?: () => void;
   onOpenFeedback?: () => void;
 }
 
 const EvaluationProgressWidget = ({
   theme,
-  onOpenLogin,
   onOpenFeedback,
 }: EvaluationProgressWidgetProps) => {
-  const { user } = useAuth();
   const { progress, completionPercentage, feedbackUnlocked, notify } = useEvaluationProgress();
   const [expanded, setExpanded] = useState(false);
   const panelRef = useRef<HTMLElement | null>(null);
   const isLight = theme === 'light';
 
   const handleStartTour = () => {
-    if (!user) {
-      onOpenLogin?.();
-      notify('Log in before starting the guide tour.', 'warning');
-      return;
-    }
-
     window.dispatchEvent(new CustomEvent('labzero:start-guide-tour'));
   };
 

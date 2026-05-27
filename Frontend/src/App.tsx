@@ -400,6 +400,32 @@ const AppContent: React.FC = () => {
     }
   }, [markTaskComplete, viewState]);
 
+  useEffect(() => {
+    const showDashboard = () => {
+      if (user) {
+        setViewState(ViewState.DASHBOARD);
+      } else {
+        setShowAuth(true);
+      }
+    };
+
+    const showSubjects = () => {
+      setViewState(ViewState.LANDING);
+      window.setTimeout(() => {
+        const subjectTarget = document.querySelector('[data-tour="subjects"]');
+        subjectTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 250);
+    };
+
+    window.addEventListener('labzero:guide-show-dashboard', showDashboard);
+    window.addEventListener('labzero:guide-show-subjects', showSubjects);
+
+    return () => {
+      window.removeEventListener('labzero:guide-show-dashboard', showDashboard);
+      window.removeEventListener('labzero:guide-show-subjects', showSubjects);
+    };
+  }, [user]);
+
 
   const t = (key: string) => translations[key]?.[language] || key;
   const isFeedbackView = [
@@ -418,12 +444,14 @@ const AppContent: React.FC = () => {
       return;
     }
     setSelectedSubject(subject);
+    markTaskComplete('subjectViewed');
     setViewState(ViewState.SUBJECT);
-  }, [user]);
+  }, [markTaskComplete, user]);
 
   const handleSelectTopic = useCallback((topic: Topic) => {
     setSelectedTopic(topic);
     setViewState(ViewState.TOPIC);
+    window.dispatchEvent(new CustomEvent('labzero:guide-topic-opened'));
   }, []);
 
   const handleLaunchSimulation = useCallback((topicId: string | number) => {
@@ -475,10 +503,6 @@ const AppContent: React.FC = () => {
 
   const handleDashboardClick = () => {
     setViewState(ViewState.DASHBOARD);
-  };
-
-  const handleEvaluationLoginClick = () => {
-    setShowAuth(true);
   };
 
   const handleOpenSiteFeedback = () => {
@@ -718,7 +742,7 @@ const AppContent: React.FC = () => {
                         onLogoutClick={logout}
                         onProfileClick={() => setShowAuth(true)}
                         onOpenGlossary={() => setShowGlossary(true)}
-                        onDashboardClick={() => setViewState(ViewState.DASHBOARD)}
+                        onDashboardClick={handleDashboardClick}
                         onAdminClick={() => setViewState(ViewState.ADMIN)}
                         onFeedbackAdminClick={handleOpenFeedbackAdmin}
                         onLaunchSimulation={handleLaunchSimulation}
@@ -994,7 +1018,6 @@ const AppContent: React.FC = () => {
               <OnboardingTour />
               <EvaluationProgressWidget
                 theme={theme}
-                onOpenLogin={handleEvaluationLoginClick}
                 onOpenFeedback={handleOpenSiteFeedback}
               />
               <EvaluationToasts />

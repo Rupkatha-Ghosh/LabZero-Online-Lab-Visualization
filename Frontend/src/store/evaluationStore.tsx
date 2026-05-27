@@ -14,6 +14,9 @@ import { useAuth } from '../context/AuthContext';
 export type EvaluationTaskKey =
   | 'loginCompleted'
   | 'dashboardVisited'
+  | 'videoCallViewed'
+  | 'subjectViewed'
+  | 'simulationViewed'
   | 'uploadDone'
   | 'subjectsChecked';
 
@@ -21,6 +24,9 @@ export interface EvaluationProgressState {
   tourCompleted: boolean;
   loginCompleted: boolean;
   dashboardVisited: boolean;
+  videoCallViewed: boolean;
+  subjectViewed: boolean;
+  simulationViewed: boolean;
   uploadDone: boolean;
   subjectsChecked: boolean;
 }
@@ -75,6 +81,9 @@ export const defaultEvaluationProgress: EvaluationProgressState = {
   tourCompleted: false,
   loginCompleted: false,
   dashboardVisited: false,
+  videoCallViewed: false,
+  subjectViewed: false,
+  simulationViewed: false,
   uploadDone: false,
   subjectsChecked: false,
 };
@@ -89,7 +98,9 @@ const defaultMetadata: EvaluationMetadata = {
 const taskKeys: EvaluationTaskKey[] = [
   'loginCompleted',
   'dashboardVisited',
-  'subjectsChecked',
+  'videoCallViewed',
+  'subjectViewed',
+  'simulationViewed',
 ];
 
 const EvaluationContext = createContext<EvaluationContextValue | undefined>(undefined);

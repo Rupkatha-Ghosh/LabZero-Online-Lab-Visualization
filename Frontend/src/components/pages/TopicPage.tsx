@@ -133,6 +133,13 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
     window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'uploadDone' }));
   };
 
+  const handleViewChange = (view: TopicView) => {
+    setActiveView(view);
+    if (view === TopicView.VISUALIZATION) {
+      window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'simulationViewed' }));
+    }
+  };
+
   const materials: TheoryMaterial[] = [
     ...assignmentMaterials,
     ...resources.map((resource) => ({ ...resource, canDelete: true })),
@@ -185,7 +192,8 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
             ].map((view) => (
               <button
                 key={view.id}
-                onClick={() => setActiveView(view.id)}
+                onClick={() => handleViewChange(view.id)}
+                data-tour={view.id === TopicView.VISUALIZATION ? 'simulation-view' : undefined}
                 className={`relative flex items-center gap-2 px-4 sm:px-6 py-2 rounded-full text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300 shrink-0 ${activeView === view.id
                   ? 'text-[#fff]'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'

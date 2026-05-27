@@ -2,58 +2,68 @@ import { useCallback, useEffect, useRef } from 'react';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { useEvaluationProgress } from '../../hooks/useEvaluationProgress';
-import { useAuth } from '../../context/AuthContext';
+import type { EvaluationProgressState, EvaluationTaskKey } from '../../store/evaluationStore';
 
-interface TourStep {
-  element: string;
-  popover: {
-    title: string;
-    description: string;
-    side?: 'left' | 'right' | 'top' | 'bottom';
-    align?: 'start' | 'center' | 'end';
-  };
+interface GuideStep {
+  selector: string;
+  title: string;
+  description: string;
+  side?: 'left' | 'right' | 'top' | 'bottom';
+  waitForTask?: EvaluationTaskKey;
+  waitForEvent?: string;
+  beforeShow?: () => void;
 }
 
-const requestedTourSteps: TourStep[] = [
+const guideSteps: GuideStep[] = [
   {
-    element: '[data-tour="onboarding"]',
-    popover: {
-      title: 'Onboarding',
-      description: 'Follow this short guided tour to understand each evaluation checkpoint.',
-      side: 'left',
-    },
+    selector: '[data-tour="onboarding"]',
+    title: 'Onboarding',
+    description: 'This panel tracks your guide progress. Continue from here, then complete each highlighted action.',
+    side: 'left',
   },
   {
-    element: '[data-tour="login"]',
-    popover: {
-      title: 'Login',
-      description: 'Log in to start the guided evaluation and save your LabZero progress.',
-      side: 'bottom',
-    },
+    selector: '[data-tour="login"]',
+    title: 'Login',
+    description: 'Click this login area and sign in so LabZero can save your guide progress.',
+    side: 'bottom',
+    waitForTask: 'loginCompleted',
   },
   {
-    element: '[data-tour="dashboard"]',
-    popover: {
-      title: 'Visit Dashboard',
-      description: 'Explore the dashboard to review your learning workspace, classrooms, and recent activity.',
-      side: 'bottom',
-    },
+    selector: '[data-tour="dashboard"]',
+    title: 'Dashboard',
+    description: 'Open the dashboard to view your learning workspace and classroom controls.',
+    side: 'bottom',
+    waitForTask: 'dashboardVisited',
   },
   {
-    element: '[data-tour="upload"]',
-    popover: {
-      title: 'File Task',
-      description: 'Students should open a shared file. Teachers should upload a file for an assignment.',
-      side: 'left',
-    },
+    selector: '[data-tour="video-call"]',
+    title: 'Video Calling',
+    description: 'Click the online class control to view the video calling feature.',
+    side: 'bottom',
+    waitForTask: 'videoCallViewed',
+    beforeShow: () => window.dispatchEvent(new CustomEvent('labzero:guide-show-dashboard')),
   },
   {
-    element: '[data-tour="subjects"]',
-    popover: {
-      title: 'Checked the Subjects',
-      description: 'Take a look at each subject card and its contents before submitting evaluation feedback.',
-      side: 'left',
-    },
+    selector: '[data-tour="subjects"]',
+    title: 'Subject View',
+    description: 'Click any subject card to open its subject view.',
+    side: 'left',
+    waitForTask: 'subjectViewed',
+    beforeShow: () => window.dispatchEvent(new CustomEvent('labzero:guide-show-subjects')),
+  },
+  {
+    selector: '[data-tour="topic-card"]',
+    title: 'Choose a Topic',
+    description: 'Open any topic from this subject so you can view a simulation.',
+    side: 'left',
+    waitForEvent: 'labzero:guide-topic-opened',
+  },
+  {
+    selector: '[data-tour="simulation-view"]',
+    title: 'Simulation View',
+    description: 'Click Visualization to view one simulation or visualization for this topic.',
+    side: 'bottom',
+    waitForTask: 'simulationViewed',
   },
 ];
 
@@ -72,91 +82,163 @@ const isVisibleTourTarget = (element: Element) => {
 const getVisibleTourElement = (selector: string) =>
   Array.from(document.querySelectorAll(selector)).find(isVisibleTourTarget);
 
-const getAvailableSteps = () =>
-  requestedTourSteps
-    .map((step) => {
-      const element = getVisibleTourElement(step.element);
-      return element ? { ...step, element } : null;
-    })
-    .filter(Boolean) as Array<Omit<TourStep, 'element'> & { element: Element }>;
+const taskIsComplete = (
+  progress: EvaluationProgressState,
+  task?: EvaluationTaskKey,
+) => Boolean(task && progress[task as keyof EvaluationProgressState]);
 
 const OnboardingTour = () => {
-  const { user } = useAuth();
-  const { progress, startOnboarding, completeOnboarding, notify } = useEvaluationProgress();
+  const { progress, startOnboarding, completeOnboarding } = useEvaluationProgress();
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
   const retryTimerRef = useRef<number | null>(null);
+  const activeIndexRef = useRef(0);
+  const progressRef = useRef(progress);
+  const isRunningRef = useRef(false);
   const isUnmountingRef = useRef(false);
 
-  const startTour = useCallback((force = false) => {
-    if (!user) return;
-    if (!force && progress.tourCompleted) return;
-    if (driverRef.current) return;
-    isUnmountingRef.current = false;
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
 
-    const runTour = () => {
-      const steps = getAvailableSteps();
+  const clearRetryTimer = useCallback(() => {
+    if (retryTimerRef.current) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+  }, []);
 
-      if (!steps.length) {
-        retryTimerRef.current = window.setTimeout(runTour, 1000);
+  const showStep = useCallback((index: number) => {
+    clearRetryTimer();
+
+    const step = guideSteps[index];
+    if (!step) {
+      driverRef.current?.destroy();
+      driverRef.current = null;
+      isRunningRef.current = false;
+      if (!completeOnboarding()) {
+        retryTimerRef.current = window.setTimeout(() => {
+          completeOnboarding();
+        }, 5_200);
+      }
+      return;
+    }
+
+    activeIndexRef.current = index;
+
+    if (taskIsComplete(progressRef.current, step.waitForTask)) {
+      showStep(index + 1);
+      return;
+    }
+
+    step.beforeShow?.();
+
+    const renderWhenReady = () => {
+      const element = getVisibleTourElement(step.selector);
+
+      if (!element) {
+        retryTimerRef.current = window.setTimeout(renderWhenReady, 500);
         return;
       }
 
-      startOnboarding();
+      element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 
-      const tour = driver({
-        allowClose: false,
-        animate: true,
+      const waitsForUserAction = Boolean(step.waitForTask || step.waitForEvent);
+      driverRef.current?.highlight({
+        element,
         disableActiveInteraction: false,
-        overlayOpacity: 0.72,
-        showButtons: ['previous', 'next'],
-        showProgress: true,
-        stagePadding: 8,
-        stageRadius: 12,
-        nextBtnText: 'Next',
-        prevBtnText: 'Previous',
-        doneBtnText: 'Complete',
-        steps,
-        onDestroyed: () => {
-          driverRef.current = null;
-          if (isUnmountingRef.current) return;
-
-          if (!completeOnboarding()) {
-            retryTimerRef.current = window.setTimeout(() => {
-              notify('Onboarding will continue until the minimum review time is met.', 'info');
-              runTour();
-            }, 900);
-          }
+        popover: {
+          title: step.title,
+          description: waitsForUserAction
+            ? `${step.description} The tour will continue after you do it.`
+            : step.description,
+          side: step.side,
+          showButtons: waitsForUserAction ? [] : ['next'],
+          showProgress: true,
+          progressText: `${index + 1} of ${guideSteps.length}`,
+          nextBtnText: 'Next',
+          onNextClick: () => showStep(index + 1),
         },
       });
-
-      driverRef.current = tour;
-      tour.drive();
     };
 
-    retryTimerRef.current = window.setTimeout(runTour, 600);
-  }, [completeOnboarding, notify, progress.tourCompleted, startOnboarding, user]);
+    retryTimerRef.current = window.setTimeout(renderWhenReady, 300);
+  }, [clearRetryTimer, completeOnboarding]);
+
+  const startTour = useCallback((force = false) => {
+    if (!force && progressRef.current.tourCompleted) return;
+    if (isRunningRef.current) return;
+
+    isUnmountingRef.current = false;
+    isRunningRef.current = true;
+    startOnboarding();
+
+    driverRef.current = driver({
+      allowClose: false,
+      animate: true,
+      disableActiveInteraction: false,
+      overlayOpacity: 0.72,
+      showButtons: ['next'],
+      showProgress: true,
+      stagePadding: 8,
+      stageRadius: 12,
+      doneBtnText: 'Complete',
+      onDestroyed: () => {
+        driverRef.current = null;
+        clearRetryTimer();
+        if (!isUnmountingRef.current) {
+          isRunningRef.current = false;
+        }
+      },
+    });
+
+    showStep(0);
+  }, [clearRetryTimer, showStep, startOnboarding]);
+
+  const advanceIfCurrentStepIsSatisfied = useCallback((eventName?: string) => {
+    if (!isRunningRef.current) return;
+
+    const activeStep = guideSteps[activeIndexRef.current];
+    if (!activeStep) return;
+
+    const taskDone = taskIsComplete(progressRef.current, activeStep.waitForTask);
+    const eventDone = Boolean(eventName && activeStep.waitForEvent === eventName);
+
+    if (taskDone || eventDone) {
+      showStep(activeIndexRef.current + 1);
+    }
+  }, [showStep]);
 
   useEffect(() => {
     startTour(false);
 
     return () => {
       isUnmountingRef.current = true;
-      if (retryTimerRef.current) {
-        window.clearTimeout(retryTimerRef.current);
-      }
+      clearRetryTimer();
       driverRef.current?.destroy();
       driverRef.current = null;
+      isRunningRef.current = false;
     };
-  }, [startTour]);
+  }, [clearRetryTimer, startTour]);
+
+  useEffect(() => {
+    advanceIfCurrentStepIsSatisfied();
+  }, [advanceIfCurrentStepIsSatisfied, progress]);
 
   useEffect(() => {
     const handleManualStart = () => startTour(true);
+    const handleTaskComplete = () => window.setTimeout(() => advanceIfCurrentStepIsSatisfied(), 0);
+    const handleTopicOpened = () => advanceIfCurrentStepIsSatisfied('labzero:guide-topic-opened');
+
     window.addEventListener('labzero:start-guide-tour', handleManualStart);
+    window.addEventListener('labzero:evaluation-task', handleTaskComplete);
+    window.addEventListener('labzero:guide-topic-opened', handleTopicOpened);
 
     return () => {
       window.removeEventListener('labzero:start-guide-tour', handleManualStart);
+      window.removeEventListener('labzero:evaluation-task', handleTaskComplete);
+      window.removeEventListener('labzero:guide-topic-opened', handleTopicOpened);
     };
-  }, [startTour]);
+  }, [advanceIfCurrentStepIsSatisfied, startTour]);
 
   return null;
 };

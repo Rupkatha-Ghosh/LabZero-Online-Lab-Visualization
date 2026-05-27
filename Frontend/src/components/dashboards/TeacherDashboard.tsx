@@ -254,7 +254,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
           {onStartMeeting && (
             <div className="relative">
               <button
-                onClick={() => setIsOnlineClassMenuOpen((current) => !current)}
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'videoCallViewed' }));
+                  setIsOnlineClassMenuOpen((current) => !current);
+                }}
+                data-tour="video-call"
                 className="flex items-center gap-2 rounded-2xl bg-sky-600 px-6 py-3 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(2,132,199,0.22)] transition-all hover:bg-sky-500"
               >
                 <Video size={16} />
@@ -400,8 +404,10 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack, onStartMeet
                             <button
                               onClick={(event) => {
                                 event.stopPropagation();
+                                window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'videoCallViewed' }));
                                 onStartMeeting(item);
                               }}
+                              data-tour={i === 0 ? 'video-call' : undefined}
                               className="hidden items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-[9px] font-mono uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-600/20 transition-all hover:bg-sky-500 md:flex"
                             >
                               <Video size={14} />

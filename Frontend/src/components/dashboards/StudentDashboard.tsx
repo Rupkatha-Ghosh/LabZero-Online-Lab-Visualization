@@ -193,7 +193,11 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab
                                 {onStartMeeting && (
                                     <div className="relative z-[60]">
                                         <button
-                                            onClick={() => setIsOnlineClassMenuOpen((current) => !current)}
+                                            onClick={() => {
+                                                window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'videoCallViewed' }));
+                                                setIsOnlineClassMenuOpen((current) => !current);
+                                            }}
+                                            data-tour="video-call"
                                             className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 px-4 py-2 text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500 transition-all hover:bg-emerald-500/20"
                                         >
                                             <Video size={14} />
@@ -288,8 +292,10 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onBack, onLaunchLab
                                                 <button
                                                     onClick={(event) => {
                                                         event.stopPropagation();
+                                                        window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'videoCallViewed' }));
                                                         onStartMeeting(cls);
                                                     }}
+                                                    data-tour={i === 0 ? 'video-call' : undefined}
                                                     className="flex h-8 w-8 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 transition-all hover:bg-emerald-500 hover:text-white"
                                                 >
                                                     <Video size={14} />
