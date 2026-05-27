@@ -205,7 +205,12 @@ export const EvaluationProvider = ({ children }: { children: React.ReactNode }) 
       const elapsed = Date.now() - startedAt;
 
       if (elapsed < MIN_ONBOARDING_DURATION_MS) {
-        return current;
+        return current.metadata.onboardingStartedAt
+          ? current
+          : {
+              ...current,
+              metadata: { ...current.metadata, onboardingStartedAt: startedAt },
+            };
       }
 
       completed = true;

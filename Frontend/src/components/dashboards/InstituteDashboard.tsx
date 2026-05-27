@@ -21,7 +21,8 @@ import {
   Award,
   X,
   Download,
-  MessageSquareText
+  MessageSquareText,
+  Video
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
@@ -32,6 +33,7 @@ import DashboardLeaderboard from '../shared/DashboardLeaderboard';
 interface InstituteDashboardProps {
   onBack?: () => void;
   onOpenFeedback?: () => void;
+  onStartMeeting?: (classroom: any) => void;
   skeletonDebug?: boolean;
 }
 
@@ -42,7 +44,7 @@ interface FacultyHighlight {
   performance: number;
 }
 
-const InstituteDashboard: React.FC<InstituteDashboardProps> = ({ onBack, onOpenFeedback }) => {
+const InstituteDashboard: React.FC<InstituteDashboardProps> = ({ onBack, onOpenFeedback, onStartMeeting }) => {
   const { user } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -227,6 +229,19 @@ const InstituteDashboard: React.FC<InstituteDashboardProps> = ({ onBack, onOpenF
             <CalendarCheck size={14} />
             Attendance
           </button>
+          {onStartMeeting && (
+            <button
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'videoCallViewed' }));
+                onStartMeeting({ id: 'institute-broadcast', name: 'Institute Broadcast' });
+              }}
+              data-tour="video-call"
+              className="px-5 py-3 rounded-xl border border-sky-400/25 bg-sky-500/10 text-sky-200 text-[10px] font-mono uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all shadow-inner flex items-center gap-2"
+            >
+              <Video size={14} />
+              Online Class
+            </button>
+          )}
           <button
             onClick={exportLeaderboardReport}
             className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 text-white text-[10px] font-mono uppercase tracking-widest hover:from-cyan-400 hover:to-violet-500 transition-all shadow-[0_4px_20px_rgba(34,211,238,0.3)] border border-white/20 flex items-center gap-2"

@@ -12,6 +12,8 @@ interface GuideStep {
   waitForTask?: EvaluationTaskKey;
   waitForEvent?: string;
   beforeShow?: () => void;
+  fallbackAfterMs?: number;
+  onFallback?: () => void;
 }
 
 const guideSteps: GuideStep[] = [
@@ -42,6 +44,8 @@ const guideSteps: GuideStep[] = [
     side: 'bottom',
     waitForTask: 'videoCallViewed',
     beforeShow: () => window.dispatchEvent(new CustomEvent('labzero:guide-show-dashboard')),
+    fallbackAfterMs: 4_000,
+    onFallback: () => window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'videoCallViewed' })),
   },
   {
     selector: '[data-tour="subjects"]',
@@ -67,6 +71,14 @@ const guideSteps: GuideStep[] = [
   },
 ];
 
+const requiredTourTasks: EvaluationTaskKey[] = [
+  'loginCompleted',
+  'dashboardVisited',
+  'videoCallViewed',
+  'subjectViewed',
+  'simulationViewed',
+];
+
 const isVisibleTourTarget = (element: Element) => {
   const rect = element.getBoundingClientRect();
   const style = window.getComputedStyle(element);
@@ -87,10 +99,14 @@ const taskIsComplete = (
   task?: EvaluationTaskKey,
 ) => Boolean(task && progress[task as keyof EvaluationProgressState]);
 
+const guideIsComplete = (progress: EvaluationProgressState) =>
+  progress.tourCompleted && requiredTourTasks.every((task) => progress[task]);
+
 const OnboardingTour = () => {
   const { progress, startOnboarding, completeOnboarding } = useEvaluationProgress();
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
   const retryTimerRef = useRef<number | null>(null);
+  const fallbackTimerRef = useRef<number | null>(null);
   const activeIndexRef = useRef(0);
   const progressRef = useRef(progress);
   const isRunningRef = useRef(false);
@@ -107,8 +123,16 @@ const OnboardingTour = () => {
     }
   }, []);
 
+  const clearFallbackTimer = useCallback(() => {
+    if (fallbackTimerRef.current) {
+      window.clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+  }, []);
+
   const showStep = useCallback((index: number) => {
     clearRetryTimer();
+    clearFallbackTimer();
 
     const step = guideSteps[index];
     if (!step) {
@@ -131,6 +155,13 @@ const OnboardingTour = () => {
     }
 
     step.beforeShow?.();
+    if (step.fallbackAfterMs && step.onFallback) {
+      fallbackTimerRef.current = window.setTimeout(() => {
+        if (activeIndexRef.current === index && !getVisibleTourElement(step.selector)) {
+          step.onFallback?.();
+        }
+      }, step.fallbackAfterMs);
+    }
 
     const renderWhenReady = () => {
       const element = getVisibleTourElement(step.selector);
@@ -162,10 +193,10 @@ const OnboardingTour = () => {
     };
 
     retryTimerRef.current = window.setTimeout(renderWhenReady, 300);
-  }, [clearRetryTimer, completeOnboarding]);
+  }, [clearFallbackTimer, clearRetryTimer, completeOnboarding]);
 
   const startTour = useCallback((force = false) => {
-    if (!force && progressRef.current.tourCompleted) return;
+    if (!force && guideIsComplete(progressRef.current)) return;
     if (isRunningRef.current) return;
 
     isUnmountingRef.current = false;
@@ -185,6 +216,7 @@ const OnboardingTour = () => {
       onDestroyed: () => {
         driverRef.current = null;
         clearRetryTimer();
+        clearFallbackTimer();
         if (!isUnmountingRef.current) {
           isRunningRef.current = false;
         }
@@ -192,7 +224,7 @@ const OnboardingTour = () => {
     });
 
     showStep(0);
-  }, [clearRetryTimer, showStep, startOnboarding]);
+  }, [clearFallbackTimer, clearRetryTimer, showStep, startOnboarding]);
 
   const advanceIfCurrentStepIsSatisfied = useCallback((eventName?: string) => {
     if (!isRunningRef.current) return;
@@ -214,11 +246,12 @@ const OnboardingTour = () => {
     return () => {
       isUnmountingRef.current = true;
       clearRetryTimer();
+      clearFallbackTimer();
       driverRef.current?.destroy();
       driverRef.current = null;
       isRunningRef.current = false;
     };
-  }, [clearRetryTimer, startTour]);
+  }, [clearFallbackTimer, clearRetryTimer, startTour]);
 
   useEffect(() => {
     advanceIfCurrentStepIsSatisfied();

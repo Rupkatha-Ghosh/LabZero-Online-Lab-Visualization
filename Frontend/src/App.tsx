@@ -821,6 +821,7 @@ const AppContent: React.FC = () => {
                       ) : user.role === 'institute' ? (
                         <InstituteDashboard
                           onBack={handleBackToLanding}
+                          onStartMeeting={handleStartClassMeeting}
                           onOpenFeedback={handleOpenSiteFeedback}
                         />
                       ) : (
