@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   BookOpenCheck,
   CheckCircle2,
   ChevronDown,
+  ChevronsDown,
   FileUp,
   LayoutDashboard,
   Lock,
@@ -45,6 +46,7 @@ const EvaluationProgressWidget = ({
   const { user } = useAuth();
   const { progress, completionPercentage, feedbackUnlocked, notify } = useEvaluationProgress();
   const [expanded, setExpanded] = useState(false);
+  const panelRef = useRef<HTMLElement | null>(null);
   const isLight = theme === 'light';
   const checklist = useMemo(() => buildChecklist(user?.role), [user?.role]);
 
@@ -56,6 +58,13 @@ const EvaluationProgressWidget = ({
     }
 
     window.dispatchEvent(new CustomEvent('labzero:start-guide-tour'));
+  };
+
+  const handleScrollDown = () => {
+    panelRef.current?.scrollTo({
+      top: panelRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
   };
 
   const handleFeedbackClick = () => {
@@ -71,6 +80,7 @@ const EvaluationProgressWidget = ({
     <div className="fixed bottom-24 right-6 z-[140] flex flex-col items-end gap-3">
       {expanded && (
         <section
+          ref={panelRef}
           className={`max-h-[calc(100vh-17rem)] w-[min(calc(100vw-3rem),320px)] overflow-y-auto rounded-3xl border backdrop-blur-xl ${
             isLight
               ? 'border-slate-200 bg-white/95 text-slate-950 shadow-[0_20px_70px_rgba(15,23,42,0.16)]'
@@ -101,6 +111,21 @@ const EvaluationProgressWidget = ({
               <ChevronDown className="h-5 w-5" />
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={handleScrollDown}
+            aria-label="Scroll down guide tour progress"
+            title="Scroll down"
+            className={`mx-4 mb-3 flex h-9 w-[calc(100%-2rem)] items-center justify-center gap-2 rounded-2xl border text-xs font-black transition ${
+              isLight
+                ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+            }`}
+          >
+            <ChevronsDown className="h-4 w-4" />
+            Scroll down
+          </button>
 
           <div className="h-1.5 w-full bg-slate-200/30">
             <div
