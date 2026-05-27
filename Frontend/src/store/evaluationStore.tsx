@@ -89,7 +89,6 @@ const defaultMetadata: EvaluationMetadata = {
 const taskKeys: EvaluationTaskKey[] = [
   'loginCompleted',
   'dashboardVisited',
-  'uploadDone',
   'subjectsChecked',
 ];
 

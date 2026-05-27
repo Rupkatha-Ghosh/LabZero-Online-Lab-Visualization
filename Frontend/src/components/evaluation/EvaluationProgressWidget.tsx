@@ -1,10 +1,9 @@
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   BookOpenCheck,
   CheckCircle2,
   ChevronDown,
   ChevronsDown,
-  FileUp,
   LayoutDashboard,
   Lock,
   LogIn,
@@ -16,19 +15,14 @@ import { useAuth } from '../../context/AuthContext';
 import { useEvaluationProgress } from '../../hooks/useEvaluationProgress';
 import type { EvaluationProgressState } from '../../store/evaluationStore';
 
-const buildChecklist = (userRole?: string): Array<{
+const checklist: Array<{
   key: keyof EvaluationProgressState;
   label: string;
   icon: typeof CheckCircle2;
-}> => [
+}> = [
   { key: 'tourCompleted', label: 'Onboarding', icon: Sparkles },
   { key: 'loginCompleted', label: 'Login', icon: LogIn },
   { key: 'dashboardVisited', label: 'Dashboard', icon: LayoutDashboard },
-  {
-    key: 'uploadDone',
-    label: userRole === 'student' ? 'See file' : 'Upload file',
-    icon: FileUp,
-  },
   { key: 'subjectsChecked', label: 'Subjects', icon: BookOpenCheck },
 ];
 
@@ -48,7 +42,6 @@ const EvaluationProgressWidget = ({
   const [expanded, setExpanded] = useState(false);
   const panelRef = useRef<HTMLElement | null>(null);
   const isLight = theme === 'light';
-  const checklist = useMemo(() => buildChecklist(user?.role), [user?.role]);
 
   const handleStartTour = () => {
     if (!user) {
