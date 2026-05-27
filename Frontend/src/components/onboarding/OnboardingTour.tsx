@@ -258,6 +258,27 @@ const OnboardingTour = () => {
   }, [advanceIfCurrentStepIsSatisfied, progress]);
 
   useEffect(() => {
+    const handlePopoverNextClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('.driver-popover-next-btn')) return;
+      if (!isRunningRef.current) return;
+
+      const activeStep = guideSteps[activeIndexRef.current];
+      if (!activeStep || activeStep.waitForTask || activeStep.waitForEvent) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      showStep(activeIndexRef.current + 1);
+    };
+
+    document.addEventListener('click', handlePopoverNextClick, true);
+
+    return () => {
+      document.removeEventListener('click', handlePopoverNextClick, true);
+    };
+  }, [showStep]);
+
+  useEffect(() => {
     const handleManualStart = () => startTour(true);
     const handleTaskComplete = () => window.setTimeout(() => advanceIfCurrentStepIsSatisfied(), 0);
     const handleTopicOpened = () => advanceIfCurrentStepIsSatisfied('labzero:guide-topic-opened');
