@@ -71,7 +71,7 @@ const EvaluationProgressWidget = ({
     <div className="fixed bottom-24 right-6 z-[140] flex flex-col items-end gap-3">
       {expanded && (
         <section
-          className={`w-[min(calc(100vw-3rem),320px)] overflow-hidden rounded-3xl border backdrop-blur-xl ${
+          className={`max-h-[calc(100vh-17rem)] w-[min(calc(100vw-3rem),320px)] overflow-y-auto rounded-3xl border backdrop-blur-xl ${
             isLight
               ? 'border-slate-200 bg-white/95 text-slate-950 shadow-[0_20px_70px_rgba(15,23,42,0.16)]'
               : 'border-white/10 bg-slate-950/90 text-white shadow-[0_20px_70px_rgba(0,0,0,0.42)]'
