@@ -229,6 +229,15 @@ const OnboardingTour = () => {
           progressText: `${index + 1} of ${guideSteps.length}`,
           nextBtnText: 'Next',
           onNextClick: () => showStep(index + 1),
+          onPopoverRender: (popover) => {
+            if (waitsForUserAction) return;
+
+            popover.nextButton.onclick = (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              showStep(index + 1);
+            };
+          },
         },
       });
     };
@@ -282,8 +291,9 @@ const OnboardingTour = () => {
 
   useEffect(() => {
     const handlePopoverNextClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target?.closest('.driver-popover-next-btn')) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest('.driver-popover-next-btn')) return;
       if (!isRunningRef.current) return;
 
       const activeStep = guideSteps[activeIndexRef.current];
