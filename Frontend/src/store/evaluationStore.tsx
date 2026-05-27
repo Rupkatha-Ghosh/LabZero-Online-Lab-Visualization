@@ -4,10 +4,12 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { safeLocalStorage } from '../utils/safeStorage';
 import { trackEvaluationEvent } from '../utils/evaluationAnalytics';
+import { useAuth } from '../context/AuthContext';
 
 export type EvaluationTaskKey =
   | 'loginCompleted'
@@ -66,7 +68,7 @@ interface EvaluationContextValue {
   notify: (message: string, tone?: EvaluationToast['tone']) => void;
 }
 
-const STORAGE_KEY = 'labzero_evaluation_progress_v1';
+const STORAGE_KEY_PREFIX = 'labzero_evaluation_progress_v1';
 export const MIN_ONBOARDING_DURATION_MS = 45_000;
 
 export const defaultEvaluationProgress: EvaluationProgressState = {
@@ -93,11 +95,25 @@ const taskKeys: EvaluationTaskKey[] = [
 
 const EvaluationContext = createContext<EvaluationContextValue | undefined>(undefined);
 
-const readPersistedState = (): PersistedEvaluationState => {
+const createDefaultState = (): PersistedEvaluationState => ({
+  progress: { ...defaultEvaluationProgress },
+  metadata: { ...defaultMetadata, taskCompletedAt: {} },
+});
+
+const getUserStorageKey = (userId?: string | number | null, email?: string | null) => {
+  const identity = userId ?? email;
+  return identity ? `${STORAGE_KEY_PREFIX}_${identity}` : null;
+};
+
+const readPersistedState = (storageKey: string | null): PersistedEvaluationState => {
   try {
-    const raw = safeLocalStorage.getItem(STORAGE_KEY);
+    if (!storageKey) {
+      return createDefaultState();
+    }
+
+    const raw = safeLocalStorage.getItem(storageKey);
     if (!raw) {
-      return { progress: defaultEvaluationProgress, metadata: defaultMetadata };
+      return createDefaultState();
     }
 
     const parsed = JSON.parse(raw) as Partial<PersistedEvaluationState>;
@@ -120,13 +136,18 @@ const readPersistedState = (): PersistedEvaluationState => {
     };
   } catch (error) {
     console.warn('[EvaluationStore] Could not parse persisted progress.', error);
-    return { progress: defaultEvaluationProgress, metadata: defaultMetadata };
+    return createDefaultState();
   }
 };
 
 export const EvaluationProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, setState] = useState<PersistedEvaluationState>(readPersistedState);
+  const { user } = useAuth();
+  const userStorageKey = getUserStorageKey(user?.id, user?.email);
+  const [state, setState] = useState<PersistedEvaluationState>(() =>
+    readPersistedState(userStorageKey),
+  );
   const [toasts, setToasts] = useState<EvaluationToast[]>([]);
+  const skipNextPersistRef = useRef(false);
 
   const notify = useCallback((message: string, tone: EvaluationToast['tone'] = 'info') => {
     const id = crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
@@ -141,12 +162,23 @@ export const EvaluationProvider = ({ children }: { children: React.ReactNode }) 
   }, []);
 
   useEffect(() => {
-    safeLocalStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    skipNextPersistRef.current = true;
+    setState(readPersistedState(userStorageKey));
+  }, [userStorageKey]);
+
+  useEffect(() => {
+    if (!userStorageKey) return;
+    if (skipNextPersistRef.current) {
+      skipNextPersistRef.current = false;
+      return;
+    }
+
+    safeLocalStorage.setItem(userStorageKey, JSON.stringify(state));
     trackEvaluationEvent('progress_saved', {
       completion: taskKeys.filter((task) => state.progress[task]).length,
       tourCompleted: state.progress.tourCompleted,
     });
-  }, [state]);
+  }, [state, userStorageKey]);
 
   const startOnboarding = useCallback(() => {
     setState((current) => {

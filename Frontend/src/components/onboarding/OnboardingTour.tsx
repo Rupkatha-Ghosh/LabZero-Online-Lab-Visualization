@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { useEvaluationProgress } from '../../hooks/useEvaluationProgress';
+import { useAuth } from '../../context/AuthContext';
 
 interface TourStep {
   element: string;
@@ -80,12 +81,14 @@ const getAvailableSteps = () =>
     .filter(Boolean) as Array<Omit<TourStep, 'element'> & { element: Element }>;
 
 const OnboardingTour = () => {
+  const { user } = useAuth();
   const { progress, startOnboarding, completeOnboarding, notify } = useEvaluationProgress();
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
   const retryTimerRef = useRef<number | null>(null);
   const isUnmountingRef = useRef(false);
 
   useEffect(() => {
+    if (!user) return;
     if (progress.tourCompleted || driverRef.current) return;
     isUnmountingRef.current = false;
 
@@ -139,7 +142,7 @@ const OnboardingTour = () => {
       driverRef.current?.destroy();
       driverRef.current = null;
     };
-  }, [completeOnboarding, notify, progress.tourCompleted, startOnboarding]);
+  }, [completeOnboarding, notify, progress.tourCompleted, startOnboarding, user]);
 
   return null;
 };
