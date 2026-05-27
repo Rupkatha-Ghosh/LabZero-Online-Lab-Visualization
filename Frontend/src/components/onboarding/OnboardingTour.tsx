@@ -224,19 +224,23 @@ const OnboardingTour = () => {
             ? `${step.description} The tour will continue after you do it.`
             : step.description,
           side: step.side,
-          showButtons: waitsForUserAction ? [] : ['next'],
+          showButtons: [],
           showProgress: true,
           progressText: `${index + 1} of ${guideSteps.length}`,
-          nextBtnText: 'Next',
-          onNextClick: () => showStep(index + 1),
           onPopoverRender: (popover) => {
             if (waitsForUserAction) return;
 
-            popover.nextButton.onclick = (event) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = 'Continue';
+            button.className = 'driver-popover-next-btn';
+            button.onclick = (event) => {
               event.preventDefault();
               event.stopPropagation();
               showStep(index + 1);
             };
+            popover.footer.style.display = 'flex';
+            popover.footerButtons.replaceChildren(button);
           },
         },
       });
@@ -288,28 +292,6 @@ const OnboardingTour = () => {
   useEffect(() => {
     advanceIfCurrentStepIsSatisfied();
   }, [advanceIfCurrentStepIsSatisfied, progress]);
-
-  useEffect(() => {
-    const handlePopoverNextClick = (event: MouseEvent) => {
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-      if (!target.closest('.driver-popover-next-btn')) return;
-      if (!isRunningRef.current) return;
-
-      const activeStep = guideSteps[activeIndexRef.current];
-      if (!activeStep || activeStep.waitForTask || activeStep.waitForEvent) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      showStep(activeIndexRef.current + 1);
-    };
-
-    document.addEventListener('click', handlePopoverNextClick, true);
-
-    return () => {
-      document.removeEventListener('click', handlePopoverNextClick, true);
-    };
-  }, [showStep]);
 
   useEffect(() => {
     const handleActionTargetClick = (event: MouseEvent) => {
