@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { useEvaluationProgress } from '../../hooks/useEvaluationProgress';
@@ -87,16 +87,17 @@ const OnboardingTour = () => {
   const retryTimerRef = useRef<number | null>(null);
   const isUnmountingRef = useRef(false);
 
-  useEffect(() => {
+  const startTour = useCallback((force = false) => {
     if (!user) return;
-    if (progress.tourCompleted || driverRef.current) return;
+    if (!force && progress.tourCompleted) return;
+    if (driverRef.current) return;
     isUnmountingRef.current = false;
 
-    const startTour = () => {
+    const runTour = () => {
       const steps = getAvailableSteps();
 
       if (!steps.length) {
-        retryTimerRef.current = window.setTimeout(startTour, 1000);
+        retryTimerRef.current = window.setTimeout(runTour, 1000);
         return;
       }
 
@@ -122,7 +123,7 @@ const OnboardingTour = () => {
           if (!completeOnboarding()) {
             retryTimerRef.current = window.setTimeout(() => {
               notify('Onboarding will continue until the minimum review time is met.', 'info');
-              startTour();
+              runTour();
             }, 900);
           }
         },
@@ -132,7 +133,11 @@ const OnboardingTour = () => {
       tour.drive();
     };
 
-    retryTimerRef.current = window.setTimeout(startTour, 600);
+    retryTimerRef.current = window.setTimeout(runTour, 600);
+  }, [completeOnboarding, notify, progress.tourCompleted, startOnboarding, user]);
+
+  useEffect(() => {
+    startTour(false);
 
     return () => {
       isUnmountingRef.current = true;
@@ -142,7 +147,16 @@ const OnboardingTour = () => {
       driverRef.current?.destroy();
       driverRef.current = null;
     };
-  }, [completeOnboarding, notify, progress.tourCompleted, startOnboarding, user]);
+  }, [startTour]);
+
+  useEffect(() => {
+    const handleManualStart = () => startTour(true);
+    window.addEventListener('labzero:start-guide-tour', handleManualStart);
+
+    return () => {
+      window.removeEventListener('labzero:start-guide-tour', handleManualStart);
+    };
+  }, [startTour]);
 
   return null;
 };

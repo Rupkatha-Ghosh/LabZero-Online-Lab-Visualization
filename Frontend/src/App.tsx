@@ -160,7 +160,6 @@ import OnboardingTour from './components/onboarding/OnboardingTour';
 import EvaluationProgressWidget from './components/evaluation/EvaluationProgressWidget';
 import EvaluationToasts from './components/evaluation/EvaluationToasts';
 import {
-  FeedbackButton,
   FeedbackModuleBoundary,
   LazyAnalyticsDashboardPage,
   LazyFeedbackAdminPage,
@@ -482,23 +481,6 @@ const AppContent: React.FC = () => {
     setShowAuth(true);
   };
 
-  const handleEvaluationDashboardClick = () => {
-    if (!user) {
-      setShowAuth(true);
-      notify('Log in before opening the dashboard checkpoint.', 'warning');
-      return;
-    }
-
-    setViewState(ViewState.DASHBOARD);
-  };
-
-  const handleEvaluationSubjectsClick = () => {
-    setViewState(ViewState.LANDING);
-    window.setTimeout(() => {
-      document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 120);
-  };
-
   const handleOpenSiteFeedback = () => {
     if (!feedbackUnlocked) {
       notify('Complete the guided evaluation checklist to unlock feedback.', 'warning');
@@ -810,16 +792,19 @@ const AppContent: React.FC = () => {
                         <TeacherDashboard
                           onBack={handleBackToLanding}
                           onStartMeeting={handleStartClassMeeting}
+                          onOpenFeedback={handleOpenSiteFeedback}
                         />
                       ) : user.role === 'institute' ? (
                         <InstituteDashboard
                           onBack={handleBackToLanding}
+                          onOpenFeedback={handleOpenSiteFeedback}
                         />
                       ) : (
                         <StudentDashboard
                           onBack={handleBackToLanding}
                           onLaunchLab={handleLaunchSimulation}
                           onStartMeeting={handleStartClassMeeting}
+                          onOpenFeedback={handleOpenSiteFeedback}
                         />
                       )}
                     </React.Suspense>
@@ -895,13 +880,6 @@ const AppContent: React.FC = () => {
 
             </AnimationShell>
           </React.Suspense>
-
-          {!isFeedbackView && (
-            <FeedbackButton
-              theme={theme}
-              onClick={handleOpenSiteFeedback}
-            />
-          )}
 
           {!isFeedbackView && (
             <button
@@ -1016,10 +994,7 @@ const AppContent: React.FC = () => {
               <OnboardingTour />
               <EvaluationProgressWidget
                 theme={theme}
-                userRole={user?.role}
                 onOpenLogin={handleEvaluationLoginClick}
-                onOpenDashboard={handleEvaluationDashboardClick}
-                onOpenSubjects={handleEvaluationSubjectsClick}
               />
               <EvaluationToasts />
             </>
