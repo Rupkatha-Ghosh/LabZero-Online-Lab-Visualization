@@ -402,6 +402,10 @@ const AppContent: React.FC = () => {
   }, [markTaskComplete, viewState]);
 
   useEffect(() => {
+    const showLanding = () => {
+      setViewState(ViewState.LANDING);
+    };
+
     const showDashboard = () => {
       if (user) {
         setViewState(ViewState.DASHBOARD);
@@ -418,10 +422,12 @@ const AppContent: React.FC = () => {
       }, 250);
     };
 
+    window.addEventListener('labzero:guide-show-landing', showLanding);
     window.addEventListener('labzero:guide-show-dashboard', showDashboard);
     window.addEventListener('labzero:guide-show-subjects', showSubjects);
 
     return () => {
+      window.removeEventListener('labzero:guide-show-landing', showLanding);
       window.removeEventListener('labzero:guide-show-dashboard', showDashboard);
       window.removeEventListener('labzero:guide-show-subjects', showSubjects);
     };

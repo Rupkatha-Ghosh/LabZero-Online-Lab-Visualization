@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
+import { useAuth } from '../../context/AuthContext';
 import { useEvaluationProgress } from '../../hooks/useEvaluationProgress';
 import type { EvaluationProgressState, EvaluationTaskKey } from '../../store/evaluationStore';
 
@@ -14,6 +15,7 @@ interface GuideStep {
   beforeShow?: () => void;
   fallbackAfterMs?: number;
   onFallback?: () => void;
+  maxWaitMs?: number;
 }
 
 const guideSteps: GuideStep[] = [
@@ -29,6 +31,7 @@ const guideSteps: GuideStep[] = [
     description: 'Click this login area and sign in so LabZero can save your guide progress.',
     side: 'bottom',
     waitForTask: 'loginCompleted',
+    beforeShow: () => window.dispatchEvent(new CustomEvent('labzero:guide-show-landing')),
   },
   {
     selector: '[data-tour="dashboard"]',
@@ -79,6 +82,9 @@ const requiredTourTasks: EvaluationTaskKey[] = [
   'simulationViewed',
 ];
 
+const DEFAULT_TARGET_WAIT_MS = 12_000;
+const TARGET_RETRY_MS = 350;
+
 const isVisibleTourTarget = (element: Element) => {
   const rect = element.getBoundingClientRect();
   const style = window.getComputedStyle(element);
@@ -103,6 +109,7 @@ const guideIsComplete = (progress: EvaluationProgressState) =>
   progress.tourCompleted && requiredTourTasks.every((task) => progress[task]);
 
 const OnboardingTour = () => {
+  const { user } = useAuth();
   const { progress, startOnboarding, completeOnboarding } = useEvaluationProgress();
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
   const retryTimerRef = useRef<number | null>(null);
@@ -110,6 +117,7 @@ const OnboardingTour = () => {
   const activeIndexRef = useRef(0);
   const activeElementRef = useRef<Element | null>(null);
   const progressRef = useRef(progress);
+  const userRef = useRef(user);
   const isRunningRef = useRef(false);
   const isUnmountingRef = useRef(false);
   const isPausingForActionRef = useRef(false);
@@ -117,6 +125,10 @@ const OnboardingTour = () => {
   useEffect(() => {
     progressRef.current = progress;
   }, [progress]);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   const clearRetryTimer = useCallback(() => {
     if (retryTimerRef.current) {
@@ -165,6 +177,11 @@ const OnboardingTour = () => {
     driverRef.current.destroy();
   }, []);
 
+  const stepIsSatisfied = useCallback((step: GuideStep) => {
+    if (taskIsComplete(progressRef.current, step.waitForTask)) return true;
+    return step.waitForTask === 'loginCompleted' && Boolean(userRef.current);
+  }, []);
+
   const showStep = useCallback((index: number) => {
     clearRetryTimer();
     clearFallbackTimer();
@@ -185,7 +202,7 @@ const OnboardingTour = () => {
 
     activeIndexRef.current = index;
 
-    if (taskIsComplete(progressRef.current, step.waitForTask)) {
+    if (stepIsSatisfied(step)) {
       showStep(index + 1);
       return;
     }
@@ -199,11 +216,23 @@ const OnboardingTour = () => {
       }, step.fallbackAfterMs);
     }
 
+    const waitStartedAt = Date.now();
+
     const renderWhenReady = () => {
+      if (!isRunningRef.current || activeIndexRef.current !== index) return;
+
       const element = getVisibleTourElement(step.selector);
 
       if (!element) {
-        retryTimerRef.current = window.setTimeout(renderWhenReady, 500);
+        const timedOut = Date.now() - waitStartedAt >= (step.maxWaitMs ?? DEFAULT_TARGET_WAIT_MS);
+
+        if (timedOut) {
+          step.onFallback?.();
+          showStep(index + 1);
+          return;
+        }
+
+        retryTimerRef.current = window.setTimeout(renderWhenReady, TARGET_RETRY_MS);
         return;
       }
 
@@ -246,12 +275,22 @@ const OnboardingTour = () => {
       });
     };
 
-    retryTimerRef.current = window.setTimeout(renderWhenReady, 300);
-  }, [clearFallbackTimer, clearRetryTimer, completeOnboarding, createDriver]);
+    retryTimerRef.current = window.setTimeout(renderWhenReady, TARGET_RETRY_MS);
+  }, [clearFallbackTimer, clearRetryTimer, completeOnboarding, createDriver, stepIsSatisfied]);
 
   const startTour = useCallback((force = false) => {
     if (!force && guideIsComplete(progressRef.current)) return;
-    if (isRunningRef.current) return;
+
+    if (isRunningRef.current) {
+      if (!force) return;
+      clearRetryTimer();
+      clearFallbackTimer();
+      isPausingForActionRef.current = false;
+      driverRef.current?.destroy();
+      driverRef.current = null;
+      activeElementRef.current = null;
+      isRunningRef.current = false;
+    }
 
     isUnmountingRef.current = false;
     isRunningRef.current = true;
@@ -260,7 +299,7 @@ const OnboardingTour = () => {
     driverRef.current = createDriver();
 
     showStep(0);
-  }, [createDriver, showStep, startOnboarding]);
+  }, [clearFallbackTimer, clearRetryTimer, createDriver, showStep, startOnboarding]);
 
   const advanceIfCurrentStepIsSatisfied = useCallback((eventName?: string) => {
     if (!isRunningRef.current) return;
@@ -268,13 +307,13 @@ const OnboardingTour = () => {
     const activeStep = guideSteps[activeIndexRef.current];
     if (!activeStep) return;
 
-    const taskDone = taskIsComplete(progressRef.current, activeStep.waitForTask);
+    const taskDone = stepIsSatisfied(activeStep);
     const eventDone = Boolean(eventName && activeStep.waitForEvent === eventName);
 
     if (taskDone || eventDone) {
       showStep(activeIndexRef.current + 1);
     }
-  }, [showStep]);
+  }, [showStep, stepIsSatisfied]);
 
   useEffect(() => {
     startTour(false);
