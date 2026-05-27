@@ -54,3 +54,109 @@ body:not(.light-mode) .feedback-module option {
   background: #0f172a;
   color: #f8fafc;
 }
+
+.feedback-thanks-stage {
+  color: #1f1020;
+}
+
+.feedback-thanks-heading {
+  color: #2a1026;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.8),
+    0 18px 28px rgba(15, 23, 42, 0.14);
+}
+
+.feedback-thanks-vine {
+  position: absolute;
+  height: 2px;
+  border-top: 2px solid rgba(31, 71, 54, 0.9);
+  border-radius: 999px;
+  transform: rotate(-2deg);
+}
+
+.feedback-thanks-vine::before,
+.feedback-thanks-vine::after {
+  content: '';
+  position: absolute;
+  top: -7px;
+  width: 15px;
+  height: 9px;
+  border-radius: 999px 999px 0 999px;
+  background: #4f9a62;
+  transform: rotate(-28deg);
+}
+
+.feedback-thanks-vine::before {
+  left: 18%;
+}
+
+.feedback-thanks-vine::after {
+  right: 16%;
+  transform: rotate(38deg);
+}
+
+.feedback-thanks-flower {
+  display: block;
+  width: 46px;
+  height: 46px;
+  z-index: 2;
+}
+
+.feedback-thanks-flower span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 23px;
+  height: 17px;
+  border: 2px solid rgba(45, 32, 38, 0.72);
+  border-radius: 999px 999px 999px 0;
+  transform-origin: 0 0;
+}
+
+.feedback-thanks-flower span:nth-child(1) {
+  transform: rotate(8deg) translate(-2px, -8px);
+}
+
+.feedback-thanks-flower span:nth-child(2) {
+  transform: rotate(88deg) translate(-3px, -8px);
+}
+
+.feedback-thanks-flower span:nth-child(3) {
+  transform: rotate(168deg) translate(-2px, -8px);
+}
+
+.feedback-thanks-flower span:nth-child(4) {
+  transform: rotate(248deg) translate(-3px, -8px);
+}
+
+.feedback-thanks-flower-rose span {
+  background: linear-gradient(135deg, #fbd38d 0%, #f97316 48%, #be123c 100%);
+}
+
+.feedback-thanks-flower-mint span {
+  background: linear-gradient(135deg, #d9f99d 0%, #a7f3d0 42%, #67e8f9 100%);
+}
+
+body:not(.light-mode) .feedback-thanks-stage {
+  color: #f8fafc;
+}
+
+body:not(.light-mode) .feedback-thanks-heading {
+  color: #f8fafc;
+  text-shadow:
+    0 0 28px rgba(34, 211, 238, 0.18),
+    0 20px 34px rgba(0, 0, 0, 0.55);
+}
+
+body:not(.light-mode) .feedback-thanks-vine {
+  border-color: rgba(125, 211, 252, 0.72);
+}
+
+body:not(.light-mode) .feedback-thanks-vine::before,
+body:not(.light-mode) .feedback-thanks-vine::after {
+  background: #34d399;
+}
+
+body:not(.light-mode) .feedback-thanks-flower span {
+  border-color: rgba(226, 232, 240, 0.72);
+}
