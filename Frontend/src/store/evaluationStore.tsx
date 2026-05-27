@@ -69,7 +69,7 @@ interface EvaluationContextValue {
 }
 
 const STORAGE_KEY_PREFIX = 'labzero_evaluation_progress_v1';
-export const MIN_ONBOARDING_DURATION_MS = 45_000;
+export const MIN_ONBOARDING_DURATION_MS = 5_000;
 
 export const defaultEvaluationProgress: EvaluationProgressState = {
   tourCompleted: false,
@@ -220,7 +220,7 @@ export const EvaluationProvider = ({ children }: { children: React.ReactNode }) 
     if (completed) {
       notify('Evaluation progress saved', 'success');
     } else {
-      notify('Please spend at least 45 seconds in the onboarding tour.', 'warning');
+      notify('Please spend at least 5 seconds in the onboarding tour.', 'warning');
     }
 
     return completed;
