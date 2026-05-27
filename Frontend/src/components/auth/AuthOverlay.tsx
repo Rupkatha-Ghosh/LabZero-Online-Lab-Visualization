@@ -35,11 +35,17 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
     setIsSubmitting(true);
     try {
       if (isLogin) {
-        if (!email || !password) return;
+        if (!email || !password) {
+          setError('Please enter your email or username and password.');
+          return;
+        }
         await login(email, password);
         setSuccess("Success! Identity verified.");
       } else {
-        if (!firstName || !lastName || !username || !email || !password) return;
+        if (!firstName || !lastName || !username || !email || !password) {
+          setError('Please fill in every required field.');
+          return;
+        }
         if (!role) {
           setError('Please select an account type');
           setIsSubmitting(false);

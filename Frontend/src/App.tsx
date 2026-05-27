@@ -391,6 +391,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (user) {
       markTaskComplete('loginCompleted');
+      setShowAuth(false);
     }
   }, [markTaskComplete, user]);
 
