@@ -5,9 +5,6 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Legend,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -17,6 +14,7 @@ import { useAuth } from '../../../context/AuthContext';
 import AdminFilterBar from '../components/admin/AdminFilterBar';
 import AdminFormsTable from '../components/admin/AdminFormsTable';
 import FeedbackFormBuilderModal from '../components/admin/FeedbackFormBuilderModal';
+import PieDonutChart from '../components/analytics/PieDonutChart';
 import FeedbackPageShell from '../components/common/FeedbackPageShell';
 import FeedbackSkeleton from '../components/common/FeedbackSkeleton';
 import SentimentSummary from '../components/text-analysis/SentimentSummary';
@@ -509,7 +507,7 @@ const ChoicePieGrid = ({
         <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
           {choiceTypeLabels[type]}
         </p>
-        <PieVisualization data={toChartData(data[type])} heightClass="h-56" />
+        <PieVisualization data={toChartData(data[type])} heightClass="h-80" />
       </div>
     ))}
   </div>
@@ -551,7 +549,11 @@ const FormOverviewCard = ({
           <BarVisualization data={toChartData(ratingDistribution)} heightClass="h-44" />
         </MiniPanel>
         <MiniPanel title="Choices">
-          <PieVisualization data={toChartData(choiceCounts)} heightClass="h-44" />
+          <PieVisualization
+            data={toChartData(choiceCounts)}
+            heightClass="h-72"
+            legendGridClassName="sm:grid-cols-2"
+          />
         </MiniPanel>
         <MiniPanel title="Text" wide>
           <div className="grid gap-3 md:grid-cols-2">
@@ -710,27 +712,17 @@ const BarVisualization = ({
 const PieVisualization = ({
   data,
   heightClass = 'h-72',
+  legendGridClassName,
 }: {
   data: Array<{ name: string; value: number; fill: string }>;
   heightClass?: string;
+  legendGridClassName?: string;
 }) => (
-  <div className={heightClass}>
-    {data.length ? (
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Tooltip />
-          <Legend />
-          <Pie data={data} dataKey="value" nameKey="name" innerRadius={44} outerRadius={88}>
-            {data.map((entry) => (
-              <Cell key={entry.name} fill={entry.fill} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-    ) : (
-      <EmptyViz />
-    )}
-  </div>
+  <PieDonutChart
+    data={data}
+    heightClass={heightClass}
+    legendGridClassName={legendGridClassName}
+  />
 );
 
 const EmptyViz = () => (

@@ -3,9 +3,6 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Legend,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -18,6 +15,7 @@ import {
   ratingHistogramData,
 } from '../../utils/feedbackAnalytics';
 import ChartCard from './ChartCard';
+import PieDonutChart from './PieDonutChart';
 
 interface AnalyticsChartsProps {
   questionStats: FeedbackQuestionAnalytics[];
@@ -175,26 +173,11 @@ const ChoicePieChart = ({
       title={`${question.type[0].toUpperCase()}${question.type.slice(1)} Pie Chart`}
       subtitle={question.prompt ?? question.questionId}
     >
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Tooltip />
-            <Legend />
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              innerRadius={56}
-              outerRadius={104}
-              paddingAngle={2}
-            >
-              {data.map((entry) => (
-                <Cell key={entry.name} fill={entry.fill} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
+      <PieDonutChart
+        data={data}
+        heightClass="h-80"
+        legendGridClassName="sm:grid-cols-2"
+      />
     </ChartCard>
   );
 };
