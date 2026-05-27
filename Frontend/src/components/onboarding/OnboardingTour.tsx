@@ -110,7 +110,7 @@ const guideIsComplete = (progress: EvaluationProgressState) =>
 
 const OnboardingTour = () => {
   const { user } = useAuth();
-  const { progress, startOnboarding, completeOnboarding } = useEvaluationProgress();
+  const { progress, startOnboarding, completeOnboarding, markTaskComplete } = useEvaluationProgress();
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
   const retryTimerRef = useRef<number | null>(null);
   const fallbackTimerRef = useRef<number | null>(null);
@@ -181,6 +181,16 @@ const OnboardingTour = () => {
     if (taskIsComplete(progressRef.current, step.waitForTask)) return true;
     return step.waitForTask === 'loginCompleted' && Boolean(userRef.current);
   }, []);
+
+  const syncAuthenticatedProgress = useCallback(() => {
+    if (!userRef.current || progressRef.current.loginCompleted) return;
+
+    progressRef.current = {
+      ...progressRef.current,
+      loginCompleted: true,
+    };
+    markTaskComplete('loginCompleted');
+  }, [markTaskComplete]);
 
   const showStep = useCallback((index: number) => {
     clearRetryTimer();
@@ -283,12 +293,20 @@ const OnboardingTour = () => {
 
     isUnmountingRef.current = false;
     isRunningRef.current = true;
+    syncAuthenticatedProgress();
     startOnboarding();
 
     driverRef.current = createDriver();
 
     showStep(0);
-  }, [clearFallbackTimer, clearRetryTimer, createDriver, showStep, startOnboarding]);
+  }, [
+    clearFallbackTimer,
+    clearRetryTimer,
+    createDriver,
+    showStep,
+    startOnboarding,
+    syncAuthenticatedProgress,
+  ]);
 
   const advanceIfCurrentStepIsSatisfied = useCallback((eventName?: string) => {
     if (!isRunningRef.current) return;
