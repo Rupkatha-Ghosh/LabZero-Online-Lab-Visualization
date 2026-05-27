@@ -6,10 +6,17 @@ import ResourceUpload from '../shared/ResourceUpload';
 import ResourceViewer from '../shared/ResourceViewer';
 import Classroom from '../shared/Classroom';
 import { getResourcesByTopic, deleteResource } from '../../services/resourceService';
+import { classroomsService } from '../../services/classroomsService';
 import { motion, AnimatePresence } from 'motion/react';
 import { Language, translations } from '../../services/translations';
 import { useAuth } from '../../context/AuthContext';
 import { Skeleton } from '../common/Skeleton';
+
+type TheoryMaterial = Resource & {
+  assignmentId?: number | string;
+  teacherName?: string;
+  canDelete?: boolean;
+};
 
 interface TopicPageProps {
   topic: Topic;
@@ -26,8 +33,19 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
   const [activeView, setActiveView] = useState<TopicView>(TopicView.THEORY);
   const t = (key: string) => translations[key]?.[language] || key;
   const [resources, setResources] = useState<Resource[]>([]);
+  const [assignmentMaterials, setAssignmentMaterials] = useState<TheoryMaterial[]>([]);
   const [viewingResource, setViewingResource] = useState<Resource | null>(null);
   const [isReading, setIsReading] = useState(false);
+
+  const inferResourceType = (url: string) => {
+    const path = url.split('?')[0].toLowerCase();
+    if (path.endsWith('.pdf')) return 'application/pdf';
+    if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'].some((ext) => path.endsWith(ext))) {
+      return `image/${path.split('.').pop() === 'jpg' ? 'jpeg' : path.split('.').pop()}`;
+    }
+    if (['.txt', '.md', '.csv', '.json'].some((ext) => path.endsWith(ext))) return 'text/plain';
+    return 'application/octet-stream';
+  };
 
   const fetchResources = async () => {
     try {
@@ -38,12 +56,42 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
     }
   };
 
+  const fetchAssignmentMaterials = async () => {
+    if (!user) {
+      setAssignmentMaterials([]);
+      return;
+    }
+
+    try {
+      const assignments = await classroomsService.getAssignments();
+      const materials = assignments
+        .filter((assignment: any) => assignment.file_url && String(assignment.topic) === String(topic.id))
+        .map((assignment: any) => ({
+          id: `assignment-${assignment.id}`,
+          assignmentId: assignment.id,
+          topicId: String(assignment.topic),
+          name: assignment.title || assignment.file_url.split('/').pop() || 'Class material',
+          type: inferResourceType(assignment.file_url),
+          content: assignment.file_url,
+          timestamp: assignment.created_at ? new Date(assignment.created_at).getTime() : Date.now(),
+          teacherName: assignment.teacher_name,
+          canDelete: false,
+        }));
+
+      setAssignmentMaterials(materials);
+    } catch (err) {
+      console.error('Failed to fetch assignment materials:', err);
+      setAssignmentMaterials([]);
+    }
+  };
+
   useEffect(() => {
     fetchResources();
+    fetchAssignmentMaterials();
     return () => {
       window.speechSynthesis.cancel();
     };
-  }, [topic.id]);
+  }, [topic.id, user?.id]);
 
   const toggleReadAloud = () => {
     if (isReading) {
@@ -71,10 +119,24 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
     const link = document.createElement('a');
     link.href = resource.content;
     link.download = resource.name;
+    if (/^https?:\/\//i.test(resource.content)) {
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+    }
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
+  const handleOpenMaterial = (resource: Resource) => {
+    setViewingResource(resource);
+    window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'uploadDone' }));
+  };
+
+  const materials: TheoryMaterial[] = [
+    ...assignmentMaterials,
+    ...resources.map((resource) => ({ ...resource, canDelete: true })),
+  ].sort((a, b) => b.timestamp - a.timestamp);
 
   return (
     <div className="flex flex-col h-full bg-[var(--bg-deep)] grainy">
@@ -206,12 +268,22 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
 
                     <Skeleton name="topic-resources" loading={false}>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {resources.map((resource) => (
+                        {materials.map((resource) => (
                           <motion.div
                             key={resource.id}
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="group p-6 rounded-[32px] bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all"
+                            role="button"
+                            tabIndex={0}
+                            data-tour={user?.role === 'student' ? 'upload' : undefined}
+                            onClick={() => handleOpenMaterial(resource)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                handleOpenMaterial(resource);
+                              }
+                            }}
+                            className="group p-6 rounded-[32px] bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
                           >
                             <div className="flex items-center gap-4 mb-6">
                               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -220,30 +292,37 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
                               <div className="flex flex-col overflow-hidden">
                                 <span className="text-sm font-bold text-white truncate">{resource.name}</span>
                                 <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">
-                                  {new Date(resource.timestamp).toLocaleDateString()}
+                                  {resource.teacherName || new Date(resource.timestamp).toLocaleDateString()}
                                 </span>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-2 pt-4 border-t border-white/5">
-                              {(user?.role === 'teacher' || user?.role === 'institute') && (
-                                <button
-                                  onClick={() => setViewingResource(resource)}
-                                  className="flex-1 h-10 rounded-xl bg-primary text-[10px] font-mono uppercase tracking-widest text-white hover:bg-primary/80 transition-colors flex items-center justify-center gap-2"
-                                >
-                                  <Presentation size={14} />
-                                  {t('present')}
-                                </button>
-                              )}
                               <button
-                                onClick={() => handleDownloadResource(resource)}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleOpenMaterial(resource);
+                                }}
+                                className="flex-1 h-10 rounded-xl bg-primary text-[10px] font-mono uppercase tracking-widest text-white hover:bg-primary/80 transition-colors flex items-center justify-center gap-2"
+                              >
+                                <Presentation size={14} />
+                                {user?.role === 'student' ? 'View' : t('present')}
+                              </button>
+                              <button
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleDownloadResource(resource);
+                                }}
                                 className="w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center"
                               >
                                 <Download size={16} />
                               </button>
-                              {(user?.role === 'teacher' || user?.role === 'institute') && (
+                              {resource.canDelete && (user?.role === 'teacher' || user?.role === 'institute') && (
                                 <button
-                                  onClick={() => handleDeleteResource(resource.id)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleDeleteResource(resource.id);
+                                  }}
                                   className="w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all flex items-center justify-center"
                                 >
                                   <Trash2 size={16} />

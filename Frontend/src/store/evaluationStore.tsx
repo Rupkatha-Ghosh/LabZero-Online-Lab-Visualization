@@ -3,8 +3,8 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import { safeLocalStorage } from '../utils/safeStorage';
@@ -147,7 +147,6 @@ export const EvaluationProvider = ({ children }: { children: React.ReactNode }) 
     readPersistedState(userStorageKey),
   );
   const [toasts, setToasts] = useState<EvaluationToast[]>([]);
-  const skipNextPersistRef = useRef(false);
 
   const notify = useCallback((message: string, tone: EvaluationToast['tone'] = 'info') => {
     const id = crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
@@ -161,17 +160,12 @@ export const EvaluationProvider = ({ children }: { children: React.ReactNode }) 
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
-  useEffect(() => {
-    skipNextPersistRef.current = true;
+  useLayoutEffect(() => {
     setState(readPersistedState(userStorageKey));
   }, [userStorageKey]);
 
   useEffect(() => {
     if (!userStorageKey) return;
-    if (skipNextPersistRef.current) {
-      skipNextPersistRef.current = false;
-      return;
-    }
 
     safeLocalStorage.setItem(userStorageKey, JSON.stringify(state));
     trackEvaluationEvent('progress_saved', {

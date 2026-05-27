@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Maximize2, Minimize2, Download } from 'lucide-react';
 import { Resource } from '../../types/types';
 
@@ -9,14 +9,47 @@ interface ResourceViewerProps {
 }
 
 const ResourceViewer: React.FC<ResourceViewerProps> = ({ resource, onClose }) => {
-  const isPdf = resource.type === 'application/pdf';
-  const isText = resource.type.startsWith('text/');
-  const isImage = resource.type.startsWith('image/');
+  const [remoteText, setRemoteText] = useState<string | null>(null);
+  const [remoteTextError, setRemoteTextError] = useState(false);
+  const source = resource.content;
+  const isRemoteUrl = /^https?:\/\//i.test(source);
+  const sourceWithoutQuery = source.split('?')[0].toLowerCase();
+  const isPdf = resource.type === 'application/pdf' || sourceWithoutQuery.endsWith('.pdf');
+  const isText =
+    resource.type.startsWith('text/') ||
+    ['.txt', '.md', '.csv', '.json'].some((extension) => sourceWithoutQuery.endsWith(extension));
+  const isImage =
+    resource.type.startsWith('image/') ||
+    ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'].some((extension) =>
+      sourceWithoutQuery.endsWith(extension),
+    );
+
+  useEffect(() => {
+    setRemoteText(null);
+    setRemoteTextError(false);
+
+    if (!isRemoteUrl || !isText) return;
+
+    fetch(source)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Failed to load text file: ${response.status}`);
+        return response.text();
+      })
+      .then(setRemoteText)
+      .catch((error) => {
+        console.error('Failed to preview text resource:', error);
+        setRemoteTextError(true);
+      });
+  }, [isRemoteUrl, isText, source]);
 
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = resource.content;
     link.download = resource.name;
+    if (isRemoteUrl) {
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+    }
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -68,7 +101,9 @@ const ResourceViewer: React.FC<ResourceViewerProps> = ({ resource, onClose }) =>
             />
           ) : isText ? (
             <div className="w-full h-full overflow-y-auto p-12 font-mono text-sm text-slate-300 whitespace-pre-wrap selection:bg-indigo-500/30">
-              {atob(resource.content.split(',')[1])}
+              {isRemoteUrl
+                ? remoteText ?? (remoteTextError ? 'Preview unavailable. Please download the file to view it.' : 'Loading preview...')
+                : atob(resource.content.split(',')[1])}
             </div>
           ) : isImage ? (
             <div className="w-full h-full flex items-center justify-center p-8">
