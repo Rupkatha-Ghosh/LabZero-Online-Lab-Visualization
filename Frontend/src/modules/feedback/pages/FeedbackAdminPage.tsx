@@ -29,6 +29,7 @@ import {
   FeedbackAnalytics,
   FeedbackForm,
   FeedbackFormDraft,
+  FeedbackQuestionType,
   FeedbackSubmittedResponse,
   TextFeedbackAnalysis,
 } from '../types/feedback.types';
@@ -288,6 +289,47 @@ const AccessDenied = () => (
 );
 
 const chartColors = ['#4f46e5', '#0891b2', '#059669', '#d97706', '#c026d3', '#e11d48', '#475569'];
+const choiceQuestionTypes = ['checkbox', 'radio', 'dropdown'] as const;
+type ChoiceQuestionType = Extract<FeedbackQuestionType, (typeof choiceQuestionTypes)[number]>;
+const choiceTypeLabels: Record<ChoiceQuestionType, string> = {
+  checkbox: 'Checkbox',
+  radio: 'Radio',
+  dropdown: 'Dropdown',
+};
+
+const createEmptyChoiceCounts = (): Record<ChoiceQuestionType, Record<string, number>> => ({
+  checkbox: {},
+  radio: {},
+  dropdown: {},
+});
+
+const isChoiceQuestionType = (type: FeedbackQuestionType): type is ChoiceQuestionType =>
+  choiceQuestionTypes.includes(type as ChoiceQuestionType);
+
+const getChoiceCountsByType = (
+  overview: FeedbackAdminOverview
+): Record<ChoiceQuestionType, Record<string, number>> => {
+  const countsByType = createEmptyChoiceCounts();
+  const analyticsGroups = [
+    overview.overall.siteFeedback.analytics,
+    ...overview.forms.map((item) => item.analytics),
+  ].filter((analytics): analytics is FeedbackAnalytics => Boolean(analytics));
+
+  analyticsGroups.forEach((analytics) => {
+    analytics.questionStats.forEach((question) => {
+      if (!isChoiceQuestionType(question.type)) {
+        return;
+      }
+
+      Object.entries(question.optionCounts ?? {}).forEach(([option, count]) => {
+        countsByType[question.type][option] =
+          (countsByType[question.type][option] ?? 0) + count;
+      });
+    });
+  });
+
+  return countsByType;
+};
 
 const FeedbackOverview = ({
   overview,
@@ -299,113 +341,119 @@ const FeedbackOverview = ({
   isLoading: boolean;
   error: string | null;
   onRefresh: () => void;
-}) => (
-  <section className="space-y-4">
-    <div className="flex flex-col gap-3 rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-600">
-          Visualization mapping
-        </p>
-        <h2 className="mt-1 text-2xl font-black text-slate-950">
-          Feedback Overview
-        </h2>
+}) => {
+  const choiceCountsByType = overview
+    ? getChoiceCountsByType(overview)
+    : createEmptyChoiceCounts();
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-600">
+            Visualization mapping
+          </p>
+          <h2 className="mt-1 text-2xl font-black text-slate-950">
+            Feedback Overview
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={isLoading}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+        >
+          <RefreshCw size={16} className={isLoading ? 'animate-spin' : undefined} />
+          Refresh overview
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={onRefresh}
-        disabled={isLoading}
-        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
-      >
-        <RefreshCw size={16} className={isLoading ? 'animate-spin' : undefined} />
-        Refresh overview
-      </button>
-    </div>
 
-    {isLoading && <FeedbackSkeleton rows={2} variant="cards" />}
+      {isLoading && <FeedbackSkeleton rows={2} variant="cards" />}
 
-    {error && (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-        {error}
-      </div>
-    )}
+      {error && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+          {error}
+        </div>
+      )}
 
-    {overview && !isLoading && (
-      <>
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <OverviewMetric label="All responses" value={overview.overall.totalResponses} icon={Users} />
-          <OverviewMetric label="Average rating" value={overview.overall.averageRating.toFixed(2)} icon={Star} />
-          <OverviewMetric label="Satisfaction" value={`${overview.overall.satisfactionPercentage}%`} icon={BarChart3} />
-          <OverviewMetric label="Text responses" value={overview.overall.textAnalysis.totalTextResponses} icon={MessageSquareText} />
-        </section>
+      {overview && !isLoading && (
+        <>
+          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <OverviewMetric label="All responses" value={overview.overall.totalResponses} icon={Users} />
+            <OverviewMetric label="Average rating" value={overview.overall.averageRating.toFixed(2)} icon={Star} />
+            <OverviewMetric label="Satisfaction" value={`${overview.overall.satisfactionPercentage}%`} icon={BarChart3} />
+            <OverviewMetric label="Text responses" value={overview.overall.textAnalysis.totalTextResponses} icon={MessageSquareText} />
+          </section>
 
-        <section className="grid gap-5 xl:grid-cols-2">
-          <OverviewCard title="Scale / Rating" subtitle="Histogram / Bar Graph">
-            <BarVisualization data={toChartData(overview.overall.ratingDistribution)} />
-          </OverviewCard>
-          <OverviewCard title="Checkbox / Radio / Dropdown" subtitle="Pie Chart">
-            <PieVisualization data={toChartData(overview.overall.optionCounts)} />
-          </OverviewCard>
-          <OverviewCard title="Question Types" subtitle="Overall form composition">
-            <BarVisualization data={toChartData(overview.overall.questionTypeCounts)} />
-          </OverviewCard>
-          <OverviewCard title="Text Feedback" subtitle="Word Cloud / Sentiment Analysis">
-            <div className="grid gap-4 md:grid-cols-2">
-              <WordCloud words={overview.overall.textAnalysis.wordFrequencies.slice(0, 28)} />
-              <SentimentSummary
-                sentiment={overview.overall.textAnalysis.sentiment}
-                totalResponses={overview.overall.textAnalysis.totalTextResponses}
-              />
-            </div>
-          </OverviewCard>
-        </section>
+          <section className="grid gap-5 xl:grid-cols-2">
+            <OverviewCard title="Scale / Rating" subtitle="Histogram / Bar Graph">
+              <BarVisualization data={toChartData(overview.overall.ratingDistribution)} />
+            </OverviewCard>
+            <OverviewCard title="Checkbox / Radio / Dropdown" subtitle="Pie Chart">
+              <ChoicePieGrid data={choiceCountsByType} />
+            </OverviewCard>
+            <OverviewCard title="Question Types" subtitle="Overall form composition">
+              <BarVisualization data={toChartData(overview.overall.questionTypeCounts)} />
+            </OverviewCard>
+            <OverviewCard title="Text Feedback" subtitle="Word Cloud / Sentiment Analysis">
+              <div className="grid gap-4 md:grid-cols-2">
+                <WordCloud words={overview.overall.textAnalysis.wordFrequencies.slice(0, 28)} />
+                <SentimentSummary
+                  sentiment={overview.overall.textAnalysis.sentiment}
+                  totalResponses={overview.overall.textAnalysis.totalTextResponses}
+                />
+              </div>
+            </OverviewCard>
+          </section>
 
-        <section className="space-y-4">
-          <h3 className="text-lg font-black text-slate-950">
-            Submitted Feedback Analysis
-          </h3>
-          <div className="grid gap-4 lg:grid-cols-2">
-            {overview.overall.siteFeedback.analytics && (
-              <FormOverviewCard
-                form={{
-                  _id: 'site-feedback',
-                  title: 'Site feedback',
-                  description: 'Feedback submitted from the LabZero feedback page.',
-                  anonymousAllowed: false,
-                  sections: [],
-                  status: 'published',
-                }}
-                analytics={overview.overall.siteFeedback.analytics}
-                textAnalysis={
-                  overview.overall.siteFeedback.textAnalysis ??
-                  overview.overall.siteFeedback.analytics.responses?.[0]?.analysis.textAnalysis ?? {
-                    totalTextResponses: 0,
-                    keywords: [],
-                    wordFrequencies: [],
-                    sentiment: {
-                      positive: 0,
-                      neutral: 0,
-                      negative: 0,
-                      averageScore: 0,
-                      satisfactionPercentage: 0,
-                    },
+          <section className="space-y-4">
+            <h3 className="text-lg font-black text-slate-950">
+              Submitted Feedback Analysis
+            </h3>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {overview.overall.siteFeedback.analytics && (
+                <FormOverviewCard
+                  form={{
+                    _id: 'site-feedback',
+                    title: 'Site feedback',
+                    description: 'Feedback submitted from the LabZero feedback page.',
+                    anonymousAllowed: false,
+                    sections: [],
+                    status: 'published',
+                  }}
+                  analytics={overview.overall.siteFeedback.analytics}
+                  textAnalysis={
+                    overview.overall.siteFeedback.textAnalysis ??
+                    overview.overall.siteFeedback.analytics.responses?.[0]?.analysis.textAnalysis ?? {
+                      totalTextResponses: 0,
+                      keywords: [],
+                      wordFrequencies: [],
+                      sentiment: {
+                        positive: 0,
+                        neutral: 0,
+                        negative: 0,
+                        averageScore: 0,
+                        satisfactionPercentage: 0,
+                      },
+                    }
                   }
-                }
-              />
-            )}
-            {overview.forms.map((item) => (
-              <FormOverviewCard
-                key={item.form._id}
-                form={item.form}
-                analytics={item.analytics}
-                textAnalysis={item.textAnalysis}
-              />
-            ))}
-          </div>
-        </section>
-      </>
-    )}
-  </section>
-);
+                />
+              )}
+              {overview.forms.map((item) => (
+                <FormOverviewCard
+                  key={item.form._id}
+                  form={item.form}
+                  analytics={item.analytics}
+                  textAnalysis={item.textAnalysis}
+                />
+              ))}
+            </div>
+          </section>
+        </>
+      )}
+    </section>
+  );
+};
 
 const OverviewMetric = ({
   label,
@@ -448,6 +496,23 @@ const OverviewCard = ({
     </div>
     {children}
   </article>
+);
+
+const ChoicePieGrid = ({
+  data,
+}: {
+  data: Record<ChoiceQuestionType, Record<string, number>>;
+}) => (
+  <div className="grid gap-3 md:grid-cols-3">
+    {choiceQuestionTypes.map((type) => (
+      <div key={type} className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
+        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+          {choiceTypeLabels[type]}
+        </p>
+        <PieVisualization data={toChartData(data[type])} heightClass="h-56" />
+      </div>
+    ))}
+  </div>
 );
 
 const FormOverviewCard = ({

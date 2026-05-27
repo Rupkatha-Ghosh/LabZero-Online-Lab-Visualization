@@ -262,6 +262,7 @@ def build_feedback_analytics(form):
 STOP_WORDS = set('a an and are as at be but by for from had has have i in is it its of on or our that the their there this to was we were with you your'.split())
 POSITIVE_WORDS = set('accurate amazing clear easy effective engaging excellent fun good great helpful improved interactive interesting liked love perfect smooth useful well'.split())
 NEGATIVE_WORDS = set('bad boring broken confusing difficult error frustrating hard issue lag missing poor problem slow stuck unclear unhelpful weak worse wrong'.split())
+EMPTY_CHOICE_VALUES = {'not selected', 'not specified', 'not provided', 'no written comment provided.'}
 
 
 def tokenize_text(value):
@@ -301,6 +302,62 @@ def text_analysis_for_values(values):
             'satisfactionPercentage': round((positive / len(values)) * 100) if values else 0,
         },
     }
+
+
+def parse_choice_values(value, split_multiple=False):
+    values = value.split(',') if split_multiple else [value]
+    return [
+        item.strip()
+        for item in values
+        if item.strip() and item.strip().lower() not in EMPTY_CHOICE_VALUES
+    ]
+
+
+def site_feedback_choice_counts(comment):
+    section_type = None
+    counts = {
+        'checkbox': Counter(),
+        'radio': Counter(),
+        'dropdown': Counter(),
+    }
+
+    for raw_line in (comment or '').splitlines():
+        line = raw_line.strip()
+        normalized = line.lower()
+        if not line:
+            continue
+
+        if normalized.endswith('multiple choice:'):
+            section_type = 'checkbox'
+            continue
+        if normalized.endswith('single choice:'):
+            section_type = 'radio'
+            continue
+        if normalized.endswith('dropdown details:'):
+            section_type = 'dropdown'
+            continue
+        if line.endswith(':'):
+            section_type = None
+            continue
+
+        if section_type and line.startswith('- ') and ':' in line:
+            _, value = line[2:].split(':', 1)
+            counts[section_type].update(
+                parse_choice_values(value, split_multiple=section_type == 'checkbox')
+            )
+            continue
+
+        if ':' not in line:
+            continue
+
+        label, value = line.split(':', 1)
+        normalized_label = label.strip().lower()
+        if normalized_label == 'covered areas':
+            counts['checkbox'].update(parse_choice_values(value, split_multiple=True))
+        elif normalized_label == 'feedback type':
+            counts['radio'].update(parse_choice_values(value))
+
+    return {question_type: dict(counter) for question_type, counter in counts.items()}
 
 
 def display_answer_value(question, value):
@@ -389,6 +446,10 @@ def serialize_feedback_response(response, form):
 def site_feedback_as_response(feedback):
     values = [feedback.comment] if feedback.comment else []
     average_rating = float(feedback.rating or 0)
+    choice_counts_by_type = site_feedback_choice_counts(feedback.comment)
+    choice_counts = Counter()
+    for counts in choice_counts_by_type.values():
+        choice_counts.update(counts)
     return {
         'id': str(feedback.id),
         'submittedAt': feedback.created_at.isoformat() if feedback.created_at else None,
@@ -417,7 +478,7 @@ def site_feedback_as_response(feedback):
             'satisfactionPercentage': round((average_rating / 5) * 100) if average_rating else 0,
             'ratingCount': 1 if feedback.rating else 0,
             'textResponseCount': len(values),
-            'choiceCounts': {},
+            'choiceCounts': dict(choice_counts),
             'textAnalysis': {
                 'totalTextResponses': len(values),
                 **text_analysis_for_values(values),
@@ -447,6 +508,15 @@ def build_site_feedback_analytics():
     feedback_items = list(Feedback.objects.select_related('user').all())
     ratings = [item.rating for item in feedback_items if item.rating]
     comments = [item.comment for item in feedback_items if item.comment]
+    choice_counts_by_type = {
+        'checkbox': Counter(),
+        'radio': Counter(),
+        'dropdown': Counter(),
+    }
+    for comment in comments:
+        parsed_counts = site_feedback_choice_counts(comment)
+        for question_type, counts in parsed_counts.items():
+            choice_counts_by_type[question_type].update(counts)
     average_rating = round(sum(ratings) / len(ratings), 2) if ratings else 0
     return {
         'formId': 'site-feedback',
@@ -469,6 +539,27 @@ def build_site_feedback_analytics():
                 'type': 'text',
                 'totalAnswers': len(comments),
                 'textAnswerCount': len(comments),
+            },
+            {
+                'questionId': 'site-checkbox',
+                'prompt': 'Checkbox selections',
+                'type': 'checkbox',
+                'totalAnswers': sum(choice_counts_by_type['checkbox'].values()),
+                'optionCounts': dict(choice_counts_by_type['checkbox']),
+            },
+            {
+                'questionId': 'site-radio',
+                'prompt': 'Radio selections',
+                'type': 'radio',
+                'totalAnswers': sum(choice_counts_by_type['radio'].values()),
+                'optionCounts': dict(choice_counts_by_type['radio']),
+            },
+            {
+                'questionId': 'site-dropdown',
+                'prompt': 'Dropdown selections',
+                'type': 'dropdown',
+                'totalAnswers': sum(choice_counts_by_type['dropdown'].values()),
+                'optionCounts': dict(choice_counts_by_type['dropdown']),
             },
         ],
         'responses': [site_feedback_as_response(item) for item in feedback_items],
@@ -542,6 +633,8 @@ def aggregate_feedback_overview(forms):
     for question_stat in site_analytics.get('questionStats', []):
         if question_stat.get('ratingDistribution'):
             overall_rating_distribution.update(question_stat.get('ratingDistribution'))
+        if question_stat.get('optionCounts'):
+            overall_option_counts.update(question_stat.get('optionCounts'))
         question_type_counts[question_stat.get('type')] += 1
         total_questions += 1
 

@@ -178,3 +178,32 @@ class FeedbackApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['data']['title'], 'New form')
+
+    def test_admin_overview_includes_site_feedback_choice_counts(self):
+        Feedback.objects.create(
+            user=self.student,
+            rating=5,
+            comment='\n'.join(
+                [
+                    'Feedback Category: Student',
+                    'Student Multiple Choice:',
+                    '- Helpful tools: Simulations, Quizzes',
+                    '- Improvements: Not selected',
+                    'Student Single Choice:',
+                    '- Overall pace: Good',
+                    'Student Dropdown Details:',
+                    '- Preferred subject: Physics',
+                ]
+            ),
+        )
+
+        self.client.force_authenticate(self.teacher)
+        response = self.client.get(reverse('feedback-admin-overview'))
+
+        self.assertEqual(response.status_code, 200)
+        option_counts = response.data['data']['overall']['optionCounts']
+        self.assertEqual(option_counts['Simulations'], 1)
+        self.assertEqual(option_counts['Quizzes'], 1)
+        self.assertEqual(option_counts['Good'], 1)
+        self.assertEqual(option_counts['Physics'], 1)
+        self.assertNotIn('Not selected', option_counts)
