@@ -253,23 +253,12 @@ const OnboardingTour = () => {
             ? `${step.description} The tour will continue after you do it.`
             : step.description,
           side: step.side,
-          showButtons: [],
+          showButtons: waitsForUserAction ? [] : ['next'],
+          nextBtnText: 'Continue',
           showProgress: true,
           progressText: `${index + 1} of ${guideSteps.length}`,
-          onPopoverRender: (popover) => {
-            if (waitsForUserAction) return;
-
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.textContent = 'Continue';
-            button.className = 'driver-popover-next-btn';
-            button.onclick = (event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              showStep(index + 1);
-            };
-            popover.footer.style.display = 'flex';
-            popover.footerButtons.replaceChildren(button);
+          onNextClick: () => {
+            showStep(index + 1);
           },
         },
       });
