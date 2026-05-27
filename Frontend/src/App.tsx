@@ -995,6 +995,7 @@ const AppContent: React.FC = () => {
               <EvaluationProgressWidget
                 theme={theme}
                 onOpenLogin={handleEvaluationLoginClick}
+                onOpenFeedback={handleOpenSiteFeedback}
               />
               <EvaluationToasts />
             </>

@@ -5,7 +5,9 @@ import {
   ChevronDown,
   FileUp,
   LayoutDashboard,
+  Lock,
   LogIn,
+  MessageSquareText,
   Route,
   Sparkles,
 } from 'lucide-react';
@@ -32,11 +34,16 @@ const buildChecklist = (userRole?: string): Array<{
 interface EvaluationProgressWidgetProps {
   theme: 'dark' | 'light';
   onOpenLogin?: () => void;
+  onOpenFeedback?: () => void;
 }
 
-const EvaluationProgressWidget = ({ theme, onOpenLogin }: EvaluationProgressWidgetProps) => {
+const EvaluationProgressWidget = ({
+  theme,
+  onOpenLogin,
+  onOpenFeedback,
+}: EvaluationProgressWidgetProps) => {
   const { user } = useAuth();
-  const { progress, completionPercentage, notify } = useEvaluationProgress();
+  const { progress, completionPercentage, feedbackUnlocked, notify } = useEvaluationProgress();
   const [expanded, setExpanded] = useState(false);
   const isLight = theme === 'light';
   const checklist = useMemo(() => buildChecklist(user?.role), [user?.role]);
@@ -49,6 +56,15 @@ const EvaluationProgressWidget = ({ theme, onOpenLogin }: EvaluationProgressWidg
     }
 
     window.dispatchEvent(new CustomEvent('labzero:start-guide-tour'));
+  };
+
+  const handleFeedbackClick = () => {
+    if (!feedbackUnlocked) {
+      notify('Complete the guide tour progress to unlock feedback.', 'warning');
+      return;
+    }
+
+    onOpenFeedback?.();
   };
 
   return (
@@ -129,6 +145,25 @@ const EvaluationProgressWidget = ({ theme, onOpenLogin }: EvaluationProgressWidg
             >
               <Route className="h-4 w-4" />
               Start tour
+            </button>
+
+            <button
+              type="button"
+              onClick={handleFeedbackClick}
+              className={`flex h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-black transition ${
+                feedbackUnlocked
+                  ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20 hover:bg-emerald-400'
+                  : isLight
+                    ? 'border border-slate-200 bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    : 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+              }`}
+            >
+              {feedbackUnlocked ? (
+                <MessageSquareText className="h-4 w-4" />
+              ) : (
+                <Lock className="h-4 w-4" />
+              )}
+              {feedbackUnlocked ? 'Open feedback' : 'Feedback locked'}
             </button>
           </div>
         </section>
