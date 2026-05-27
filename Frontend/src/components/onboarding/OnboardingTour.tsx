@@ -108,9 +108,11 @@ const OnboardingTour = () => {
   const retryTimerRef = useRef<number | null>(null);
   const fallbackTimerRef = useRef<number | null>(null);
   const activeIndexRef = useRef(0);
+  const activeElementRef = useRef<Element | null>(null);
   const progressRef = useRef(progress);
   const isRunningRef = useRef(false);
   const isUnmountingRef = useRef(false);
+  const isPausingForActionRef = useRef(false);
 
   useEffect(() => {
     progressRef.current = progress;
@@ -130,9 +132,43 @@ const OnboardingTour = () => {
     }
   }, []);
 
+  const createDriver = useCallback(() => driver({
+    allowClose: false,
+    animate: true,
+    disableActiveInteraction: false,
+    overlayOpacity: 0.72,
+    showButtons: ['next'],
+    showProgress: true,
+    stagePadding: 8,
+    stageRadius: 12,
+    doneBtnText: 'Complete',
+    onDestroyed: () => {
+      driverRef.current = null;
+      clearRetryTimer();
+      clearFallbackTimer();
+      activeElementRef.current = null;
+
+      if (isPausingForActionRef.current) {
+        isPausingForActionRef.current = false;
+        return;
+      }
+
+      if (!isUnmountingRef.current) {
+        isRunningRef.current = false;
+      }
+    },
+  }), [clearFallbackTimer, clearRetryTimer]);
+
+  const pauseOverlayForUserAction = useCallback(() => {
+    if (!driverRef.current) return;
+    isPausingForActionRef.current = true;
+    driverRef.current.destroy();
+  }, []);
+
   const showStep = useCallback((index: number) => {
     clearRetryTimer();
     clearFallbackTimer();
+    activeElementRef.current = null;
 
     const step = guideSteps[index];
     if (!step) {
@@ -174,6 +210,11 @@ const OnboardingTour = () => {
       element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 
       const waitsForUserAction = Boolean(step.waitForTask || step.waitForEvent);
+      activeElementRef.current = element;
+      if (!driverRef.current) {
+        driverRef.current = createDriver();
+      }
+
       driverRef.current?.highlight({
         element,
         disableActiveInteraction: false,
@@ -193,7 +234,7 @@ const OnboardingTour = () => {
     };
 
     retryTimerRef.current = window.setTimeout(renderWhenReady, 300);
-  }, [clearFallbackTimer, clearRetryTimer, completeOnboarding]);
+  }, [clearFallbackTimer, clearRetryTimer, completeOnboarding, createDriver]);
 
   const startTour = useCallback((force = false) => {
     if (!force && guideIsComplete(progressRef.current)) return;
@@ -203,28 +244,10 @@ const OnboardingTour = () => {
     isRunningRef.current = true;
     startOnboarding();
 
-    driverRef.current = driver({
-      allowClose: false,
-      animate: true,
-      disableActiveInteraction: false,
-      overlayOpacity: 0.72,
-      showButtons: ['next'],
-      showProgress: true,
-      stagePadding: 8,
-      stageRadius: 12,
-      doneBtnText: 'Complete',
-      onDestroyed: () => {
-        driverRef.current = null;
-        clearRetryTimer();
-        clearFallbackTimer();
-        if (!isUnmountingRef.current) {
-          isRunningRef.current = false;
-        }
-      },
-    });
+    driverRef.current = createDriver();
 
     showStep(0);
-  }, [clearFallbackTimer, clearRetryTimer, showStep, startOnboarding]);
+  }, [createDriver, showStep, startOnboarding]);
 
   const advanceIfCurrentStepIsSatisfied = useCallback((eventName?: string) => {
     if (!isRunningRef.current) return;
@@ -277,6 +300,29 @@ const OnboardingTour = () => {
       document.removeEventListener('click', handlePopoverNextClick, true);
     };
   }, [showStep]);
+
+  useEffect(() => {
+    const handleActionTargetClick = (event: MouseEvent) => {
+      if (!isRunningRef.current) return;
+
+      const activeStep = guideSteps[activeIndexRef.current];
+      const activeElement = activeElementRef.current;
+      if (!activeStep || !activeElement || (!activeStep.waitForTask && !activeStep.waitForEvent)) return;
+
+      const target = event.target as Node | null;
+      if (!target || !activeElement.contains(target)) return;
+
+      window.setTimeout(() => {
+        pauseOverlayForUserAction();
+      }, 0);
+    };
+
+    document.addEventListener('click', handleActionTargetClick, true);
+
+    return () => {
+      document.removeEventListener('click', handleActionTargetClick, true);
+    };
+  }, [pauseOverlayForUserAction]);
 
   useEffect(() => {
     const handleManualStart = () => startTour(true);
