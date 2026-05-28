@@ -61,7 +61,7 @@ const roleFeedbackConfig: Record<UserRole, RoleFeedbackConfig> = {
     fields: {
       course: { label: 'Course', placeholder: 'Example: Physics' },
       classroom: { label: 'Classroom', placeholder: 'Example: Class 11 A' },
-      teacher: { label: 'Teacher', placeholder: 'Teacher name' },
+      teacher: { label: '', placeholder: '' },
       session: { label: 'Session', placeholder: 'Example: Live class / Lab session' },
     },
     feedbackAreas: [
@@ -73,9 +73,9 @@ const roleFeedbackConfig: Record<UserRole, RoleFeedbackConfig> = {
     usageSteps: [
       'Login/Register with a student account.',
       'Open the feedback page from the floating feedback button or Dashboard -> Feedback.',
-      'Select Course, Classroom, Teacher, and Session.',
+      'Select Course, Classroom, and Session.',
       'Answer learning experience, rating, checkbox, radio, and text feedback questions.',
-      'Submit feedback for teacher and platform improvement.',
+      'Submit feedback for platform improvement.',
     ],
   },
   teacher: {
@@ -141,18 +141,18 @@ const questionTypes = [
 const studentTextQuestions = [
   {
     id: 'mostHelpfulFeature',
-    label: 'What feature of LabZero helped you most in learning?',
-    placeholder: 'Example: live classes, lab visualizations, notes, chat, assignments...',
+    label: 'Which laboratory simulation or interactive visualization helped you understand a concept best, and why?',
+    placeholder: 'Example: Physics electromagnetism simulation, Chemistry acid-base titration titration curve, etc.',
   },
   {
     id: 'difficulties',
-    label: 'What difficulties did you face while using the platform?',
-    placeholder: 'Share login, navigation, loading, classroom, resource, or device issues.',
+    label: 'What technical issues did you face while running or interacting with the 3D/graphical lab visualizations?',
+    placeholder: 'Share loading delays, lag in graphics, drag-and-drop issues, simulation resets, or device crashes.',
   },
   {
     id: 'onlineClassExperience',
-    label: 'Describe your experience during online classes.',
-    placeholder: 'Tell us about interaction, clarity, audio/video quality, and participation.',
+    label: 'How interactive and collaborative was your experience during live virtual lab sessions?',
+    placeholder: 'Share your experience collaborating on live lab tools, audio/video clarity, and instructor guidance.',
   },
   {
     id: 'improvements',
@@ -169,9 +169,9 @@ const studentTextQuestions = [
 const studentRatingQuestions = [
   { id: 'overallUsability', label: 'Rate the overall usability of LabZero.' },
   { id: 'classroomInteraction', label: 'Rate the quality of classroom interaction.' },
-  { id: 'studyMaterialsAccess', label: 'Rate the ease of accessing study materials.' },
-  { id: 'platformSpeed', label: 'Rate the responsiveness/speed of the platform.' },
-  { id: 'overallLearning', label: 'Rate your overall learning experience.' },
+  { id: 'studyMaterialsAccess', label: 'Rate the ease of accessing study resources and lecture notes.' },
+  { id: 'platformSpeed', label: 'Rate the responsiveness and interactive control smoothness of the lab simulations.' },
+  { id: 'overallLearning', label: 'Rate how well the virtual lab simulation matched your real-world lab expectations.' },
 ] as const;
 
 const studentCheckboxQuestions = [
@@ -179,26 +179,24 @@ const studentCheckboxQuestions = [
     id: 'regularFeatures',
     label: 'Which features do you use regularly?',
     options: [
-      'Live Classes',
-      'Notes/PDF Sharing',
-      'Assignment Submission',
-      'Classroom Chat',
-      'Recorded Sessions',
-      'Virtual Labs',
-      'Quizzes / Practice Tasks',
+      'Live Video Call & Classroom Screen',
+      '3D Interactive Simulations',
+      'Graphical Data Visualizer',
+      'Collaborative Lab Notebook / Whiteboard',
+      'Procedure / Experiment Manuals',
+      'Chat & Instant Messaging',
     ],
   },
   {
     id: 'desiredImprovements',
     label: 'What improvements would you like?',
     options: [
-      'Better UI Design',
-      'Faster Loading',
-      'More Interactive Features',
-      'Mobile Optimization',
-      'Better Notifications',
-      'More Recorded Sessions',
-      'Clearer Assignment Tracking',
+      'More Virtual Lab experiments',
+      'Smoother 3D Graphics Rendering',
+      'Step-by-step interactive hints during simulations',
+      'Improved Graphing/Data plotting tools',
+      'Offline mode support for simulations',
+      'Better mobile touch controls for lab equipment',
     ],
   },
   {
@@ -211,8 +209,8 @@ const studentCheckboxQuestions = [
 const studentRadioQuestions = [
   {
     id: 'usageFrequency',
-    label: 'How often do you use LabZero?',
-    options: ['Daily', 'Weekly', 'Occasionally', 'Rarely'],
+    label: 'What is your initial impression of the LabZero onboarding tour?',
+    options: ['Very clear and helpful', 'Somewhat clear', 'Confusing / needs improvements', 'I skipped/did not notice it'],
   },
   {
     id: 'overallSatisfaction',
@@ -221,8 +219,8 @@ const studentRadioQuestions = [
   },
   {
     id: 'wouldRecommend',
-    label: 'Would you recommend LabZero to others?',
-    options: ['Yes', 'No'],
+    label: 'How easily can you follow laboratory procedures using the platform?',
+    options: ['Very easily', 'With minor guide help', 'With major difficulties', 'Not at all'],
   },
 ] as const;
 
@@ -261,8 +259,8 @@ const studentDropdownQuestions = [
   },
   {
     id: 'preferredLearningMode',
-    label: 'Select your preferred learning mode.',
-    options: ['Live online classes', 'Recorded lessons', 'Self-paced study', 'Blended learning', 'Virtual lab practice'],
+    label: 'Select your student level / institution type.',
+    options: ['High School (Grades 9-12)', 'Undergraduate (B.Sc / B.Tech / B.E)', 'Postgraduate (M.Sc / M.Tech / Ph.D)', 'Vocational / Diploma school'],
   },
   {
     id: 'internetQuality',
@@ -271,8 +269,8 @@ const studentDropdownQuestions = [
   },
   {
     id: 'primaryUsageTime',
-    label: 'Select your primary usage time.',
-    options: ['Morning', 'Afternoon', 'Evening', 'Night', 'Flexible / varies'],
+    label: 'Select how easily you were able to navigate to the lab visualization page.',
+    options: ['Very easily (Immediate)', 'Took some searching', 'Had to use the onboarding guide', 'Difficult / got lost'],
   },
 ] as const;
 
@@ -652,8 +650,8 @@ const SiteFeedbackPage = ({
   const isInstituteFeedback = feedbackRole === 'institute';
 
   const inputClass = `mt-2 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${isLight
-      ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
-      : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
+    ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
+    : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
     }`;
 
   useEffect(() => {
@@ -861,9 +859,130 @@ const SiteFeedbackPage = ({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!user) {
-      onLogin();
-      return;
+    // Enforce role-specific question validation
+    if (isStudentFeedback) {
+      // 1. Text questions (Minimum 10 characters required)
+      for (const q of studentTextQuestions) {
+        const val = studentTextAnswers[q.id]?.trim() || '';
+        if (val.length < 10) {
+          setError(`Please write a detailed response (at least 10 characters) for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      // 2. Rating questions
+      for (const q of studentRatingQuestions) {
+        if (!studentRatings[q.id] || studentRatings[q.id] < 1) {
+          setError(`Please rate the question: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      // 3. Checkbox questions (must select at least one option)
+      for (const q of studentCheckboxQuestions) {
+        if (!studentCheckboxAnswers[q.id] || studentCheckboxAnswers[q.id].length === 0) {
+          setError(`Please select at least one option for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      // 4. Radio questions
+      for (const q of studentRadioQuestions) {
+        if (!studentRadioAnswers[q.id]) {
+          setError(`Please select an option for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      // 5. Dropdown questions
+      for (const q of studentDropdownQuestions) {
+        if (!studentDropdownAnswers[q.id]) {
+          setError(`Please choose an option for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+    } else if (isTeacherFeedback) {
+      for (const q of teacherTextQuestions) {
+        const val = teacherTextAnswers[q.id]?.trim() || '';
+        if (val.length < 10) {
+          setError(`Please write a detailed response (at least 10 characters) for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      for (const q of teacherRatingQuestions) {
+        if (!teacherRatings[q.id] || teacherRatings[q.id] < 1) {
+          setError(`Please rate the question: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      for (const q of teacherCheckboxQuestions) {
+        if (!teacherCheckboxAnswers[q.id] || teacherCheckboxAnswers[q.id].length === 0) {
+          setError(`Please select at least one option for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      for (const q of teacherRadioQuestions) {
+        if (!teacherRadioAnswers[q.id]) {
+          setError(`Please select an option for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      for (const q of teacherDropdownQuestions) {
+        if (!teacherDropdownAnswers[q.id]) {
+          setError(`Please choose an option for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+    } else if (isInstituteFeedback) {
+      for (const q of instituteTextQuestions) {
+        const val = instituteTextAnswers[q.id]?.trim() || '';
+        if (val.length < 10) {
+          setError(`Please write a detailed response (at least 10 characters) for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      for (const q of instituteRatingQuestions) {
+        if (!instituteRatings[q.id] || instituteRatings[q.id] < 1) {
+          setError(`Please rate the question: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      for (const q of instituteCheckboxQuestions) {
+        if (!instituteCheckboxAnswers[q.id] || instituteCheckboxAnswers[q.id].length === 0) {
+          setError(`Please select at least one option for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      for (const q of instituteRadioQuestions) {
+        if (!instituteRadioAnswers[q.id]) {
+          setError(`Please select an option for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+      for (const q of instituteDropdownQuestions) {
+        if (!instituteDropdownAnswers[q.id]) {
+          setError(`Please choose an option for: "${q.label}"`);
+          setStatus('error');
+          return;
+        }
+      }
+    } else {
+      // Default fallback overall rating
+      if (!rating || rating < 1) {
+        setError('Please select a star rating before submitting feedback.');
+        setStatus('error');
+        return;
+      }
     }
 
     const selectedRating = isStudentFeedback
@@ -873,12 +992,6 @@ const SiteFeedbackPage = ({
         : isInstituteFeedback
           ? instituteRatings.overallInstitutionalUsefulness
           : rating;
-
-    if (!selectedRating || selectedRating < 1) {
-      setError('Please select a star rating before submitting feedback.');
-      setStatus('error');
-      return;
-    }
 
     setIsSubmitting(true);
     setStatus('idle');
@@ -1062,11 +1175,7 @@ const SiteFeedbackPage = ({
               tools, and feedback analytics.
             </p>
 
-            {!user && (
-              <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                Please sign in before submitting feedback.
-              </div>
-            )}
+
           </article>
 
           <article className="rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
@@ -1131,8 +1240,8 @@ const SiteFeedbackPage = ({
           <form
             onSubmit={handleSubmit}
             className={`rounded-3xl border p-5 shadow-sm backdrop-blur sm:p-6 ${isLight
-                ? 'border-slate-200/80 bg-white/90 text-slate-950'
-                : 'border-slate-700/70 bg-slate-950/90 text-slate-50'
+              ? 'border-slate-200/80 bg-white/90 text-slate-950'
+              : 'border-slate-700/70 bg-slate-950/90 text-slate-50'
               }`}
           >
             <div>
@@ -1170,18 +1279,20 @@ const SiteFeedbackPage = ({
                   className={inputClass}
                 />
               </div>
-              <div>
-                <label htmlFor="feedback-teacher" className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                  {roleConfig.fields.teacher.label}
-                </label>
-                <input
-                  id="feedback-teacher"
-                  value={teacher}
-                  onChange={(event) => setTeacher(event.target.value)}
-                  placeholder={roleConfig.fields.teacher.placeholder}
-                  className={inputClass}
-                />
-              </div>
+              {!isStudentFeedback && (
+                <div>
+                  <label htmlFor="feedback-teacher" className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
+                    {roleConfig.fields.teacher.label}
+                  </label>
+                  <input
+                    id="feedback-teacher"
+                    value={teacher}
+                    onChange={(event) => setTeacher(event.target.value)}
+                    placeholder={roleConfig.fields.teacher.placeholder}
+                    className={inputClass}
+                  />
+                </div>
+              )}
               <div>
                 <label htmlFor="feedback-session" className={`text-sm font-semibold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
                   {roleConfig.fields.session.label}
@@ -1278,10 +1389,10 @@ const SiteFeedbackPage = ({
                         type="button"
                         onClick={() => setFeedbackType(area)}
                         className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${feedbackType === area
-                            ? 'border-indigo-500 bg-indigo-600 text-white'
-                            : isLight
-                              ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
-                              : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                          ? 'border-indigo-500 bg-indigo-600 text-white'
+                          : isLight
+                            ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
+                            : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
                           }`}
                       >
                         {area}
@@ -1299,10 +1410,10 @@ const SiteFeedbackPage = ({
                       <label
                         key={area}
                         className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${selectedAreas.includes(area)
-                            ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                            : isLight
-                              ? 'border-slate-200 bg-white text-slate-600'
-                              : 'border-white/10 bg-white/5 text-slate-300'
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                          : isLight
+                            ? 'border-slate-200 bg-white text-slate-600'
+                            : 'border-white/10 bg-white/5 text-slate-300'
                           }`}
                       >
                         <input
@@ -1332,10 +1443,10 @@ const SiteFeedbackPage = ({
                         onClick={() => setRating(value)}
                         aria-label={`Rate ${value} out of 5`}
                         className={`flex h-11 w-11 items-center justify-center rounded-xl border transition ${value <= rating
-                            ? 'border-amber-400 bg-amber-400 text-slate-950'
-                            : isLight
-                              ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
-                              : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
+                          ? 'border-amber-400 bg-amber-400 text-slate-950'
+                          : isLight
+                            ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
+                            : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
                           }`}
                       >
                         <Star
@@ -1362,8 +1473,8 @@ const SiteFeedbackPage = ({
                     rows={7}
                     placeholder="Tell us what worked well or what should be improved."
                     className={`mt-2 w-full resize-none rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${isLight
-                        ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
-                        : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
+                      ? 'border-slate-200 bg-white text-slate-950 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-indigo-100'
+                      : 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-cyan-300/15'
                       }`}
                   />
                 </div>
@@ -1389,7 +1500,7 @@ const SiteFeedbackPage = ({
               )}
               <button
                 type="submit"
-                disabled={!user || isSubmitting}
+                disabled={isSubmitting}
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? (
@@ -1481,6 +1592,8 @@ const StudentFeedbackQuestions = ({
   const panelTitleClass = `text-base font-black ${isLight ? 'text-slate-950' : 'text-slate-50'}`;
   const panelHintClass = `mt-1 text-xs leading-5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`;
 
+  const requiredLabel = <span className="ml-1 text-[10px] font-medium text-rose-500 lowercase">(required)</span>;
+
   return (
     <>
       <section className={panelClass}>
@@ -1492,8 +1605,14 @@ const StudentFeedbackQuestions = ({
           {studentTextQuestions.map((question) => (
             <div key={question.id}>
               <label htmlFor={`student-${question.id}`} className={labelClass}>
-                {question.label}
+                {question.label}{requiredLabel}
               </label>
+              {question.id === 'onlineClassExperience' && (
+                <p className="mt-2 mb-3 text-xs leading-relaxed text-indigo-900 dark:text-cyan-200 font-medium bg-indigo-50/70 dark:bg-slate-900/60 p-3 rounded-xl border border-indigo-200 dark:border-white/10">
+                  💡 <strong>To test and access this feature:</strong> Have one group member register as a <strong>teacher</strong> to create a classroom in the teacher dashboard, and other team members join that classroom as a <strong>student</strong>.
+                  <span className="block mt-1 opacity-90">Teacher can also upload notes/assignments from teacher dashboard that can be viewed by the student.</span>
+                </p>
+              )}
               <textarea
                 id={`student-${question.id}`}
                 value={textAnswers[question.id]}
@@ -1519,7 +1638,7 @@ const StudentFeedbackQuestions = ({
               className={`rounded-2xl border px-4 py-4 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
                 }`}
             >
-              <p className={labelClass}>{question.label}</p>
+              <p className={labelClass}>{question.label}{requiredLabel}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <button
@@ -1528,10 +1647,10 @@ const StudentFeedbackQuestions = ({
                     onClick={() => onRatingChange(question.id, value)}
                     aria-label={`${question.label} ${value} out of 5`}
                     className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${value <= ratings[question.id]
-                        ? 'border-amber-400 bg-amber-400 text-slate-950'
-                        : isLight
-                          ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
-                          : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
+                      ? 'border-amber-400 bg-amber-400 text-slate-950'
+                      : isLight
+                        ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
+                        : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
                       }`}
                   >
                     {value}
@@ -1551,16 +1670,16 @@ const StudentFeedbackQuestions = ({
         <div className="mt-4 grid gap-4">
           {studentCheckboxQuestions.map((question) => (
             <fieldset key={question.id}>
-              <legend className={labelClass}>{question.label}</legend>
+              <legend className={labelClass}>{question.label}{requiredLabel}</legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {question.options.map((option) => (
                   <label
                     key={option}
                     className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${checkboxAnswers[question.id].includes(option)
-                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                        : isLight
-                          ? 'border-slate-200 bg-white text-slate-600'
-                          : 'border-white/10 bg-white/5 text-slate-300'
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                      : isLight
+                        ? 'border-slate-200 bg-white text-slate-600'
+                        : 'border-white/10 bg-white/5 text-slate-300'
                       }`}
                   >
                     <input
@@ -1583,16 +1702,16 @@ const StudentFeedbackQuestions = ({
         <div className="mt-4 grid gap-4">
           {studentRadioQuestions.map((question) => (
             <fieldset key={question.id}>
-              <legend className={labelClass}>{question.label}</legend>
+              <legend className={labelClass}>{question.label}{requiredLabel}</legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {question.options.map((option) => (
                   <label
                     key={option}
                     className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${radioAnswers[question.id] === option
-                        ? 'border-indigo-500 bg-indigo-600 text-white'
-                        : isLight
-                          ? 'border-slate-200 bg-white text-slate-600'
-                          : 'border-white/10 bg-white/5 text-slate-300'
+                      ? 'border-indigo-500 bg-indigo-600 text-white'
+                      : isLight
+                        ? 'border-slate-200 bg-white text-slate-600'
+                        : 'border-white/10 bg-white/5 text-slate-300'
                       }`}
                   >
                     <input
@@ -1617,7 +1736,7 @@ const StudentFeedbackQuestions = ({
           {studentDropdownQuestions.map((question) => (
             <div key={question.id}>
               <label htmlFor={`student-${question.id}`} className={labelClass}>
-                {question.label}
+                {question.label}{requiredLabel}
               </label>
               <select
                 id={`student-${question.id}`}
@@ -1675,6 +1794,8 @@ const TeacherFeedbackQuestions = ({
   const panelTitleClass = `text-base font-black ${isLight ? 'text-slate-950' : 'text-slate-50'}`;
   const panelHintClass = `mt-1 text-xs leading-5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`;
 
+  const requiredLabel = <span className="ml-1 text-[10px] font-medium text-rose-500 lowercase">(required)</span>;
+
   return (
     <>
       <section className={panelClass}>
@@ -1686,7 +1807,7 @@ const TeacherFeedbackQuestions = ({
           {teacherTextQuestions.map((question) => (
             <div key={question.id}>
               <label htmlFor={`teacher-${question.id}`} className={labelClass}>
-                {question.label}
+                {question.label}{requiredLabel}
               </label>
               <textarea
                 id={`teacher-${question.id}`}
@@ -1713,7 +1834,7 @@ const TeacherFeedbackQuestions = ({
               className={`rounded-2xl border px-4 py-4 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
                 }`}
             >
-              <p className={labelClass}>{question.label}</p>
+              <p className={labelClass}>{question.label}{requiredLabel}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <button
@@ -1722,10 +1843,10 @@ const TeacherFeedbackQuestions = ({
                     onClick={() => onRatingChange(question.id, value)}
                     aria-label={`${question.label} ${value} out of 5`}
                     className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${value <= ratings[question.id]
-                        ? 'border-amber-400 bg-amber-400 text-slate-950'
-                        : isLight
-                          ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
-                          : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
+                      ? 'border-amber-400 bg-amber-400 text-slate-950'
+                      : isLight
+                        ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
+                        : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
                       }`}
                   >
                     {value}
@@ -1745,16 +1866,16 @@ const TeacherFeedbackQuestions = ({
         <div className="mt-4 grid gap-4">
           {teacherCheckboxQuestions.map((question) => (
             <fieldset key={question.id}>
-              <legend className={labelClass}>{question.label}</legend>
+              <legend className={labelClass}>{question.label}{requiredLabel}</legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {question.options.map((option) => (
                   <label
                     key={option}
                     className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${checkboxAnswers[question.id].includes(option)
-                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                        : isLight
-                          ? 'border-slate-200 bg-white text-slate-600'
-                          : 'border-white/10 bg-white/5 text-slate-300'
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                      : isLight
+                        ? 'border-slate-200 bg-white text-slate-600'
+                        : 'border-white/10 bg-white/5 text-slate-300'
                       }`}
                   >
                     <input
@@ -1777,16 +1898,16 @@ const TeacherFeedbackQuestions = ({
         <div className="mt-4 grid gap-4">
           {teacherRadioQuestions.map((question) => (
             <fieldset key={question.id}>
-              <legend className={labelClass}>{question.label}</legend>
+              <legend className={labelClass}>{question.label}{requiredLabel}</legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {question.options.map((option) => (
                   <label
                     key={option}
                     className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${radioAnswers[question.id] === option
-                        ? 'border-indigo-500 bg-indigo-600 text-white'
-                        : isLight
-                          ? 'border-slate-200 bg-white text-slate-600'
-                          : 'border-white/10 bg-white/5 text-slate-300'
+                      ? 'border-indigo-500 bg-indigo-600 text-white'
+                      : isLight
+                        ? 'border-slate-200 bg-white text-slate-600'
+                        : 'border-white/10 bg-white/5 text-slate-300'
                       }`}
                   >
                     <input
@@ -1811,7 +1932,7 @@ const TeacherFeedbackQuestions = ({
           {teacherDropdownQuestions.map((question) => (
             <div key={question.id}>
               <label htmlFor={`teacher-${question.id}`} className={labelClass}>
-                {question.label}
+                {question.label}{requiredLabel}
               </label>
               <select
                 id={`teacher-${question.id}`}
@@ -1869,6 +1990,8 @@ const InstituteFeedbackQuestions = ({
   const panelTitleClass = `text-base font-black ${isLight ? 'text-slate-950' : 'text-slate-50'}`;
   const panelHintClass = `mt-1 text-xs leading-5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`;
 
+  const requiredLabel = <span className="ml-1 text-[10px] font-medium text-rose-500 lowercase">(required)</span>;
+
   return (
     <>
       <section className={panelClass}>
@@ -1880,7 +2003,7 @@ const InstituteFeedbackQuestions = ({
           {instituteTextQuestions.map((question) => (
             <div key={question.id}>
               <label htmlFor={`institute-${question.id}`} className={labelClass}>
-                {question.label}
+                {question.label}{requiredLabel}
               </label>
               <textarea
                 id={`institute-${question.id}`}
@@ -1907,7 +2030,7 @@ const InstituteFeedbackQuestions = ({
               className={`rounded-2xl border px-4 py-4 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950/40'
                 }`}
             >
-              <p className={labelClass}>{question.label}</p>
+              <p className={labelClass}>{question.label}{requiredLabel}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <button
@@ -1916,10 +2039,10 @@ const InstituteFeedbackQuestions = ({
                     onClick={() => onRatingChange(question.id, value)}
                     aria-label={`${question.label} ${value} out of 5`}
                     className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-black transition ${value <= ratings[question.id]
-                        ? 'border-amber-400 bg-amber-400 text-slate-950'
-                        : isLight
-                          ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
-                          : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
+                      ? 'border-amber-400 bg-amber-400 text-slate-950'
+                      : isLight
+                        ? 'border-slate-200 bg-slate-50 text-slate-400 hover:text-amber-500'
+                        : 'border-white/10 bg-white/5 text-slate-500 hover:text-amber-300'
                       }`}
                   >
                     {value}
@@ -1939,16 +2062,16 @@ const InstituteFeedbackQuestions = ({
         <div className="mt-4 grid gap-4">
           {instituteCheckboxQuestions.map((question) => (
             <fieldset key={question.id}>
-              <legend className={labelClass}>{question.label}</legend>
+              <legend className={labelClass}>{question.label}{requiredLabel}</legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {question.options.map((option) => (
                   <label
                     key={option}
                     className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${checkboxAnswers[question.id].includes(option)
-                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                        : isLight
-                          ? 'border-slate-200 bg-white text-slate-600'
-                          : 'border-white/10 bg-white/5 text-slate-300'
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                      : isLight
+                        ? 'border-slate-200 bg-white text-slate-600'
+                        : 'border-white/10 bg-white/5 text-slate-300'
                       }`}
                   >
                     <input
@@ -1971,16 +2094,16 @@ const InstituteFeedbackQuestions = ({
         <div className="mt-4 grid gap-4">
           {instituteRadioQuestions.map((question) => (
             <fieldset key={question.id}>
-              <legend className={labelClass}>{question.label}</legend>
+              <legend className={labelClass}>{question.label}{requiredLabel}</legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {question.options.map((option) => (
                   <label
                     key={option}
                     className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${radioAnswers[question.id] === option
-                        ? 'border-indigo-500 bg-indigo-600 text-white'
-                        : isLight
-                          ? 'border-slate-200 bg-white text-slate-600'
-                          : 'border-white/10 bg-white/5 text-slate-300'
+                      ? 'border-indigo-500 bg-indigo-600 text-white'
+                      : isLight
+                        ? 'border-slate-200 bg-white text-slate-600'
+                        : 'border-white/10 bg-white/5 text-slate-300'
                       }`}
                   >
                     <input
@@ -2005,7 +2128,7 @@ const InstituteFeedbackQuestions = ({
           {instituteDropdownQuestions.map((question) => (
             <div key={question.id}>
               <label htmlFor={`institute-${question.id}`} className={labelClass}>
-                {question.label}
+                {question.label}{requiredLabel}
               </label>
               <select
                 id={`institute-${question.id}`}

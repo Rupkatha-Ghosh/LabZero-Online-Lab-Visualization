@@ -74,7 +74,7 @@ interface EvaluationContextValue {
   notify: (message: string, tone?: EvaluationToast['tone']) => void;
 }
 
-const STORAGE_KEY_PREFIX = 'labzero_evaluation_progress_v1';
+const STORAGE_KEY = 'labzero_evaluation_progress_v1_browser';
 export const MIN_ONBOARDING_DURATION_MS = 5_000;
 
 export const defaultEvaluationProgress: EvaluationProgressState = {
@@ -110,18 +110,9 @@ const createDefaultState = (): PersistedEvaluationState => ({
   metadata: { ...defaultMetadata, taskCompletedAt: {} },
 });
 
-const getUserStorageKey = (userId?: string | number | null, email?: string | null) => {
-  const identity = userId ?? email;
-  return identity ? `${STORAGE_KEY_PREFIX}_${identity}` : null;
-};
-
-const readPersistedState = (storageKey: string | null): PersistedEvaluationState => {
+const readPersistedState = (): PersistedEvaluationState => {
   try {
-    if (!storageKey) {
-      return createDefaultState();
-    }
-
-    const raw = safeLocalStorage.getItem(storageKey);
+    const raw = safeLocalStorage.getItem(STORAGE_KEY);
     if (!raw) {
       return createDefaultState();
     }
@@ -151,10 +142,8 @@ const readPersistedState = (storageKey: string | null): PersistedEvaluationState
 };
 
 export const EvaluationProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
-  const userStorageKey = getUserStorageKey(user?.id, user?.email);
   const [state, setState] = useState<PersistedEvaluationState>(() =>
-    readPersistedState(userStorageKey),
+    readPersistedState(),
   );
   const [toasts, setToasts] = useState<EvaluationToast[]>([]);
 
@@ -170,19 +159,18 @@ export const EvaluationProvider = ({ children }: { children: React.ReactNode }) 
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
+  // No-op layout effect, we no longer reload on user switches
   useLayoutEffect(() => {
-    setState(readPersistedState(userStorageKey));
-  }, [userStorageKey]);
+    // Left empty or removed to avoid reloading state on user logins/logouts
+  }, []);
 
   useEffect(() => {
-    if (!userStorageKey) return;
-
-    safeLocalStorage.setItem(userStorageKey, JSON.stringify(state));
+    safeLocalStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     trackEvaluationEvent('progress_saved', {
       completion: taskKeys.filter((task) => state.progress[task]).length,
       tourCompleted: state.progress.tourCompleted,
     });
-  }, [state, userStorageKey]);
+  }, [state]);
 
   const startOnboarding = useCallback(() => {
     setState((current) => {
