@@ -429,7 +429,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   Admin Panel
                 </button>
               )}
-              {(user.role === 'teacher' || user.role === 'institute' || user.is_staff || user.is_superuser) && (
+              {(user.is_staff || user.is_superuser) && (
                 <button
                   onClick={onFeedbackAdminClick}
                   className="hidden md:block px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full text-[13px] font-bold uppercase tracking-tight transition-all shadow-md shadow-cyan-500/25 border border-cyan-400/20"
