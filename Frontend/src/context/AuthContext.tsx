@@ -98,9 +98,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (authError) {
       window.history.replaceState({}, document.title, window.location.pathname);
-      const msg = authError === 'account_not_found' 
-        ? 'Account not found. Please pick a role and Sign Up first.' 
-        : `Authentication failed: ${authError}`;
+      let msg = `Authentication failed: ${authError}`;
+      if (authError === 'account_not_found') {
+        msg = 'Account not found. Please pick a role and Sign Up first.';
+      } else if (authError === 'domain_not_allowed') {
+        msg = 'Only @heritageit.edu.in emails are allowed for Google Login.';
+      } else if (authError === 'registration_disabled') {
+        msg = 'Account creation is being stopped for the time being until the feedback is being collected. Use college mail id and sign in with Google to login.';
+      }
       setError(msg);
       return false;
     }

@@ -85,6 +85,10 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
             </button>
           </div>
 
+          <div className="mb-6 text-red-600 dark:text-red-400 text-xs font-mono uppercase tracking-wider text-center leading-normal font-semibold">
+            Account creation is being stopped for the time being until the feedback is being collected. Use college mail ID and sign in with Google to login.
+          </div>
+
           {(error || authError) && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -160,59 +164,63 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {!isLogin && (
-                    <div className="space-y-3">
+                    <div className="space-y-3 opacity-60">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
                           type="text"
-                          placeholder="FIRST NAME"
+                          placeholder="FIRST NAME (DISABLED)"
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-xs font-mono"
-                          required
+                          disabled={true}
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white placeholder:text-slate-500 focus:outline-none transition-all text-xs font-mono cursor-not-allowed opacity-50"
                         />
                         <input
                           type="text"
-                          placeholder="LAST NAME"
+                          placeholder="LAST NAME (DISABLED)"
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-xs font-mono"
-                          required
+                          disabled={true}
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white placeholder:text-slate-500 focus:outline-none transition-all text-xs font-mono cursor-not-allowed opacity-50"
                         />
                       </div>
                       <input
                         type="text"
-                        placeholder="USERNAME"
+                        placeholder="USERNAME (DISABLED)"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-xs font-mono"
-                        required
+                        disabled={true}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white placeholder:text-slate-500 focus:outline-none transition-all text-xs font-mono cursor-not-allowed opacity-50"
                       />
                     </div>
                   )}
 
-                  <div className="space-y-2">
+                  <div className={`space-y-2 ${!isLogin ? 'opacity-60' : ''}`}>
                     <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">
-                      {isLogin ? "Email or Username" : "Email"}
+                      {isLogin ? "Email or Username" : "Email (Disabled)"}
                     </label>
                     <input
                       type={isLogin ? "text" : "email"}
-                      required
+                      required={isLogin}
+                      disabled={!isLogin}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder={isLogin ? "Enter email or username..." : "Enter your email..."}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light"
+                      placeholder={isLogin ? "Enter email or username..." : "Registration disabled"}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">Password</label>
+                  <div className={`space-y-2 ${!isLogin ? 'opacity-60' : ''}`}>
+                    <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">
+                      {isLogin ? "Password" : "Password (Disabled)"}
+                    </label>
                     <input
                       type="password"
-                      required
+                      required={isLogin}
+                      disabled={!isLogin}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password..."
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light"
+                      placeholder={isLogin ? "Enter your password..." : "Registration disabled"}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
 
@@ -251,8 +259,8 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
                   )}
 
                   <button
-                    type="submit"
-                    disabled={isSubmitting || (!isLogin && !role)}
+                    type={isLogin ? "submit" : "button"}
+                    disabled={isSubmitting || !isLogin || (!isLogin && !role)}
                     className="w-full h-16 rounded-2xl bg-primary text-white font-mono uppercase tracking-[.2em] hover:bg-primary/80 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/30 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
@@ -262,8 +270,8 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
                       </div>
                     ) : (
                       <>
-                        {isLogin ? 'Login' : 'Create Account'}
-                        <ArrowRight size={18} />
+                        {isLogin ? 'Login' : 'Account Creation Disabled'}
+                        {isLogin && <ArrowRight size={18} />}
                       </>
                     )}
                   </button>

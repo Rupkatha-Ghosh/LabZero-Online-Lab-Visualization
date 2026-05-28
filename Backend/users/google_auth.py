@@ -45,6 +45,7 @@ class GoogleLoginView(View):
             'access_type': 'offline',
             'state': state,
             'prompt': 'select_account',
+            'hd': 'heritageit.edu.in',
         }
 
         url = f"{GOOGLE_AUTH_URL}?{urllib.parse.urlencode(params)}"
@@ -112,6 +113,9 @@ class GoogleCallbackView(View):
         if not email:
             return HttpResponseRedirect(f"{FRONTEND_URL}?auth_error=no_email")
 
+        if not email.endswith('@heritageit.edu.in'):
+            return HttpResponseRedirect(f"{FRONTEND_URL}?auth_error=domain_not_allowed")
+
         user = None
 
         try:
@@ -128,24 +132,7 @@ class GoogleCallbackView(View):
                 pass
 
         if not user:
-            if role == 'login':
-                return HttpResponseRedirect(f"{FRONTEND_URL}?auth_error=account_not_found")
-
-            base_username = email.split('@')[0]
-            username = base_username
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
-
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                first_name=first_name,
-                last_name=last_name,
-                role=role,
-                google_id=google_id,
-            )
+            return HttpResponseRedirect(f"{FRONTEND_URL}?auth_error=registration_disabled")
 
         refresh = RefreshToken.for_user(user)
         access_jwt = str(refresh.access_token)
