@@ -108,6 +108,8 @@ const taskIsComplete = (
 const guideIsComplete = (progress: EvaluationProgressState) =>
   progress.tourCompleted && requiredTourTasks.every((task) => progress[task]);
 
+let tourHasAutoStarted = false;
+
 const OnboardingTour = () => {
   const { user } = useAuth();
   const { progress, startOnboarding, completeOnboarding, markTaskComplete } = useEvaluationProgress();
@@ -121,6 +123,7 @@ const OnboardingTour = () => {
   const isRunningRef = useRef(false);
   const isUnmountingRef = useRef(false);
   const isPausingForActionRef = useRef(false);
+  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     progressRef.current = progress;
@@ -160,6 +163,10 @@ const OnboardingTour = () => {
       clearFallbackTimer();
       activeElementRef.current = null;
 
+      if (isTransitioningRef.current) {
+        return;
+      }
+
       if (isPausingForActionRef.current) {
         isPausingForActionRef.current = false;
         return;
@@ -193,12 +200,14 @@ const OnboardingTour = () => {
   }, [markTaskComplete]);
 
   const showStep = useCallback((index: number) => {
+    console.log('[Tour] showStep index:', index);
     clearRetryTimer();
     clearFallbackTimer();
     activeElementRef.current = null;
 
     const step = guideSteps[index];
     if (!step) {
+      console.log('[Tour] showStep: no step at index', index, '- finishing onboarding');
       driverRef.current?.destroy();
       driverRef.current = null;
       isRunningRef.current = false;
@@ -213,14 +222,20 @@ const OnboardingTour = () => {
     activeIndexRef.current = index;
 
     if (stepIsSatisfied(step)) {
+      console.log('[Tour] showStep:', index, 'is already satisfied, skipping to next');
       showStep(index + 1);
       return;
     }
+
+    isTransitioningRef.current = true;
+    driverRef.current?.destroy();
+    isTransitioningRef.current = false;
 
     step.beforeShow?.();
     if (step.fallbackAfterMs && step.onFallback) {
       fallbackTimerRef.current = window.setTimeout(() => {
         if (activeIndexRef.current === index && !getVisibleTourElement(step.selector)) {
+          console.log('[Tour] showStep index:', index, 'fallback triggered');
           step.onFallback?.();
         }
       }, step.fallbackAfterMs);
@@ -229,14 +244,20 @@ const OnboardingTour = () => {
     const waitStartedAt = Date.now();
 
     const renderWhenReady = () => {
-      if (!isRunningRef.current || activeIndexRef.current !== index) return;
+      console.log('[Tour] renderWhenReady checking selector:', step.selector);
+      if (!isRunningRef.current || activeIndexRef.current !== index) {
+        console.log('[Tour] renderWhenReady: tour is not running or index has changed');
+        return;
+      }
 
       const element = getVisibleTourElement(step.selector);
+      console.log('[Tour] renderWhenReady element found:', !!element);
 
       if (!element) {
         const timedOut = Date.now() - waitStartedAt >= (step.maxWaitMs ?? DEFAULT_TARGET_WAIT_MS);
 
         if (timedOut) {
+          console.log('[Tour] renderWhenReady selector timed out:', step.selector);
           step.onFallback?.();
           showStep(index + 1);
           return;
@@ -246,6 +267,7 @@ const OnboardingTour = () => {
         return;
       }
 
+      console.log('[Tour] renderWhenReady highlighting element for step:', step.title);
       element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 
       const waitsForUserAction = Boolean(step.waitForTask || step.waitForEvent);
@@ -278,9 +300,22 @@ const OnboardingTour = () => {
   }, [clearFallbackTimer, clearRetryTimer, completeOnboarding, createDriver, stepIsSatisfied]);
 
   const startTour = useCallback((force = false) => {
-    if (!force && guideIsComplete(progressRef.current)) return;
+    console.log('[Tour] startTour called, force:', force);
+    console.log('[Tour] progress:', progressRef.current);
+    console.log('[Tour] guideIsComplete:', guideIsComplete(progressRef.current));
+    console.log('[Tour] tourHasAutoStarted:', tourHasAutoStarted);
+
+    if (!force && guideIsComplete(progressRef.current)) {
+      console.log('[Tour] startTour aborted: guide is already complete');
+      return;
+    }
+    if (!force && tourHasAutoStarted) {
+      console.log('[Tour] startTour aborted: tour has already auto-started');
+      return;
+    }
 
     if (isRunningRef.current) {
+      console.log('[Tour] startTour: already running, resetting');
       if (!force) return;
       clearRetryTimer();
       clearFallbackTimer();
@@ -293,11 +328,15 @@ const OnboardingTour = () => {
 
     isUnmountingRef.current = false;
     isRunningRef.current = true;
+    if (!force) {
+      tourHasAutoStarted = true;
+    }
     syncAuthenticatedProgress();
     startOnboarding();
 
     driverRef.current = createDriver();
 
+    console.log('[Tour] startTour starting step 0');
     showStep(0);
   }, [
     clearFallbackTimer,
@@ -326,6 +365,10 @@ const OnboardingTour = () => {
     startTour(false);
 
     return () => {
+      if (!activeElementRef.current) {
+        console.log('[Tour] unmounting before element was highlighted, resetting tourHasAutoStarted');
+        tourHasAutoStarted = false;
+      }
       isUnmountingRef.current = true;
       clearRetryTimer();
       clearFallbackTimer();
