@@ -16,7 +16,6 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
         registration.unregister().then((success) => {
           if (success) {
             console.log('Unregistered active service worker in development mode:', registration);
-            window.location.reload();
           }
         });
       }

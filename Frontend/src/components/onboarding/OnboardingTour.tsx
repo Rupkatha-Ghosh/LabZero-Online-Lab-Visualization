@@ -82,7 +82,7 @@ const requiredTourTasks: EvaluationTaskKey[] = [
   'simulationViewed',
 ];
 
-const DEFAULT_TARGET_WAIT_MS = 12_000;
+const DEFAULT_TARGET_WAIT_MS = 4_000;
 const TARGET_RETRY_MS = 350;
 
 const isVisibleTourTarget = (element: Element) => {
