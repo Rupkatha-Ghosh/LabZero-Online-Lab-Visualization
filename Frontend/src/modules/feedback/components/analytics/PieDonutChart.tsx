@@ -38,8 +38,8 @@ const PieDonutChart = ({
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius="46%"
-                  outerRadius="76%"
+                  innerRadius="54%"
+                  outerRadius="92%"
                   paddingAngle={coloredData.length > 1 ? 2 : 0}
                 >
                   {coloredData.map((entry) => (
