@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Home, RotateCcw, Download } from 'lucide-react';
-import FeedbackPageShell from '../components/common/FeedbackPageShell';
 
 export interface FeedbackThankYouDetails {
   title?: string;
@@ -24,6 +23,51 @@ const floralMarks = [
   { className: 'right-[10%] top-[23%] rotate-[24deg]', tone: 'rose' },
   { className: 'right-[37%] bottom-[11%] rotate-[-20deg]', tone: 'mint' },
 ];
+
+const DEFAULT_THANK_YOU_MESSAGE =
+  'Your feedback has been submitted successfully.';
+
+const TEAM_THANK_YOU_MESSAGE =
+  'Thank you from the LabZero team for sharing your feedback with us. Your response helps us improve the learning experience for everyone.';
+
+const LabZeroBrand = () => (
+  <div className="flex items-center justify-center gap-5">
+    <div className="relative flex h-14 w-14 items-center justify-center">
+      <svg
+        viewBox="0 0 44 44"
+        className="h-full w-full drop-shadow-[0_10px_22px_rgba(99,102,241,0.18)]"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M10 12 H34 L10 32 H34"
+          stroke="#0f172a"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle
+          cx="22"
+          cy="22"
+          r="10"
+          stroke="var(--color-primary)"
+          strokeWidth="2.4"
+          opacity="0.75"
+        />
+        <circle cx="10" cy="12" r="2.2" fill="var(--color-secondary)" />
+        <circle cx="34" cy="32" r="2.2" fill="var(--color-primary)" />
+      </svg>
+      <div className="absolute inset-0 -z-10 rounded-full bg-[var(--color-primary)]/15 blur-xl" />
+    </div>
+    <p className="text-4xl font-black leading-none tracking-normal sm:text-5xl">
+      <span className="text-[#0f172a]">LAB</span>
+      <span className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent">
+        ZERO
+      </span>
+    </p>
+  </div>
+);
 
 const Flower = ({ className, tone }: { className: string; tone: string }) => (
   <span
@@ -67,7 +111,7 @@ const FeedbackThankYouPage = ({
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
 
-    // --- Credits box ---
+    // --- Project brand box ---
     const boxX = 96, boxY = 40, boxW = W - 192, boxH = 90, boxR = 36;
     ctx.beginPath();
     if (typeof (ctx as any).roundRect === 'function') {
@@ -81,45 +125,45 @@ const FeedbackThankYouPage = ({
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // "THE SCRIPT KIDDIES PRESENT"
-    ctx.fillStyle = '#4f46e5';
-    ctx.font = '800 13px "Inter", "Sora", sans-serif';
-    ctx.textAlign = 'center';
+    const logoX = W / 2 - 150;
+    const logoY = boxY + 27;
+    ctx.save();
+    ctx.translate(logoX, logoY);
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(36, 0);
+    ctx.lineTo(0, 36);
+    ctx.lineTo(36, 36);
+    ctx.stroke();
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(18, 18, 13, -0.2, Math.PI * 1.55);
+    ctx.stroke();
+    ctx.fillStyle = '#ec4899';
+    ctx.beginPath();
+    ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#6366f1';
+    ctx.beginPath();
+    ctx.arc(36, 36, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
-    // Polyfill letterSpacing in Canvas
-    const text = 'THE SCRIPT KIDDIES PRESENT';
-    if ('letterSpacing' in ctx) {
-      (ctx as any).letterSpacing = '3.5px';
-      ctx.fillText(text, W / 2, boxY + 38);
-      (ctx as any).letterSpacing = '0px';
-    } else {
-      // Draw manually with spacing if unsupported
-      const canvasCtx = ctx as CanvasRenderingContext2D;
-      const chars = text.split('');
-      const spacing = 3.5;
-      let totalWidth = 0;
-      canvasCtx.font = '800 13px "Inter", "Sora", sans-serif';
-      const widths = chars.map(c => {
-        const w = canvasCtx.measureText(c).width;
-        totalWidth += w + spacing;
-        return w;
-      });
-      totalWidth -= spacing; // remove last space
-      let curX = W / 2 - totalWidth / 2;
-      chars.forEach((c, idx) => {
-        canvasCtx.fillText(c, curX + widths[idx] / 2, boxY + 38);
-        curX += widths[idx] + spacing;
-      });
-    }
-
-    // "LabZero" gradient
-    const grad = ctx.createLinearGradient(W / 2 - 80, 0, W / 2 + 80, 0);
+    const grad = ctx.createLinearGradient(W / 2 - 60, 0, W / 2 + 175, 0);
     grad.addColorStop(0, '#4f46e5');
     grad.addColorStop(0.5, '#a855f7');
     grad.addColorStop(1, '#ec4899');
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 38px "Inter", "Sora", sans-serif';
+    ctx.fillText('LAB', W / 2 - 98, boxY + 62);
     ctx.fillStyle = grad;
-    ctx.font = '900 36px "Inter", "Sora", sans-serif';
-    ctx.fillText('LabZero', W / 2, boxY + 76);
+    ctx.fillText('ZERO', W / 2 - 23, boxY + 62);
 
     // --- Decorative vines ---
     const drawVine = (x: number, y: number, w: number, angle: number) => {
@@ -208,24 +252,34 @@ const FeedbackThankYouPage = ({
     // Message text with word-wrap
     ctx.fillStyle = '#475569';
     ctx.font = '400 14px "Inter", "Sora", sans-serif';
-    const msgText = details?.message || 'Thanks for reaching out. Your feedback has been received, and it will help us improve the LabZero experience.';
-    const words = msgText.split(' ');
-    let line = '';
-    const maxWidth = 460;
-    for (const word of words) {
-      const test = line + (line ? ' ' : '') + word;
-      if (ctx.measureText(test).width > maxWidth && line) {
-        ctx.fillText(line, W / 2, yPos);
-        line = word;
-        yPos += 20;
-      } else {
-        line = test;
+    const drawWrappedText = (text: string, maxWidth: number, lineHeight: number) => {
+      const words = text.split(' ');
+      let line = '';
+      for (const word of words) {
+        const test = line + (line ? ' ' : '') + word;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          ctx.fillText(line, W / 2, yPos);
+          line = word;
+          yPos += lineHeight;
+        } else {
+          line = test;
+        }
       }
-    }
-    if (line) {
-      ctx.fillText(line, W / 2, yPos);
-      yPos += 28;
-    }
+      if (line) {
+        ctx.fillText(line, W / 2, yPos);
+        yPos += lineHeight;
+      }
+    };
+
+    const msgText = details?.message || DEFAULT_THANK_YOU_MESSAGE;
+    const maxWidth = 460;
+    drawWrappedText(msgText, maxWidth, 20);
+    yPos += 8;
+
+    ctx.fillStyle = '#334155';
+    ctx.font = '600 14px "Inter", "Sora", sans-serif';
+    drawWrappedText(TEAM_THANK_YOU_MESSAGE, maxWidth, 20);
+    yPos += 8;
 
     // Form title badge
     if (details?.formTitle) {
@@ -255,7 +309,7 @@ const FeedbackThankYouPage = ({
 
   const message =
     details?.message ||
-    'Thanks for reaching out. Your feedback has been received, and it will help us improve the LabZero experience.';
+    DEFAULT_THANK_YOU_MESSAGE;
 
   return (
     <div className="min-h-screen w-full bg-white flex items-center justify-center px-4 py-12 relative">
@@ -284,12 +338,8 @@ const FeedbackThankYouPage = ({
 
       <section ref={cardRef} className="w-full text-center max-w-2xl mx-auto">
 
-        {/* Credits at the Top */}
-        <div className="mb-10 w-full flex flex-col items-center justify-center rounded-[36px] border-[3px] border-indigo-100 bg-indigo-50/40 py-7 shadow-lg">
-          <span className="text-base uppercase tracking-[0.25em] text-indigo-600 font-extrabold">The Script Kiddies Present</span>
-          <p className="mt-2 text-4xl font-black tracking-tight">
-            <span className="bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">LabZero</span>
-          </p>
+        <div className="mb-10 w-full flex flex-col items-center justify-center rounded-[32px] border border-indigo-100 bg-white/90 px-6 py-7 shadow-xl shadow-indigo-100/70">
+          <LabZeroBrand />
         </div>
 
         <div className="relative mx-auto w-full max-w-3xl pb-3 pt-4">
@@ -324,6 +374,9 @@ const FeedbackThankYouPage = ({
           )}
           <p className="mt-2 text-sm leading-6 text-slate-600">
             {message}
+          </p>
+          <p className="mt-3 text-sm font-semibold leading-6 text-slate-700">
+            {TEAM_THANK_YOU_MESSAGE}
           </p>
 
           {details?.formTitle && (
