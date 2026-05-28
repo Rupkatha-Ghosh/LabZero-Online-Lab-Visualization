@@ -21,13 +21,13 @@ const checklist: Array<{
   label: string;
   icon: typeof CheckCircle2;
 }> = [
-  { key: 'tourCompleted', label: 'Onboarding', icon: Sparkles },
-  { key: 'loginCompleted', label: 'Login', icon: LogIn },
-  { key: 'dashboardVisited', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'videoCallViewed', label: 'Video Calling', icon: Video },
-  { key: 'subjectViewed', label: 'Subject View', icon: BookOpenCheck },
-  { key: 'simulationViewed', label: 'Simulation View', icon: MonitorPlay },
-];
+    { key: 'tourCompleted', label: 'Onboarding', icon: Sparkles },
+    { key: 'loginCompleted', label: 'Login', icon: LogIn },
+    { key: 'dashboardVisited', label: 'Dashboard', icon: LayoutDashboard },
+    { key: 'videoCallViewed', label: 'Video Calling', icon: Video },
+    { key: 'subjectViewed', label: 'Subject View', icon: BookOpenCheck },
+    { key: 'simulationViewed', label: 'Simulation View', icon: MonitorPlay },
+  ];
 
 interface EvaluationProgressWidgetProps {
   theme: 'dark' | 'light';
@@ -43,9 +43,7 @@ const EvaluationProgressWidget = ({
   const panelRef = useRef<HTMLElement | null>(null);
   const isLight = theme === 'light';
 
-  const handleStartTour = () => {
-    window.dispatchEvent(new CustomEvent('labzero:start-guide-tour'));
-  };
+
 
   const handleScrollDown = () => {
     panelRef.current?.scrollTo({
@@ -68,11 +66,10 @@ const EvaluationProgressWidget = ({
       {expanded && (
         <section
           ref={panelRef}
-          className={`max-h-[calc(100vh-17rem)] w-[min(calc(100vw-3rem),320px)] overflow-y-auto rounded-3xl border backdrop-blur-xl ${
-            isLight
+          className={`max-h-[calc(100vh-17rem)] w-[min(calc(100vw-3rem),320px)] overflow-y-auto rounded-3xl border backdrop-blur-xl ${isLight
               ? 'border-slate-200 bg-white/95 text-slate-950 shadow-[0_20px_70px_rgba(15,23,42,0.16)]'
               : 'border-white/10 bg-slate-950/90 text-white shadow-[0_20px_70px_rgba(0,0,0,0.42)]'
-          }`}
+            }`}
         >
           <div className="flex items-center justify-between gap-4 p-4">
             <div className="flex items-center gap-3">
@@ -104,11 +101,10 @@ const EvaluationProgressWidget = ({
             onClick={handleScrollDown}
             aria-label="Scroll down guide tour progress"
             title="Scroll down"
-            className={`mx-4 mb-3 flex h-9 w-[calc(100%-2rem)] items-center justify-center gap-2 rounded-2xl border text-xs font-black transition ${
-              isLight
+            className={`mx-4 mb-3 flex h-9 w-[calc(100%-2rem)] items-center justify-center gap-2 rounded-2xl border text-xs font-black transition ${isLight
                 ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
                 : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
-            }`}
+              }`}
           >
             <ChevronsDown className="h-4 w-4" />
             Scroll down
@@ -129,15 +125,14 @@ const EvaluationProgressWidget = ({
               return (
                 <div
                   key={item.key}
-                  className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm ${
-                    complete
+                  className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm ${complete
                       ? isLight
                         ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                         : 'border-emerald-300/20 bg-emerald-300/10 text-emerald-100'
                       : isLight
                         ? 'border-slate-200 bg-slate-50 text-slate-600'
                         : 'border-white/10 bg-white/5 text-slate-300'
-                  }`}
+                    }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
                   <span className="min-w-0 flex-1 font-semibold">{item.label}</span>
@@ -150,25 +145,16 @@ const EvaluationProgressWidget = ({
               );
             })}
 
-            <button
-              type="button"
-              onClick={handleStartTour}
-              className="mt-1 flex h-11 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 text-sm font-black text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-500"
-            >
-              <Route className="h-4 w-4" />
-              Start tour
-            </button>
 
             <button
               type="button"
               onClick={handleFeedbackClick}
-              className={`flex h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-black transition ${
-                feedbackUnlocked
+              className={`flex h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-black transition ${feedbackUnlocked
                   ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20 hover:bg-emerald-400'
                   : isLight
                     ? 'border border-slate-200 bg-slate-100 text-slate-500 hover:bg-slate-200'
                     : 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
-              }`}
+                }`}
             >
               {feedbackUnlocked ? (
                 <MessageSquareText className="h-4 w-4" />
@@ -187,11 +173,10 @@ const EvaluationProgressWidget = ({
         aria-label={expanded ? 'Hide guide tour progress' : 'Show guide tour progress'}
         title="Guide Tour"
         data-tour="onboarding"
-        className={`relative inline-flex h-14 w-14 items-center justify-center rounded-2xl border transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-          isLight
+        className={`relative inline-flex h-14 w-14 items-center justify-center rounded-2xl border transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isLight
             ? 'border-slate-200 bg-white/90 text-indigo-700 shadow-[0_18px_45px_rgba(15,23,42,0.16)] hover:bg-indigo-50 focus-visible:ring-indigo-500 focus-visible:ring-offset-white'
             : 'border-white/10 bg-slate-900/90 text-cyan-200 shadow-[0_18px_45px_rgba(0,0,0,0.38)] hover:border-cyan-300/30 hover:bg-slate-800 focus-visible:ring-cyan-300 focus-visible:ring-offset-slate-950'
-        }`}
+          }`}
       >
         <Route className="h-6 w-6" />
         <Sparkles className="absolute right-2 top-2 h-3.5 w-3.5" />
