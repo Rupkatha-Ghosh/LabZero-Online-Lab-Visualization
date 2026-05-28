@@ -220,16 +220,19 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
                     <div className="space-y-4 pt-2">
                       <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">Select Access Level</label>
                       <div className="grid grid-cols-1 gap-3">
-                        {[
-                          { id: 'student', label: 'Student', desc: 'Interact w/ simulations & tutor', icon: GraduationCap },
-                          { id: 'teacher', label: 'Teacher', desc: 'Access classroom & resources', icon: School },
-                          { id: 'institute', label: 'Institute', desc: 'System analytics & fleet mgmt', icon: Building2 },
+                          {[
+                          { id: 'student', label: 'Student', desc: 'Interact w/ simulations & tutor', icon: GraduationCap, disabled: false },
+                          { id: 'teacher', label: 'Teacher', desc: 'Access classroom & resources', icon: School, disabled: false },
+                          { id: 'institute', label: 'Institute', desc: 'Disabled for now. Accessed by admin for now.', icon: Building2, disabled: true },
                         ].map((r) => (
                           <button
                             key={r.id}
                             type="button"
-                            onClick={() => setRole(r.id as UserRole)}
-                            className={`p-4 sm:p-5 rounded-3xl border transition-all text-left flex items-center gap-4 ${role === r.id
+                            disabled={r.disabled}
+                            onClick={() => !r.disabled && setRole(r.id as UserRole)}
+                            className={`p-4 sm:p-5 rounded-3xl border transition-all text-left flex items-center gap-4 ${r.disabled
+                                ? 'opacity-40 cursor-not-allowed bg-white/[0.02] border-white/5 text-slate-500'
+                                : role === r.id
                                 ? 'bg-primary/20 border-primary text-white shadow-lg shadow-primary/10'
                                 : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/20'
                               }`}
