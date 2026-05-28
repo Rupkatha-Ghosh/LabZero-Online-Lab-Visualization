@@ -408,7 +408,7 @@ const FeedbackOverview = ({
             <h3 className="text-lg font-black text-slate-950">
               Submitted Feedback Analysis
             </h3>
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4">
               {overview.overall.siteFeedback.analytics && (
                 <FormOverviewCard
                   form={{
@@ -537,26 +537,27 @@ const FormOverviewCard = ({
   }, {});
 
   return (
-    <article className="rounded-2xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur">
+    <article className="rounded-2xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur sm:p-6">
       <div className="mb-4">
         <h4 className="text-lg font-bold text-slate-950">{form.title}</h4>
         <p className="mt-1 text-sm text-slate-500">
           {analytics.totalResponses} responses · {analytics.questionStats.length} questions
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <MiniPanel title="Rating">
-          <BarVisualization data={toChartData(ratingDistribution)} heightClass="h-44" />
+          <BarVisualization data={toChartData(ratingDistribution)} heightClass="h-72" />
         </MiniPanel>
         <MiniPanel title="Choices">
           <PieVisualization
             data={toChartData(choiceCounts)}
-            heightClass="h-72"
+            heightClass="h-96"
             legendGridClassName="sm:grid-cols-2"
+            legendMaxHeightClass="max-h-40"
           />
         </MiniPanel>
         <MiniPanel title="Text" wide>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             <WordCloud words={textAnalysis.wordFrequencies.slice(0, 18)} />
             <SentimentSummary
               sentiment={textAnalysis.sentiment}
@@ -675,7 +676,7 @@ const MiniPanel = ({
   children: React.ReactNode;
   wide?: boolean;
 }) => (
-  <div className={`rounded-2xl border border-slate-100 bg-slate-50/70 p-3 ${wide ? 'md:col-span-2' : ''}`}>
+  <div className={`min-w-0 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 ${wide ? 'xl:col-span-2' : ''}`}>
     <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">{title}</p>
     {children}
   </div>
@@ -688,10 +689,10 @@ const BarVisualization = ({
   data: Array<{ name: string; value: number; fill: string }>;
   heightClass?: string;
 }) => (
-  <div className={heightClass}>
+  <div className={`min-w-0 ${heightClass}`}>
     {data.length ? (
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
+        <BarChart data={data} margin={{ top: 8, right: 12, bottom: 8, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis dataKey="name" tick={{ fontSize: 11 }} />
           <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
@@ -713,15 +714,18 @@ const PieVisualization = ({
   data,
   heightClass = 'h-72',
   legendGridClassName,
+  legendMaxHeightClass,
 }: {
   data: Array<{ name: string; value: number; fill: string }>;
   heightClass?: string;
   legendGridClassName?: string;
+  legendMaxHeightClass?: string;
 }) => (
   <PieDonutChart
     data={data}
     heightClass={heightClass}
     legendGridClassName={legendGridClassName}
+    legendMaxHeightClass={legendMaxHeightClass}
   />
 );
 
