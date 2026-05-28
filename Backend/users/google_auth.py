@@ -132,7 +132,24 @@ class GoogleCallbackView(View):
                 pass
 
         if not user:
-            return HttpResponseRedirect(f"{FRONTEND_URL}?auth_error=registration_disabled")
+            if role == 'login':
+                return HttpResponseRedirect(f"{FRONTEND_URL}?auth_error=account_not_found")
+
+            base_username = email.split('@')[0]
+            username = base_username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                role=role if role in ('student', 'teacher', 'institute') else 'student',
+                google_id=google_id,
+            )
 
         refresh = RefreshToken.for_user(user)
         access_jwt = str(refresh.access_token)
