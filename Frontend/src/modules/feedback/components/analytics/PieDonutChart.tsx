@@ -25,10 +25,10 @@ const PieDonutChart = ({
   }));
 
   return (
-    <div className={`${heightClass} flex min-h-0 flex-col gap-3`}>
+    <div className={`${heightClass} flex min-h-0 min-w-0 flex-col gap-3`}>
       {coloredData.length ? (
         <>
-          <div className="min-h-36 flex-1">
+          <div className="min-h-36 min-w-0 flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
                 <Tooltip />
