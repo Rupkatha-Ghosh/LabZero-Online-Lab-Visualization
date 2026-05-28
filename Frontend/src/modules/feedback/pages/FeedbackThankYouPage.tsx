@@ -30,6 +30,8 @@ const DEFAULT_THANK_YOU_MESSAGE =
 const TEAM_THANK_YOU_MESSAGE =
   'Thank you from the LabZero team for sharing your feedback with us. Your response helps us improve the learning experience for everyone.';
 
+const TEAM_NAME = 'Script Kiddies';
+
 const LabZeroBrand = () => (
   <div className="flex items-center justify-center gap-5">
     <div className="relative flex h-14 w-14 items-center justify-center">
@@ -164,6 +166,11 @@ const FeedbackThankYouPage = ({
     ctx.fillText('LAB', W / 2 - 98, boxY + 62);
     ctx.fillStyle = grad;
     ctx.fillText('ZERO', W / 2 - 23, boxY + 62);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = '700 13px "Inter", "Sora", sans-serif';
+    ctx.fillText(`Team ${TEAM_NAME}`, W / 2, boxY + 80);
 
     // --- Decorative vines ---
     const drawVine = (x: number, y: number, w: number, angle: number) => {
@@ -377,6 +384,9 @@ const FeedbackThankYouPage = ({
           </p>
           <p className="mt-3 text-sm font-semibold leading-6 text-slate-700">
             {TEAM_THANK_YOU_MESSAGE}
+          </p>
+          <p className="mt-4 text-xs font-black uppercase tracking-[0.22em] text-indigo-600">
+            Team {TEAM_NAME}
           </p>
 
           {details?.formTitle && (
