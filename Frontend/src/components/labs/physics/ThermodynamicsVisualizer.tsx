@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { Thermometer, Zap, Activity, Info, RefreshCw, Gauge, FlaskConical, Wind } from 'lucide-react';
@@ -11,7 +12,8 @@ interface Particle {
 }
 
 const ThermodynamicsVisualizer: React.FC = () => {
-  const [temperature, setTemperature] = useState(300); // Kelvin
+  
+  const { t } = useLanguage();const [temperature, setTemperature] = useState(300); // Kelvin
   const [volume, setVolume] = useState(2); // relative units
   const [pressure, setPressure] = useState(1); // relative units
   const [isHeating, setIsHeating] = useState(false);
@@ -29,6 +31,7 @@ const ThermodynamicsVisualizer: React.FC = () => {
 
   // Particle System Logic
   useEffect(() => {
+  
     // Initialize particles
     const initialParticles: Particle[] = Array.from({ length: 50 }).map((_, i) => ({
       id: i,
@@ -96,30 +99,27 @@ const ThermodynamicsVisualizer: React.FC = () => {
       <div className="w-full flex flex-col md:flex-row items-center justify-between gap-8 z-10">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-indigo-400 font-mono text-[10px] tracking-[0.5em] uppercase">
-            <div className="w-8 h-px bg-indigo-500/50" />
-            Thermodynamics Engine Lab
-          </div>
-          <h2 className="text-4xl md:text-7xl font-display font-black text-white tracking-tighter uppercase leading-none">
-            Kinetic <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-rose-500 to-indigo-600">Dynamics</span>
+            <div className="w-8 h-px bg-indigo-500/50" />{t('Thermodynamics Engine Lab')}</div>
+          <h2 className="text-4xl md:text-7xl font-display font-black text-white tracking-tighter uppercase leading-none">{t('Kinetic')}<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-rose-500 to-indigo-600">{t('Dynamics')}</span>
           </h2>
         </div>
 
         <div className="flex gap-4">
           <MetricDisplay 
             icon={<Thermometer size={16} />} 
-            label="Temp" 
+            label={t('Temp')} 
             value={`${temperature.toFixed(0)}K`} 
             color={temperature > 450 ? 'text-orange-500' : 'text-indigo-400'}
           />
           <MetricDisplay 
             icon={<Gauge size={16} />} 
-            label="Pressure" 
+            label={t('Pressure')} 
             value={pressure.toFixed(2)} 
             color="text-rose-400"
           />
           <MetricDisplay 
             icon={<FlaskConical size={16} />} 
-            label="Volume" 
+            label={t('Volume')} 
             value={`${volume.toFixed(1)}L`} 
             color="text-emerald-400"
           />
@@ -133,13 +133,11 @@ const ThermodynamicsVisualizer: React.FC = () => {
           <div className="glass-panel p-8 rounded-[3rem] border border-white/5 bg-white/[0.01] backdrop-blur-3xl shadow-2xl space-y-10">
              <div className="flex items-center justify-between border-b border-white/5 pb-4">
                 <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
-                  <Activity size={14} className="text-rose-400" />
-                  Control Module
-                </h3>
+                  <Activity size={14} className="text-rose-400" />{t('Control Module')}</h3>
              </div>
 
              <ControlGroup 
-                label="Isothermal Heating" 
+                label={t('Isothermal Heating')} 
                 value={temperature} 
                 unit="K" 
                 min={200} 
@@ -149,7 +147,7 @@ const ThermodynamicsVisualizer: React.FC = () => {
              />
 
              <ControlGroup 
-                label="Compression / Expansion" 
+                label={t('Compression / Expansion')} 
                 value={volume} 
                 unit="L" 
                 min={0.5} 
@@ -161,20 +159,16 @@ const ThermodynamicsVisualizer: React.FC = () => {
              <div className="p-8 bg-rose-500/5 rounded-[2.5rem] border border-rose-500/10 space-y-4">
                 <div className="flex items-center gap-2 text-rose-400">
                   <Info size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-rose-400/80">Boyles & Charles Law</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-rose-400/80">{t('Boyles & Charles Law')}</span>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  As you <span className="text-white font-bold">decrease volume</span>, notice how the pressure surges. <span className="text-white font-bold">Increasing temperature</span> adds kinetic energy to the particles, leading to more frequent wall collisions.
-                </p>
+                <p className="text-xs text-slate-500 leading-relaxed">{t('As you')}<span className="text-white font-bold">{t('decrease volume')}</span>, notice how the pressure surges. <span className="text-white font-bold">{t('Increasing temperature')}</span>{t('adds kinetic energy to the particles, leading to more frequent wall collisions.')}</p>
              </div>
 
              <button 
                 onClick={() => { setTemperature(300); setVolume(2); }}
                 className="w-full py-5 rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 transition-all font-mono text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3"
               >
-                <RefreshCw size={14} />
-                Reset System State
-             </button>
+                <RefreshCw size={14} />{t('Reset System State')}</button>
           </div>
         </div>
 
@@ -214,7 +208,7 @@ const ThermodynamicsVisualizer: React.FC = () => {
 
               <div className="mt-8 flex items-center gap-4 text-slate-500">
                 <Wind size={16} className="animate-pulse" />
-                <span className="text-[10px] font-mono uppercase tracking-[0.3em]">Molecular Kinetic Field</span>
+                <span className="text-[10px] font-mono uppercase tracking-[0.3em]">{t('Molecular Kinetic Field')}</span>
               </div>
            </div>
 
@@ -222,10 +216,8 @@ const ThermodynamicsVisualizer: React.FC = () => {
            <div className="glass-panel rounded-[4rem] border border-white/5 bg-black/40 p-12 flex flex-col items-center justify-between shadow-2xl">
               <div className="w-full space-y-2">
                  <h4 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                   <Activity size={14} className="text-indigo-400" />
-                   State Diagram
-                 </h4>
-                 <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Pressure-Volume Relationship</p>
+                   <Activity size={14} className="text-indigo-400" />{t('State Diagram')}</h4>
+                 <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">{t('Pressure-Volume Relationship')}</p>
               </div>
 
               {/* The SVG Graph */}
@@ -268,12 +260,12 @@ const ThermodynamicsVisualizer: React.FC = () => {
 
               <div className="w-full pt-8 border-t border-white/5 grid grid-cols-2 gap-4">
                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                    <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Current State</p>
-                    <p className="text-sm font-mono font-bold text-white">Ideal Gas</p>
+                    <p className="text-[8px] font-black text-slate-500 uppercase mb-1">{t('Current State')}</p>
+                    <p className="text-sm font-mono font-bold text-white">{t('Ideal Gas')}</p>
                  </div>
                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                    <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Process</p>
-                    <p className="text-sm font-mono font-bold text-indigo-400 uppercase">Isothermal</p>
+                    <p className="text-[8px] font-black text-slate-500 uppercase mb-1">{t('Process')}</p>
+                    <p className="text-sm font-mono font-bold text-indigo-400 uppercase">{t('Isothermal')}</p>
                  </div>
               </div>
            </div>

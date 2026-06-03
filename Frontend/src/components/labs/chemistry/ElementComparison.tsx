@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect } from 'react';
 import { ElementData } from '../../../types/types';
 
@@ -6,6 +7,8 @@ interface ElementComparisonProps {
 }
 
 const ElementComparison: React.FC<ElementComparisonProps> = ({ elements }) => {
+ 
+  const { t } = useLanguage();
   const [el1, setEl1] = useState<ElementData>(elements[0]);
   const [el2, setEl2] = useState<ElementData>(elements[2] || elements[0]);
 
@@ -24,6 +27,7 @@ const ElementComparison: React.FC<ElementComparisonProps> = ({ elements }) => {
   ];
 
   const renderBar = (val1: number, val2: number, propKey: string, color: string) => {
+  
     const maxVal = Math.max(val1, val2, 1);
     const p1 = (val1 / maxVal) * 100;
     const p2 = (val2 / maxVal) * 100;
@@ -50,11 +54,11 @@ const ElementComparison: React.FC<ElementComparisonProps> = ({ elements }) => {
 
   return (
     <div className="glass-card p-8 rounded-[40px] border border-white/10">
-      <h3 className="text-xs font-black text-white/20 uppercase tracking-[0.2em] mb-8">Element Comparison Lab</h3>
+      <h3 className="text-xs font-black text-white/20 uppercase tracking-[0.2em] mb-8">{t('Element Comparison Lab')}</h3>
       
       <div className="grid grid-cols-2 gap-12 mb-12">
         <div className="space-y-4">
-          <label className="text-[10px] font-bold text-white/40 uppercase">Element Alpha</label>
+          <label className="text-[10px] font-bold text-white/40 uppercase">{t('Element Alpha')}</label>
           <select 
             value={el1?.number} 
             onChange={(e) => setEl1(elements.find(el => el.number === Number(e.target.value))!)}
@@ -64,7 +68,7 @@ const ElementComparison: React.FC<ElementComparisonProps> = ({ elements }) => {
           </select>
         </div>
         <div className="space-y-4">
-          <label className="text-[10px] font-bold text-white/40 uppercase">Element Beta</label>
+          <label className="text-[10px] font-bold text-white/40 uppercase">{t('Element Beta')}</label>
           <select 
             value={el2?.number} 
             onChange={(e) => setEl2(elements.find(el => el.number === Number(e.target.value))!)}
@@ -98,7 +102,7 @@ const ElementComparison: React.FC<ElementComparisonProps> = ({ elements }) => {
               >
                 <span className="font-black text-xs">{el1.symbol}</span>
               </div>
-              <span className="text-[10px] font-bold text-white/40 uppercase">Alpha Size</span>
+              <span className="text-[10px] font-bold text-white/40 uppercase">{t('Alpha Size')}</span>
             </div>
             <div className="flex flex-col items-center gap-4">
               <div 
@@ -107,7 +111,7 @@ const ElementComparison: React.FC<ElementComparisonProps> = ({ elements }) => {
               >
                 <span className="font-black text-xs">{el2.symbol}</span>
               </div>
-              <span className="text-[10px] font-bold text-white/40 uppercase">Beta Size</span>
+              <span className="text-[10px] font-bold text-white/40 uppercase">{t('Beta Size')}</span>
             </div>
           </div>
         </>

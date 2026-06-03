@@ -146,7 +146,8 @@ const useAnimatedFavicon = () => {
 
 import { HeroSkeleton } from './components/common/Skeleton';
 import { Molecule, ElementData, Subject, Topic, ViewState, TopicId } from './types/types';
-import { Language, translations } from './services/translations';
+import { Language } from './services/translations';
+import { useLanguage } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { getSubjects } from './services/subjectsService';
 import { SIMULATION_REGISTRY } from './simulations/registry';
@@ -235,7 +236,7 @@ const AppContent: React.FC = () => {
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => (safeLocalStorage.getItem('labzero_theme') as 'dark' | 'light') || 'light');
   const [colorBlindMode, setColorBlindMode] = useState(() => safeLocalStorage.getItem('labzero_colorblind') === 'true');
-  const [language, setLanguage] = useState<Language>(() => (safeLocalStorage.getItem('labzero_language') as Language) || 'en');
+  const { language, setLanguage, t } = useLanguage();
 
   const [isGestureActive, setIsGestureActive] = useState(false);
   const [cameraSource, setCameraSource] = useState<"local" | "remote">("local");
@@ -375,10 +376,6 @@ const AppContent: React.FC = () => {
   }, [colorBlindMode]);
 
   useEffect(() => {
-    safeLocalStorage.setItem('labzero_language', language);
-  }, [language]);
-
-  useEffect(() => {
     if (
       viewState === ViewState.FEEDBACK_FORM ||
       viewState === ViewState.FEEDBACK_THANK_YOU
@@ -434,7 +431,6 @@ const AppContent: React.FC = () => {
   }, [user]);
 
 
-  const t = (key: string) => translations[key]?.[language] || key;
   const isFeedbackView = [
     ViewState.SITE_FEEDBACK,
     ViewState.FEEDBACK_FORM,

@@ -3,10 +3,13 @@ import { Subject } from '../../types/types';
 import { safeLocalStorage } from '../../utils/safeStorage';
 import { Beaker, Zap, Calculator, Dna, ArrowRight, Play, Maximize2, Move3d, RotateCcw, Rotate3d, Layout, Layers, Users, Star, Globe } from 'lucide-react';
 import { Language, translations } from '../../services/translations';
+import { useLanguage } from '../../context/LanguageContext';
 import { Logo } from '../common/Logo';
 import Footer from '../common/Footer';
 // Inline skeleton components (replaces missing '../common/Skeleton')
 const Hero3DModelFallback = ({ theme }: { theme: 'dark' | 'light' }) => {
+ 
+  const { t } = useLanguage();
   const isDark = theme === 'dark';
   return (
     <div className="w-full h-full min-h-[280px] flex items-center justify-center relative overflow-hidden select-none rounded-[32px]">
@@ -187,9 +190,7 @@ const Hero3DModelFallback = ({ theme }: { theme: 'dark' | 'light' }) => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
           </div>
-          <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-slate-600 dark:text-sky-300 font-semibold">
-            Loading Interactive 3D...
-          </span>
+          <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-slate-600 dark:text-sky-300 font-semibold">{t('Loading Interactive 3D...')}</span>
         </div>
       </div>
     </div>
@@ -197,7 +198,8 @@ const Hero3DModelFallback = ({ theme }: { theme: 'dark' | 'light' }) => {
 };
 
 const HeroSkeleton: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
-  return (
+  
+  const { t } = useLanguage();return (
     <div className="flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[75vh] scroll-mt-24 w-full">
       {/* Left-side Text skeleton */}
       <div className="lg:w-[40%] space-y-8 z-10 pt-10 flex flex-col items-center lg:items-start w-full">
@@ -254,12 +256,16 @@ import { InverseSquareGraph } from '../models/InverseSquareGraph';
 
 const LazyElectricFieldSimulation = React.lazy(() => import('../models/ElectricField').then(module => ({ default: module.ElectricFieldSimulation })));
 
-const ElectricFieldSimulationFallback = () => (
-  <div className="w-full h-full flex flex-col items-center justify-center bg-transparent min-h-[300px] select-none">
-    <div className="w-8 h-8 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
-    <div className="mt-4 text-[10px] font-mono tracking-widest text-teal-500/50 uppercase">Loading field grid...</div>
-  </div>
-);
+const ElectricFieldSimulationFallback = () => {
+ 
+  const { t } = useLanguage();
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent min-h-[300px] select-none">
+      <div className="w-8 h-8 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
+      <div className="mt-4 text-[10px] font-mono tracking-widest text-teal-500/50 uppercase">{t('Loading field grid...')}</div>
+    </div>
+  );
+};
 
 const SuspendedElectricFieldSimulation = ({ theme }: { theme: 'dark' | 'light' }) => (
   <React.Suspense fallback={<ElectricFieldSimulationFallback />}>
@@ -280,7 +286,8 @@ const SuspendedHero3DModel = ({ theme }: { theme: 'dark' | 'light' }) => (
 );
 
 const useDeferredHeroWidgets = () => {
-  const [shouldLoad, setShouldLoad] = React.useState(() => {
+  
+  const { t } = useLanguage();const [shouldLoad, setShouldLoad] = React.useState(() => {
     return typeof window !== 'undefined' && safeLocalStorage.getItem('heroWidgetsLoaded') === 'true';
   });
 
@@ -359,8 +366,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
   onLaunchSimulation,
   stats = { subjects: 0, topics: 0, students: 0, average_rating: 0.0, feedback_count: 0 }
 }) => {
+ 
+  const { t } = useLanguage();
   const shouldLoadHeroWidgets = useDeferredHeroWidgets();
-  const t = (key: string) => translations[key]?.[language] || key;
+  
   const feedbackCount = Math.max(0, Number(stats.feedback_count ?? 0));
   const averageRating = Math.max(0, Math.min(5, Number(stats.average_rating ?? 0)));
   const formattedRating = averageRating.toFixed(averageRating % 1 === 0 ? 0 : 1);
@@ -408,16 +417,12 @@ const LandingPage: React.FC<LandingPageProps> = ({
         <div className="flex min-w-0 items-center gap-2 sm:gap-4">
           {!user ? (
             <>
-              <button onClick={onLoginClick} data-tour="login" className="hidden md:block px-5 py-2 text-[15px] font-medium text-[var(--text-primary)] border border-[var(--border-glass)] hover:bg-[var(--bg-panel)] rounded-full transition-all bg-white/5 shadow-sm">
-                Log in
-              </button>
+              <button onClick={onLoginClick} data-tour="login" className="hidden md:block px-5 py-2 text-[15px] font-medium text-[var(--text-primary)] border border-[var(--border-glass)] hover:bg-[var(--bg-panel)] rounded-full transition-all bg-white/5 shadow-sm">{t('Log in')}</button>
               <button
                 onClick={onLoginClick}
                 data-tour="login"
                 className="px-4 sm:px-6 py-2 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/90 text-white rounded-full text-sm sm:text-[15px] font-medium transition-all shadow-md shadow-[var(--color-secondary)]/20 whitespace-nowrap"
-              >
-                Get Started
-              </button>
+              >{t('Get Started')}</button>
             </>
           ) : (
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -425,17 +430,13 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 <button
                   onClick={onAdminClick}
                   className="hidden md:block px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-[13px] font-bold uppercase tracking-tight transition-all shadow-md shadow-indigo-500/25 border border-indigo-400/20"
-                >
-                  Admin Panel
-                </button>
+                >{t('Admin Panel')}</button>
               )}
               {(user.is_staff || user.is_superuser) && (
                 <button
                   onClick={onFeedbackAdminClick}
                   className="hidden md:block px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full text-[13px] font-bold uppercase tracking-tight transition-all shadow-md shadow-cyan-500/25 border border-cyan-400/20"
-                >
-                  Feedback Admin
-                </button>
+                >{t('Feedback Admin')}</button>
               )}
               {user.role && (
                 <button onClick={onDashboardClick} data-tour="dashboard" className="px-5 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-white rounded-full text-[15px] font-medium transition-all shadow-sm hidden md:block">
@@ -457,18 +458,18 @@ const LandingPage: React.FC<LandingPageProps> = ({
           <section id="home" className="flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[75vh] scroll-mt-24">
             <div className="lg:w-[40%] space-y-8 z-10 pt-10 flex flex-col items-center lg:items-start">
               <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#E0F2FE] border border-[#BAE6FD]">
-                <span className="text-xs font-semibold text-[#0284c7] tracking-wide text-center">3D Educational Virtual Lab</span>
+                <span className="text-xs font-semibold text-[#0284c7] tracking-wide text-center">{t('3D Educational Virtual Lab')}</span>
               </div>
 
               <h1 className="text-[52px] md:text-[72px] lg:text-[84px] font-display font-bold leading-[1.1] tracking-[-0.03em] text-[var(--text-primary)] text-center lg:text-left">
-                Visualize.<br />
-                Experiment.<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">Understand.</span>
+                {t('Visualize.')}<br />
+                {t('Experiment.')}<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">{t('Understand.')}</span>
               </h1>
 
               <p className="text-base md:text-lg lg:text-xl text-[var(--text-muted)] max-w-md mx-auto lg:mx-0 leading-relaxed font-normal text-center lg:text-left">
-                Interactive 3D labs for Physics, Chemistry, Math & Biology.<br className="hidden md:block" />
-                Turn abstract concepts into real understanding.
+                {t('Interactive 3D labs for Physics, Chemistry, Math & Biology.')}<br className="hidden md:block" />
+                {t('Turn abstract concepts into real understanding.')}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-center lg:justify-start">
@@ -476,13 +477,13 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   onClick={() => document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' })}
                   className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-[#14b8a6] hover:bg-[#0f766e] text-white rounded-full text-sm sm:text-base font-semibold transition-all shadow-lg shadow-[#14b8a6]/25 flex items-center justify-center gap-2"
                 >
-                  Start Exploring <ArrowRight size={18} />
+                  {t('Start Exploring')} <ArrowRight size={18} />
                 </button>
                 <button
                   onClick={() => document.getElementById('simulations')?.scrollIntoView({ behavior: 'smooth' })}
                   className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white border-2 border-[#E2E8F0] hover:border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#0F172A] rounded-full text-sm sm:text-base font-semibold transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
-                  Watch Demo <Play size={18} fill="currentColor" className="text-[#0F172A]" />
+                  {t('Watch Demo')} <Play size={18} fill="currentColor" className="text-[#0F172A]" />
                 </button>
               </div>
 
@@ -536,10 +537,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               {/* Interaction Hint Bar */}
               <div className="hidden sm:flex absolute bottom-4 left-1/2 -translate-x-1/2 bg-[var(--bg-panel)] backdrop-blur-md border border-[var(--border-glass)] px-4 sm:px-6 py-2.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.1)] items-center gap-4 sm:gap-6 z-20 whitespace-nowrap overflow-x-auto max-w-[90vw] scrollbar-hide">
-                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Move3d size={16} strokeWidth={2} /> Drag</div>
-                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Rotate3d size={16} strokeWidth={2} /> Rotate</div>
-                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Maximize2 size={16} strokeWidth={2} /> Zoom</div>
-                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><RotateCcw size={16} strokeWidth={2} /> Reset</div>
+                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Move3d size={16} strokeWidth={2} />{t('Drag')}</div>
+                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Rotate3d size={16} strokeWidth={2} />{t('Rotate')}</div>
+                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><Maximize2 size={16} strokeWidth={2} />{t('Zoom')}</div>
+                <div className="flex items-center gap-2 text-[11px] sm:text-[13px] font-medium text-[var(--text-muted)]"><RotateCcw size={16} strokeWidth={2} />{t('Reset')}</div>
               </div>
 
               {/* Floating Subject Buttons Overlay */}
@@ -558,9 +559,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
-                <span className="text-xs font-mono uppercase tracking-widest opacity-60">
-                  Curriculum Filter
-                </span>
+                <span className="text-xs font-mono uppercase tracking-widest opacity-60">{t('Curriculum Filter')}</span>
               </div>
 
               {onSelectClass && (
@@ -570,11 +569,11 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     onChange={(e) => onSelectClass(e.target.value || null)}
                     className="w-full appearance-none rounded-xl border border-[var(--border-glass)] bg-[var(--bg-panel)] px-3.5 py-2.5 pr-9 text-sm font-medium tracking-wide text-[var(--text-primary)] outline-none transition-all hover:border-sky-500/50 focus:border-sky-500 backdrop-blur-md cursor-pointer shadow-sm"
                   >
-                    <option value="" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>All Standards</option>
-                    <option value="Class 9" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 9</option>
-                    <option value="Class 10" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 10</option>
-                    <option value="Class 11" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 11</option>
-                    <option value="Class 12" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>Class 12</option>
+                    <option value="" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>{t('All Standards')}</option>
+                    <option value="Class 9" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>{t('Class 9')}</option>
+                    <option value="Class 10" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>{t('Class 10')}</option>
+                    <option value="Class 11" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>{t('Class 11')}</option>
+                    <option value="Class 12" className={theme === 'light' ? 'text-slate-900' : 'text-white'}>{t('Class 12')}</option>
                   </select>
                   {/* Custom absolute dropdown arrow for clean styling */}
                   <div className={`absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[10px] ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -625,20 +624,19 @@ const LandingPage: React.FC<LandingPageProps> = ({
                       <div className={`w-full h-48 rounded-[24px] bg-white/[0.03] mb-6 overflow-hidden border ${subjectMeta.theme} flex items-center justify-center relative group-hover:bg-white/[0.08] transition-all duration-500`}>
                         <img
                           src={subjectMeta.img}
-                          alt={subjectMeta.name}
+                          alt={t(subjectMeta.name)}
                           className="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-500 saturate-100 brightness-[1.1]"
                         />
                         <div className="absolute inset-0 bg-white/5 group-hover:opacity-0 transition-opacity"></div>
                       </div>
 
                       <div className="flex flex-col flex-1">
-                        <h3 className="text-xl font-display font-semibold mb-3 text-[var(--text-primary)]">{subjectMeta.name}</h3>
-                        <p className="text-[var(--text-muted)] text-[15px] leading-relaxed mb-8 flex-1">{subjectMeta.desc}</p>
+                        <h3 className="text-xl font-display font-semibold mb-3 text-[var(--text-primary)]">{t(subjectMeta.name)}</h3>
+                        <p className="text-[var(--text-muted)] text-[15px] leading-relaxed mb-8 flex-1">{t(subjectMeta.desc)}</p>
                         <div
                           className={`flex items-center text-sm font-semibold ${subjectMeta.iconClass || ''} p-0 m-0 uppercase tracking-wide gap-2 group-hover:gap-3 transition-all`}
                           style={subjectMeta.iconStyle}
-                        >
-                          Explore <ArrowRight size={16} strokeWidth={2.5} />
+                        >{t('Explore')}<ArrowRight size={16} strokeWidth={2.5} />
                         </div>
                       </div>
                     </div>
@@ -657,16 +655,11 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* Left Text */}
           <div className="w-full xl:w-[30%] flex flex-col justify-center min-w-[280px]">
-            <span className={`text-[11px] font-bold uppercase tracking-widest mb-4 block ${theme === 'dark' ? 'text-slate-500' : 'text-[#64748b]'}`}>ABSTRACT TO VISUAL</span>
-            <h2 className={`text-3xl sm:text-4xl md:text-[48px] lg:text-[52px] font-display font-semibold mb-6 sm:mb-8 leading-tight lg:leading-[1.2] tracking-tight ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
-              From Theory<br />
-              to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">Reality</span>
+            <span className={`text-[11px] font-bold uppercase tracking-widest mb-4 block ${theme === 'dark' ? 'text-slate-500' : 'text-[#64748b]'}`}>{t('ABSTRACT TO VISUAL')}</span>
+            <h2 className={`text-3xl sm:text-4xl md:text-[48px] lg:text-[52px] font-display font-semibold mb-6 sm:mb-8 leading-tight lg:leading-[1.2] tracking-tight ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>{t('From Theory')}<br />{t('to')}<span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">{t('Reality')}</span>
             </h2>
-            <p className={`text-sm sm:text-[15px] leading-relaxed mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>
-              We bridge the gap between abstract theory and <br className="hidden sm:block" /> real-world understanding through immersive 3D visualizations.
-            </p>
-            <button className="text-[#f43f5e] font-medium flex items-center gap-2 hover:gap-3 transition-all text-sm">
-              Learn More <ArrowRight size={16} strokeWidth={2.5} />
+            <p className={`text-sm sm:text-[15px] leading-relaxed mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>{t('We bridge the gap between abstract theory and')}<br className="hidden sm:block" />{t('real-world understanding through immersive 3D visualizations.')}</p>
+            <button className="text-[#f43f5e] font-medium flex items-center gap-2 hover:gap-3 transition-all text-sm">{t('Learn More')}<ArrowRight size={16} strokeWidth={2.5} />
             </button>
           </div>
 
@@ -679,8 +672,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
               }`}>
               <div className="flex flex-col sm:w-[45%] lg:w-full justify-between sm:pb-2 lg:pb-0">
                 <div>
-                  <h3 className={`text-[17px] font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>Abstract Theory</h3>
-                  <span className="text-[13px] font-medium text-[#f43f5e] mb-4 sm:mb-2 lg:mb-6 block">Electric Field</span>
+                  <h3 className={`text-[17px] font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>{t('Abstract Theory')}</h3>
+                  <span className="text-[13px] font-medium text-[#f43f5e] mb-4 sm:mb-2 lg:mb-6 block">{t('Electric Field')}</span>
                 </div>
 
                 {/* Equation moved to left on Tablet */}
@@ -698,16 +691,12 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
                     <div className="flex flex-col items-center">
                       <span className="relative">
-                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[0.8rem]">^</span>
-                        r
-                      </span>
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[0.8rem]">^</span>{t('r')}</span>
                     </div>
                   </div>
                 </div>
 
-                <p className={`text-[12px] lg:text-[13px] leading-relaxed hidden sm:block lg:hidden ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
-                  Inverse-square law relationship.
-                </p>
+                <p className={`text-[12px] lg:text-[13px] leading-relaxed hidden sm:block lg:hidden ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>{t('Inverse-square law relationship.')}</p>
               </div>
 
               <div className="flex-1 flex flex-col opacity-95 sm:w-[55%] lg:w-full justify-center lg:justify-start">
@@ -716,9 +705,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   <div className={`flex justify-center items-center gap-4 font-serif text-[1.5rem] sm:text-[1.75rem] leading-none mb-4 ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>
                     <div className="flex flex-col items-center">
                       <span className="relative">
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[1rem]">→</span>
-                        E
-                      </span>
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[1rem]">→</span>{t('E')}</span>
                     </div>
                     <span>=</span>
                     <div className="flex flex-col items-center justify-center">
@@ -731,12 +718,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
                     <div className="flex flex-col items-center">
                       <span className="relative">
-                        <span className="absolute -top-[1.1rem] left-1/2 -translate-x-1/2 text-[1.2rem]">^</span>
-                        r
-                      </span>
+                        <span className="absolute -top-[1.1rem] left-1/2 -translate-x-1/2 text-[1.2rem]">^</span>{t('r')}</span>
                     </div>
                   </div>
-                  <p className={`text-[13px] text-center mb-4 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric field due to a point charge.</p>
+                  <p className={`text-[13px] text-center mb-4 ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>{t('Electric field due to a point charge.')}</p>
                 </div>
 
                 <div className="w-full flex-1 relative min-h-0 max-w-[240px] sm:max-w-[380px] lg:max-w-[280px] mx-auto">
@@ -761,7 +746,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               <div className="flex justify-between items-start mb-2 relative z-20">
                 <div>
                   <h3 className="text-[17px] font-semibold text-[#f43f5e] mb-1">3D Visualization</h3>
-                  <span className={`text-[13px] block ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>Electric Dipole Field</span>
+                  <span className={`text-[13px] block ${theme === 'dark' ? 'text-slate-400' : 'text-[#64748B]'}`}>{t('Electric Dipole Field')}</span>
                 </div>
                 <button className={`w-9 h-9 rounded-xl border flex items-center justify-center text-[#14B8A6] transition-colors ${theme === 'dark' ? 'border-white/10 hover:bg-white/5' : 'border-[#E2E8F0] hover:bg-slate-50'
                   }`}>
@@ -785,11 +770,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
         <section id="simulations" className="space-y-8 scroll-mt-24">
           <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
             <div>
-              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Try it yourself</span>
-              <h2 className="text-3xl font-display font-bold mt-2 text-[var(--text-primary)]">Try Live Simulations</h2>
+              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{t('Try it yourself')}</span>
+              <h2 className="text-3xl font-display font-bold mt-2 text-[var(--text-primary)]">{t('Try Live Simulations')}</h2>
             </div>
-            <button className="text-[var(--color-secondary)] font-medium flex items-center gap-2 text-sm hover:underline">
-              View All Simulations <ArrowRight size={14} />
+            <button className="text-[var(--color-secondary)] font-medium flex items-center gap-2 text-sm hover:underline">{t('View All Simulations')}<ArrowRight size={14} />
             </button>
           </div>
 
@@ -828,7 +812,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
             <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 flex items-center justify-center text-[var(--color-primary)] shrink-0"><Maximize2 className="w-5 h-5 lg:w-6 lg:h-6" /></div>
             <div className="flex flex-col">
               <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.subjects}</h4>
-              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Domains</p>
+              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">{t('Domains')}</p>
             </div>
           </div>
 
@@ -839,7 +823,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
             <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-green-500/30 bg-green-500/5 flex items-center justify-center text-green-500 shrink-0"><Layers className="w-5 h-5 lg:w-6 lg:h-6" /></div>
             <div className="flex flex-col">
               <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.topics}</h4>
-              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Modules</p>
+              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">{t('Modules')}</p>
             </div>
           </div>
 
@@ -850,7 +834,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
             <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-amber-500/30 bg-amber-500/5 flex items-center justify-center text-amber-500 shrink-0"><Users className="w-5 h-5 lg:w-6 lg:h-6" /></div>
             <div className="flex flex-col">
               <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.students}+</h4>
-              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Active Learners</p>
+              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">{t('Active Learners')}</p>
             </div>
           </div>
 
@@ -861,7 +845,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
             <div className="w-10 h-10 md:w-9 md:h-9 lg:w-12 lg:h-12 rounded-full border border-rose-500/30 bg-rose-500/5 flex items-center justify-center text-rose-500 shrink-0"><Star className="w-5 h-5 lg:w-6 lg:h-6" /></div>
             <div className="flex flex-col">
               <h4 className="text-lg md:text-base lg:text-xl font-bold text-[var(--text-primary)] leading-tight">{stats.average_rating}</h4>
-              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">Satisfaction</p>
+              <p className="text-[9px] lg:text-[10px] text-[var(--text-muted)] uppercase tracking-widest whitespace-nowrap">{t('Satisfaction')}</p>
             </div>
           </div>
         </section>

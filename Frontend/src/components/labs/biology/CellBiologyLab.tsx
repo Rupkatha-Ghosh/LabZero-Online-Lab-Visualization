@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 
@@ -188,7 +189,8 @@ const LABELS: LabelEntry[] = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const CellBiologyLab: React.FC = () => {
-  const mountRef = useRef<HTMLDivElement>(null);
+  
+  const { t } = useLanguage();const mountRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 
+import { useLanguage } from '../../../context/LanguageContext';
 import React from 'react';
 import { Activity, Zap, Layers, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -31,9 +32,12 @@ const levels = [
 ];
 
 const AufbauChart: React.FC<AufbauChartProps> = ({ atomicNumber, currentConfig }) => {
+ 
+  const { t } = useLanguage();
   let remainingTarget = atomicNumber;
 
   const getActualCount = (levelId: string) => {
+  
     if (!currentConfig) return 0;
     return (Object.entries(currentConfig) as [string, number[]][])
       .filter(([key]) => key.startsWith(levelId))
@@ -44,7 +48,7 @@ const AufbauChart: React.FC<AufbauChartProps> = ({ atomicNumber, currentConfig }
     <div className="glass-panel p-10 rounded-[48px] border border-white/5 h-full flex flex-col bg-[#020617]/40 shadow-2xl">
       <div className="flex items-center gap-2 mb-10">
         <Layers size={14} className="text-indigo-500" />
-        <h4 className="text-[10px] font-mono font-bold text-indigo-400/60 uppercase tracking-[0.4em]">Energy Distribution</h4>
+        <h4 className="text-[10px] font-mono font-bold text-indigo-400/60 uppercase tracking-[0.4em]">{t('Energy Distribution')}</h4>
       </div>
 
       <div className="flex-1 flex flex-col-reverse gap-6 px-2">
@@ -112,8 +116,7 @@ const AufbauChart: React.FC<AufbauChartProps> = ({ atomicNumber, currentConfig }
         <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
           <Info size={14} className="text-indigo-400" />
         </div>
-        <p className="text-[10px] text-slate-500 leading-relaxed font-light italic">
-          Electrons fill the lowest energy orbitals first before moving to higher levels, following the <span className="text-indigo-400 font-bold">Aufbau Principle</span>.
+        <p className="text-[10px] text-slate-500 leading-relaxed font-light italic">{t('Electrons fill the lowest energy orbitals first before moving to higher levels, following the')}<span className="text-indigo-400 font-bold">{t('Aufbau Principle')}</span>.
         </p>
       </div>
     </div>

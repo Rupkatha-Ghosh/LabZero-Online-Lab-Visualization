@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState } from 'react';
 import { SimulationProps } from '../../../types/types';
 
@@ -59,6 +60,8 @@ const presets: Preset[] = [
 ];
 
 const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light' }) => {
+ 
+  const { t } = useLanguage();
   const isDark = theme === 'dark';
   // --- State ---
   const [selectedPreset, setSelectedPreset] = useState<string>('pea-height');
@@ -75,6 +78,7 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
 
   // Handle preset loading
   const handleLoadPreset = (presetId: string) => {
+  
     const target = presets.find(p => p.id === presetId);
     if (!target) return;
 
@@ -196,17 +200,15 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
       
       {/* Header */}
       <div className="text-center">
-        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>Punnett Square Genetics Lab</h2>
-        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Model allelic segregation, independent assortment, and genotypic probabilities
-        </p>
+        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('Punnett Square Genetics Lab')}</h2>
+        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('Model allelic segregation, independent assortment, and genotypic probabilities')}</p>
       </div>
 
       {/* Preset Selector Banner */}
       <div className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border shadow-sm transition-colors duration-500 ${
         isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
       }`}>
-        <span className={`text-xs font-bold uppercase tracking-wider pl-1 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Experimental Presets:</span>
+        <span className={`text-xs font-bold uppercase tracking-wider pl-1 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{t('Experimental Presets:')}</span>
         <div className="flex flex-wrap gap-1.5">
           {presets.map(p => (
             <button
@@ -233,7 +235,7 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
         }`}>
           
           <div className="text-center mb-4">
-            <span className={`text-xs font-bold uppercase tracking-widest block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Gamete Matrix</span>
+            <span className={`text-xs font-bold uppercase tracking-widest block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('Gamete Matrix')}</span>
             <span className={`text-sm font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
               Parent 1 ({p1}) × Parent 2 ({p2})
             </span>
@@ -292,13 +294,11 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
           }`}>
             <div className={`text-xs font-bold uppercase tracking-wider border-b pb-1 ${
               isDark ? 'text-slate-300 border-slate-800' : 'text-slate-700 border-slate-100'
-            }`}>
-              Configuration Rules
-            </div>
+            }`}>{t('Configuration Rules')}</div>
 
             {/* Cross Complexity Dropdown */}
             <div>
-              <label className={`block text-xs font-semibold mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Cross Complexity</label>
+              <label className={`block text-xs font-semibold mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t('Cross Complexity')}</label>
               <select
                 value={crossType}
                 onChange={(e) => {
@@ -321,7 +321,7 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
             {/* Inheritance Mode */}
             {crossType === 'monohybrid' && (
               <div>
-                <label className={`block text-xs font-semibold mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Inheritance Mode</label>
+                <label className={`block text-xs font-semibold mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t('Inheritance Mode')}</label>
                 <select
                   value={inheritanceMode}
                   onChange={(e) => {
@@ -332,8 +332,8 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
                     isDark ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-700'
                   }`}
                 >
-                  <option value="complete">Complete Dominance</option>
-                  <option value="incomplete">Incomplete Dominance</option>
+                  <option value="complete">{t('Complete Dominance')}</option>
+                  <option value="incomplete">{t('Incomplete Dominance')}</option>
                 </select>
               </div>
             )}
@@ -341,7 +341,7 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
             {/* Parental Input Fields */}
             <div className="space-y-2 pt-1.5">
               <div>
-                <label className={`block text-xs font-semibold mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Parent 1 Genotype</label>
+                <label className={`block text-xs font-semibold mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t('Parent 1 Genotype')}</label>
                 <input
                   type="text"
                   maxLength={crossType === 'dihybrid' ? 4 : 2}
@@ -353,7 +353,7 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
                 />
               </div>
               <div>
-                <label className={`block text-xs font-semibold mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Parent 2 Genotype</label>
+                <label className={`block text-xs font-semibold mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t('Parent 2 Genotype')}</label>
                 <input
                   type="text"
                   maxLength={crossType === 'dihybrid' ? 4 : 2}
@@ -374,18 +374,18 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
           }`}>
             <span className={`font-bold block border-b pb-1 ${
               isDark ? 'text-slate-300 border-slate-700' : 'text-slate-700 border-slate-200'
-            }`}>Trait Mappings</span>
+            }`}>{t('Trait Mappings')}</span>
             <div className="flex justify-between mt-1.5">
-              <span>Dominant Allele:</span>
+              <span>{t('Dominant Allele:')}</span>
               <span className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>{trait1.dom}</span>
             </div>
             <div className="flex justify-between">
-              <span>Recessive Allele:</span>
+              <span>{t('Recessive Allele:')}</span>
               <span className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>{trait1.rec}</span>
             </div>
             {inheritanceMode === 'incomplete' && crossType === 'monohybrid' && (
               <div className="flex justify-between text-rose-500">
-                <span>Heterozygous Blended:</span>
+                <span>{t('Heterozygous Blended:')}</span>
                 <span className="font-bold">{trait1.inc}</span>
               </div>
             )}
@@ -403,9 +403,7 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
         <div className="flex-1 w-full">
           <span className={`text-[11px] font-bold uppercase tracking-wider block mb-2 border-b pb-1 ${
             isDark ? 'text-slate-500 border-slate-800' : 'text-slate-400 border-slate-100'
-          }`}>
-            Genotypic Probability
-          </span>
+          }`}>{t('Genotypic Probability')}</span>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {Object.entries(genotypicCounts).map(([geno, count]) => (
               <div key={geno} className={`flex justify-between items-center px-2.5 py-1.5 rounded border transition-colors duration-500 ${
@@ -426,9 +424,7 @@ const GeneticsSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
         }`}>
           <span className={`text-[11px] font-bold uppercase tracking-wider block mb-2 border-b pb-1 ${
             isDark ? 'text-slate-500 border-slate-800' : 'text-slate-400 border-slate-100'
-          }`}>
-            Phenotypic Ratio
-          </span>
+          }`}>{t('Phenotypic Ratio')}</span>
           <div className="space-y-1.5">
             {Object.entries(phenotypicCounts).map(([pheno, count]) => (
               <div key={pheno} className="flex justify-between items-center text-xs">

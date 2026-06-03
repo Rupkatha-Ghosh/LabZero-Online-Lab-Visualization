@@ -1,9 +1,11 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RotateCw, Info, Magnet, Sparkles, RefreshCw } from 'lucide-react';
 
 const ComplexNumbersLab: React.FC = () => {
-  const [point, setPoint] = useState({ x: 1, y: 0.5 });
+  
+  const { t } = useLanguage();const [point, setPoint] = useState({ x: 1, y: 0.5 });
   const [showUnitCircle, setShowUnitCircle] = useState(true);
   const [isError, setIsError] = useState(false);
   const isDragging = useRef(false);
@@ -11,6 +13,7 @@ const ComplexNumbersLab: React.FC = () => {
 
   // Trigger visual error
   const triggerError = () => {
+  
     setIsError(true);
     setTimeout(() => setIsError(false), 800);
   };
@@ -162,14 +165,12 @@ const ComplexNumbersLab: React.FC = () => {
             onClick={rotate90}
             className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-mono uppercase tracking-wider font-bold hover:bg-blue-500 transition-all flex items-center gap-2 shadow-md active:scale-95"
           >
-            <RotateCw size={14} /> Multiply by i (90°)
-          </button>
+            <RotateCw size={14} />{t('Multiply by i (90°)')}</button>
           <button 
             onClick={() => setPoint({ x: 1, y: 0 })}
             className="px-5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 text-xs font-mono uppercase tracking-wider font-bold hover:bg-slate-700 transition-all flex items-center gap-2 active:scale-95"
           >
-            <RefreshCw size={13} /> Reset
-          </button>
+            <RefreshCw size={13} />{t('Reset')}</button>
         </div>
       </div>
 
@@ -180,8 +181,7 @@ const ComplexNumbersLab: React.FC = () => {
         <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 shadow-md flex flex-col justify-between">
           <div>
             <div className="text-blue-500 font-mono text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5 font-bold">
-              <Magnet size={13} /> Cartesian Form
-            </div>
+              <Magnet size={13} />{t('Cartesian Form')}</div>
             <div className="text-2xl font-bold text-white tracking-tight font-mono">
               {point.x >= 0 ? '' : '-'}{Math.abs(point.x).toFixed(2)} 
               {point.y >= 0 ? ' + ' : ' - '}
@@ -199,12 +199,8 @@ const ComplexNumbersLab: React.FC = () => {
         <div className="p-6 rounded-2xl bg-blue-950/30 border border-blue-900/40 space-y-2.5 flex flex-col justify-between">
           <div>
             <h3 className="text-white font-bold text-sm flex items-center gap-2">
-              <Sparkles size={16} className="text-blue-400" />
-              Rotational Operators
-            </h3>
-            <p className="text-slate-400 text-xs font-normal leading-relaxed">
-              Multiplying any vector by <span className="text-blue-300 font-mono font-bold">i</span> produces an anti-clockwise 90° rotational output along the Argand plane without altering spatial magnitude.
-            </p>
+              <Sparkles size={16} className="text-blue-400" />{t('Rotational Operators')}</h3>
+            <p className="text-slate-400 text-xs font-normal leading-relaxed">{t('Multiplying any vector by')}<span className="text-blue-300 font-mono font-bold">i</span>{t('produces an anti-clockwise 90° rotational output along the Argand plane without altering spatial magnitude.')}</p>
           </div>
         </div>
 
@@ -212,10 +208,8 @@ const ComplexNumbersLab: React.FC = () => {
         <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
           <div className="space-y-2">
             <div className="text-slate-400 font-mono text-[11px] uppercase tracking-wider font-bold flex items-center gap-1.5">
-              <Info size={13} /> Reference Map
-            </div>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              The Unit Circle trace boundary visualizes absolute normalized vectors where <span className="font-mono text-white">|z| = 1</span>.
+              <Info size={13} />{t('Reference Map')}</div>
+            <p className="text-slate-400 text-xs leading-relaxed">{t('The Unit Circle trace boundary visualizes absolute normalized vectors where')}<span className="font-mono text-white">|z| = 1</span>.
             </p>
           </div>
           <button 

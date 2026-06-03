@@ -1,4 +1,5 @@
 
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { Vector3 } from '../../../types/types';
@@ -13,7 +14,8 @@ interface Lobe {
 }
 
 const QuantumNumbersLab: React.FC = () => {
-  const [n, setN] = useState(1);
+  
+  const { t } = useLanguage();const [n, setN] = useState(1);
   const [l, setL] = useState(0);
   const [ml, setMl] = useState(0);
   const [rotation, setRotation] = useState({ x: 0.5, y: 0.6 });
@@ -92,7 +94,7 @@ const QuantumNumbersLab: React.FC = () => {
     <div className="glass-panel p-10 rounded-[48px] border border-white/10 shadow-2xl relative overflow-hidden bg-slate-950/20">
       <div className="flex flex-col lg:flex-row gap-10">
         <div className="lg:col-span-4 space-y-8">
-          <h2 className="text-3xl font-black text-white">Quantum Address</h2>
+          <h2 className="text-3xl font-black text-white">{t('Quantum Address')}</h2>
           <InputGroup label="n" val={n} set={setN} min={1} max={5} />
           <InputGroup label="l" val={l} set={setL} min={0} max={n-1} />
           <InputGroup label="ml" val={ml} set={setMl} min={-l} max={l} />

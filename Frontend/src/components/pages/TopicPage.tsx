@@ -1,3 +1,4 @@
+import { useLanguage } from '../../context/LanguageContext';
 import React, { useState, useEffect } from 'react';
 import { Topic, TopicView, Resource } from '../../types/types';
 import { ArrowLeft, BookOpen, Play, Sparkles, FileText, Trash2, Download, Presentation, GraduationCap, Volume2, VolumeX, Zap } from 'lucide-react';
@@ -29,9 +30,11 @@ interface TopicPageProps {
 }
 
 const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, language, onStartQuiz, onStartMeeting }) => {
+ 
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [activeView, setActiveView] = useState<TopicView>(TopicView.THEORY);
-  const t = (key: string) => translations[key]?.[language] || key;
+  
   const [resources, setResources] = useState<Resource[]>([]);
   const [assignmentMaterials, setAssignmentMaterials] = useState<TheoryMaterial[]>([]);
   const [viewingResource, setViewingResource] = useState<Resource | null>(null);
@@ -98,7 +101,15 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
       window.speechSynthesis.cancel();
       setIsReading(false);
     } else {
-      const utterance = new SpeechSynthesisUtterance(topic.theory.replace(/[#*`]/g, ''));
+      const translatedText = t(topic.theory.trim()).replace(/[#*`]/g, '');
+      const utterance = new SpeechSynthesisUtterance(translatedText);
+      if (language === 'bn') {
+        utterance.lang = 'bn-BD';
+      } else if (language === 'hi') {
+        utterance.lang = 'hi-IN';
+      } else {
+        utterance.lang = 'en-US';
+      }
       utterance.onend = () => setIsReading(false);
       utterance.onerror = () => setIsReading(false);
       window.speechSynthesis.speak(utterance);
@@ -164,7 +175,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
 
               <div className="min-w-0">
                 <h1 className="text-base sm:text-lg lg:text-xl font-display font-bold tracking-tight text-[var(--text-primary)] uppercase truncate">
-                  {topic.name}
+                  {t(topic.name)}
                 </h1>
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
@@ -218,7 +229,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
               className="hidden lg:flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300 shrink-0"
             >
               <Zap size={14} />
-              <span>Take Quiz</span>
+              <span>{t('Take Quiz')}</span>
             </button>
           </nav>
         </div>
@@ -259,7 +270,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
                   <div className="relative pl-4 sm:pl-8">
                     <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/10 to-transparent" />
                     <div className="prose prose-sm sm:prose-invert max-w-none prose-headings:uppercase prose-headings:tracking-tighter prose-headings:font-display">
-                      <ReactMarkdown>{topic.theory}</ReactMarkdown>
+                      <ReactMarkdown>{t(topic.theory.trim())}</ReactMarkdown>
                     </div>
                   </div>
                 </div>

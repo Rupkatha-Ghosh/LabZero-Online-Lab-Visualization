@@ -1,9 +1,11 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { MousePointer2, BoxSelect, Plus, Minus, Info } from 'lucide-react';
 
 // ─── Inline Orbit Controls ──────────────────────────────────────────────────
 function createOrbitControls(camera: THREE.PerspectiveCamera, domElement: HTMLElement) {
+  
   let isPointerDown = false;
   let lastX = 0, lastY = 0;
   let spherical = { theta: 0.5, phi: Math.PI / 3 };
@@ -55,6 +57,8 @@ function createOrbitControls(camera: THREE.PerspectiveCamera, domElement: HTMLEl
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function PiApproximationLab() {
+ 
+  const { t } = useLanguage();
   const mountRef = useRef<HTMLDivElement>(null);
   const [sides, setSides] = useState(6);
   const radius = 10;
@@ -138,7 +142,7 @@ export default function PiApproximationLab() {
       {/* Header HUD */}
       <div className="absolute top-8 right-8 z-10 flex items-center gap-4 bg-[var(--bg-panel)] backdrop-blur-xl border border-[var(--border-glass)] p-4 rounded-2xl shadow-lg">
         <BoxSelect className="text-[var(--color-primary)]" size={18} />
-        <span className="text-[var(--text-primary)] text-[10px] tracking-[0.3em] uppercase font-bold">Limit Theorem Lab</span>
+        <span className="text-[var(--text-primary)] text-[10px] tracking-[0.3em] uppercase font-bold">{t('Limit Theorem Lab')}</span>
       </div>
 
       <div ref={mountRef} className="flex-1 w-full h-full cursor-grab active:cursor-grabbing" />
@@ -148,13 +152,13 @@ export default function PiApproximationLab() {
         
         <div className="flex items-center gap-3 text-[11px] text-[var(--color-primary)] uppercase tracking-[0.3em] font-bold border-b border-[var(--border-glass)] pb-4">
           <Plus size={16} />
-          <span>Geometry Scanner</span>
+          <span>{t('Geometry Scanner')}</span>
         </div>
 
         {/* Manual Input / Control */}
         <div className="space-y-4">
            <div className="flex justify-between items-center">
-             <label className="text-[9px] uppercase tracking-widest text-[var(--text-muted)] font-bold">Polygon Sides (n)</label>
+             <label className="text-[9px] uppercase tracking-widest text-[var(--text-muted)] font-bold">{t('Polygon Sides (n)')}</label>
              <span className="text-xl text-[var(--text-primary)] font-bold">{sides}</span>
            </div>
            
@@ -184,7 +188,7 @@ export default function PiApproximationLab() {
         {/* Real-time Math Panel */}
         <div className="bg-[var(--color-primary)]/5 border border-[var(--color-primary)]/20 rounded-2xl p-6 space-y-4">
           <div>
-            <div className="text-[8px] text-[var(--text-muted)] uppercase tracking-widest mb-1">Current Ratio (P / D)</div>
+            <div className="text-[8px] text-[var(--text-muted)] uppercase tracking-widest mb-1">{t('Current Ratio (P / D)')}</div>
             <div className="text-2xl text-[var(--text-primary)] font-bold tracking-tighter">
               {piApprox.toFixed(6)}
             </div>
@@ -192,9 +196,7 @@ export default function PiApproximationLab() {
           
           <div className="pt-4 border-t border-[var(--border-glass)] flex items-start gap-3">
             <Info size={14} className="text-[var(--color-primary)] mt-1 shrink-0" />
-            <p className="text-[9px] text-[var(--text-muted)] leading-relaxed uppercase tracking-wider">
-              As <span className="text-[var(--color-primary)]">n</span> increases, the perimeter of the blue shape approaches the circumference of the circle.
-            </p>
+            <p className="text-[9px] text-[var(--text-muted)] leading-relaxed uppercase tracking-wider">{t('As')}<span className="text-[var(--color-primary)]">n</span>{t('increases, the perimeter of the blue shape approaches the circumference of the circle.')}</p>
           </div>
         </div>
 
@@ -203,7 +205,7 @@ export default function PiApproximationLab() {
       {/* Helper */}
       <div className="absolute bottom-8 right-8 z-10 flex items-center gap-4 bg-[var(--bg-panel)] border border-[var(--border-glass)] px-6 py-3 rounded-full backdrop-blur-sm opacity-80 shadow-sm">
         <MousePointer2 size={14} className="text-[var(--text-muted)]" />
-        <span className="text-[var(--text-muted)] text-[9px] tracking-[0.2em] uppercase">Orbit to verify the polygon gap</span>
+        <span className="text-[var(--text-muted)] text-[9px] tracking-[0.2em] uppercase">{t('Orbit to verify the polygon gap')}</span>
       </div>
 
     </div>

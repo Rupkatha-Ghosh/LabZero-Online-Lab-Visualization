@@ -1,4 +1,5 @@
 
+import { useLanguage } from '../../../context/LanguageContext';
 import React from 'react';
 import { ElementData } from '../../../types/types';
 import { motion } from 'motion/react';
@@ -10,6 +11,8 @@ interface PeriodicTableProps {
 }
 
 const PeriodicTable: React.FC<PeriodicTableProps> = ({ elements, onSelect, selectedSymbol }) => {
+ 
+  const { t } = useLanguage();
   const sortedElements = [...elements].sort((a, b) => a.number - b.number);
 
   return (
@@ -56,7 +59,7 @@ const PeriodicTable: React.FC<PeriodicTableProps> = ({ elements, onSelect, selec
         {/* Lanthanides & Actinides separate block */}
         <div className="col-span-full h-10 flex items-center">
           <div className="h-px flex-1 bg-white/5"></div>
-          <span className="px-4 text-[9px] font-mono text-slate-700 uppercase tracking-[0.3em]">Extended Series</span>
+          <span className="px-4 text-[9px] font-mono text-slate-700 uppercase tracking-[0.3em]">{t('Extended Series')}</span>
           <div className="h-px flex-1 bg-white/5"></div>
         </div>
         

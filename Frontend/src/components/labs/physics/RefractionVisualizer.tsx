@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useRef } from 'react';
 import { RefractionPreset, RefractionProps } from '../../../types/types';
 
@@ -7,6 +8,8 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
   initialAngle = 30,
   theme = 'light'
 }) => {
+ 
+  const { t } = useLanguage();
   // --- State Management ---
   const [n1, setN1] = useState<number>(initialN1); // Medium 1 (Top)
   const [n2, setN2] = useState<number>(initialN2); // Medium 2 (Bottom)
@@ -25,6 +28,7 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
 
   // Apply a selected preset
   const handlePreset = (preset: RefractionPreset) => {
+  
     setN1(preset.n1);
     setN2(preset.n2);
     setIncidentAngle(preset.angle);
@@ -230,8 +234,7 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
       }`}>
         {/* Angle Slider */}
         <div className="space-y-3">
-          <label className={`block text-xs font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Angle of Incidence: <span className="text-rose-500">{incidentAngle}°</span>
+          <label className={`block text-xs font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('Angle of Incidence:')}<span className="text-rose-500">{incidentAngle}°</span>
           </label>
           <input
             type="range"
@@ -283,13 +286,13 @@ const RefractionSimulator: React.FC<RefractionProps> = ({
         isDark ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-300' : 'bg-indigo-50 border-indigo-100 text-indigo-700'
       }`}>
         <div className="flex items-center gap-2">
-          <span className="opacity-60">Mode:</span>
+          <span className="opacity-60">{t('Mode:')}</span>
           <span className={n1 === n2 ? '' : 'text-amber-500'}>
             {n1 === n2 ? 'Linear' : n1 < n2 ? 'Convergent' : 'Divergent'}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="opacity-60">Refraction (r):</span>
+          <span className="opacity-60">{t('Refraction (r):')}</span>
           <span>{isTIR ? 'REFL' : `${refractedAngleDeg.toFixed(1)}°`}</span>
         </div>
         {criticalAngle !== null && (

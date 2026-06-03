@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState } from 'react';
 import {
   LineChart,
@@ -10,6 +11,7 @@ import {
 } from 'recharts';
 
 const generateData = (func: (x: number) => number) => {
+  
   const data = [];
   for (let x = -10; x <= 10; x += 0.2) {
     try {
@@ -22,7 +24,8 @@ const generateData = (func: (x: number) => number) => {
 };
 
 const GraphVisualizer: React.FC = () => {
-  const [expression, setExpression] = useState('x*x');
+  
+  const { t } = useLanguage();const [expression, setExpression] = useState('x*x');
   const [data, setData] = useState(generateData((x) => x * x));
 
   const handlePlot = () => {
@@ -39,24 +42,21 @@ const GraphVisualizer: React.FC = () => {
     <div className="bg-[var(--bg-panel)] backdrop-blur-xl p-8 rounded-[32px] border border-[var(--border-glass)] shadow-2xl transition-colors duration-500">
 
       <h2 className="text-xl font-display font-bold mb-6 text-[var(--color-primary)] uppercase tracking-tight flex items-center gap-3">
-        <span>📊</span> Interactive Graph
-      </h2>
+        <span>📊</span>{t('Interactive Graph')}</h2>
 
       {/* INPUT */}
       <div className="flex gap-3 mb-8">
         <input
           value={expression}
           onChange={(e) => setExpression(e.target.value)}
-          placeholder="Enter function e.g. x*x + 2*x"
+          placeholder={t('Enter function e.g. x*x + 2*x')}
           className="flex-1 px-6 py-3 rounded-2xl bg-[var(--bg-deep)] text-[var(--text-primary)] border border-[var(--border-glass)] outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all font-mono text-sm shadow-inner"
         />
 
         <button
           onClick={handlePlot}
           className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-2xl hover:opacity-90 transition-all font-bold shadow-lg shadow-[var(--color-primary)]/20"
-        >
-          Plot
-        </button>
+        >{t('Plot')}</button>
       </div>
 
       {/* GRAPH */}

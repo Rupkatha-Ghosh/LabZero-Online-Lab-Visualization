@@ -17,6 +17,7 @@ import { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { User, UserRole } from '../../../types/types';
 import { safeLocalStorage } from '../../../utils/safeStorage';
+import { useLanguage } from '../../../context/LanguageContext';
 import FeedbackPageShell from '../components/common/FeedbackPageShell';
 import { getFeedbackApiError, submitSiteFeedback } from '../services/feedbackApi';
 import type { FeedbackThankYouDetails } from './FeedbackThankYouPage';
@@ -614,6 +615,7 @@ const SiteFeedbackPage = ({
   onLogin,
   onSubmitted,
 }: SiteFeedbackPageProps) => {
+  const { t } = useLanguage();
   const feedbackRole = user?.role ?? 'student';
   const roleConfig = roleFeedbackConfig[feedbackRole];
   const draftKey = `labzero_site_feedback_draft_${user?.id ?? user?.email ?? feedbackRole}`;
@@ -1099,11 +1101,11 @@ const SiteFeedbackPage = ({
       });
       safeLocalStorage.removeItem(draftKey);
       onSubmitted?.({
-        title: 'Thank you',
-        message: 'Your feedback has been submitted successfully.',
-        formTitle: roleConfig.title,
-        primaryActionLabel: 'Back to LabZero',
-        secondaryActionLabel: 'Submit another response',
+        title: t('Thank you'),
+        message: t('Your feedback has been submitted successfully.'),
+        formTitle: t(roleConfig.title),
+        primaryActionLabel: t('Back to LabZero'),
+        secondaryActionLabel: t('Submit another response'),
       });
       setRating(0);
       setComment('');
@@ -1152,7 +1154,7 @@ const SiteFeedbackPage = ({
             className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white/85 px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-white"
           >
             <ArrowLeft size={16} />
-            Back
+            {t('back')}
           </button>
         </div>
 
@@ -1248,9 +1250,9 @@ const SiteFeedbackPage = ({
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
                 {roleConfig.badge}
               </p>
-              <h2 className="mt-2 text-2xl font-black">{roleConfig.title}</h2>
+              <h2 className="mt-2 text-2xl font-black">{t(roleConfig.title)}</h2>
               <p className={`mt-2 text-sm leading-6 ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-                {roleConfig.description}
+                {t(roleConfig.description)}
               </p>
             </div>
 
@@ -1508,7 +1510,7 @@ const SiteFeedbackPage = ({
                 ) : (
                   <Send size={16} />
                 )}
-                Submit feedback
+                {t('Submit feedback')}
               </button>
             </div>
           </form>
