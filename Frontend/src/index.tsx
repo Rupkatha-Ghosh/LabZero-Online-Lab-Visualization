@@ -4,6 +4,7 @@ import React from 'react';
 import { safeSessionStorage } from './utils/safeStorage';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { LanguageProvider } from './context/LanguageContext';
 const Sender = React.lazy(() => import('./components/shared/Sender'));
 import { registerSW } from 'virtual:pwa-register';
 
@@ -133,9 +134,11 @@ const isPhoneSender = params.get('camera') === 'sender';
 
 root.render(
   <React.StrictMode>
-    <React.Suspense fallback={<div />}>
-      {isPhoneSender ? <Sender /> : <App />}
-    </React.Suspense>
+    <LanguageProvider>
+      <React.Suspense fallback={<div />}>
+        {isPhoneSender ? <Sender /> : <App />}
+      </React.Suspense>
+    </LanguageProvider>
   </React.StrictMode>
 );
 

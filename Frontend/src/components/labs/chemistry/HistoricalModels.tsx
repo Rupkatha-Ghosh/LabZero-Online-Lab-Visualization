@@ -1,4 +1,5 @@
 
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { GraduationCap, History, LayoutGrid, LayoutList, Lightbulb } from 'lucide-react';
@@ -50,7 +51,8 @@ const MODELS: AtomicModel[] = [
 ];
 
 const HistoricalModels: React.FC = () => {
-  const [activeModel1, setActiveModel1] = useState<ModelID>('dalton');
+  
+  const { t } = useLanguage();const [activeModel1, setActiveModel1] = useState<ModelID>('dalton');
   const [activeModel2, setActiveModel2] = useState<ModelID>('bohr');
   const [compareMode, setCompareMode] = useState(false);
   const [timelineIndex, setTimelineIndex] = useState(0);
@@ -151,9 +153,9 @@ const HistoricalModels: React.FC = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
           <div>
-            <h4 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.4em] mb-2 font-bold">Evolution of Theory</h4>
-            <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight">Timeline of Discovery</h2>
-            <p className="text-[var(--text-muted)] text-sm mt-2 max-w-xl font-medium leading-relaxed">Scrub through history to see how our understanding of the atom evolved over a century of research.</p>
+            <h4 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.4em] mb-2 font-bold">{t('Evolution of Theory')}</h4>
+            <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight">{t('Timeline of Discovery')}</h2>
+            <p className="text-[var(--text-muted)] text-sm mt-2 max-w-xl font-medium leading-relaxed">{t('Scrub through history to see how our understanding of the atom evolved over a century of research.')}</p>
           </div>
           <button 
             onClick={() => setCompareMode(!compareMode)}
@@ -211,9 +213,7 @@ const HistoricalModels: React.FC = () => {
                    <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
                       <Lightbulb className="h-6 w-6 text-white" />
                    </div>
-                   <p className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wide leading-relaxed">
-                     This model established the concept of <span className="text-[var(--text-primary)]">{activeModel.keyFeature}</span> in modern physics.
-                   </p>
+                   <p className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wide leading-relaxed">{t('This model established the concept of')}<span className="text-[var(--text-primary)]">{activeModel.keyFeature}</span>{t('in modern physics.')}</p>
                 </div>
               </div>
             </div>

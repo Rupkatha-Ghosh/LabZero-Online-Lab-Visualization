@@ -1,15 +1,18 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Settings2, Zap, Info, Maximize2, Lightbulb } from 'lucide-react';
 
 const WaveOpticsVisualizer: React.FC = () => {
-  const [wavelength, setWavelength] = useState(550); // nm
+  
+  const { t } = useLanguage();const [wavelength, setWavelength] = useState(550); // nm
   const [slitDistance, setSlitDistance] = useState(2000); // nm
   const [screenDistance, setScreenDistance] = useState(100); // cm
   const [intensity, setIntensity] = useState(0.8);
 
   // Convert wavelength to RGB color
   const getWavelengthColor = (nm: number) => {
+  
     let r, g, b;
     if (nm >= 380 && nm < 440) {
       r = -(nm - 440) / (440 - 380); g = 0; b = 1;
@@ -55,11 +58,8 @@ const WaveOpticsVisualizer: React.FC = () => {
       <div className="w-full flex flex-col md:flex-row items-center justify-between gap-8">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-indigo-400 font-mono text-[10px] tracking-[0.5em] uppercase">
-            <div className="w-8 h-px bg-indigo-500/50" />
-            Young's Double Slit Lab
-          </div>
-          <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter uppercase leading-none">
-            Wave <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-600 animate-gradient-x">Interference</span>
+            <div className="w-8 h-px bg-indigo-500/50" />{t('Young's Double Slit Lab')}</div>
+          <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter uppercase leading-none">{t('Wave')}<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-600 animate-gradient-x">{t('Interference')}</span>
           </h2>
         </div>
 
@@ -69,7 +69,7 @@ const WaveOpticsVisualizer: React.FC = () => {
               <Maximize2 size={16} />
             </div>
             <div>
-              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Fringe Width</p>
+              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">{t('Fringe Width')}</p>
               <p className="text-xl font-mono font-black text-white tracking-tighter">
                 {((wavelength * screenDistance) / (slitDistance / 100)).toFixed(2)}mm
               </p>
@@ -84,11 +84,11 @@ const WaveOpticsVisualizer: React.FC = () => {
           <div className="glass-panel p-8 rounded-[3rem] border border-white/5 bg-white/[0.01] backdrop-blur-3xl shadow-2xl space-y-8">
             <div className="flex items-center gap-3 border-b border-white/5 pb-4">
               <Settings2 size={16} className="text-indigo-400" />
-              <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Wave Parameters</h3>
+              <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em]">{t('Wave Parameters')}</h3>
             </div>
 
             <ControlSlider 
-              label="Wavelength" 
+              label={t('Wavelength')} 
               value={wavelength} 
               unit="nm" 
               min={380} 
@@ -98,7 +98,7 @@ const WaveOpticsVisualizer: React.FC = () => {
             />
             
             <ControlSlider 
-              label="Slit Distance (d)" 
+              label={t('Slit Distance (d)')} 
               value={slitDistance} 
               unit="nm" 
               min={1000} 
@@ -107,7 +107,7 @@ const WaveOpticsVisualizer: React.FC = () => {
             />
 
             <ControlSlider 
-              label="Screen Distance (D)" 
+              label={t('Screen Distance (D)')} 
               value={screenDistance} 
               unit="cm" 
               min={50} 
@@ -118,10 +118,9 @@ const WaveOpticsVisualizer: React.FC = () => {
             <div className="p-6 bg-indigo-500/5 rounded-3xl border border-indigo-500/10 space-y-4">
                <div className="flex items-center gap-2 text-indigo-400">
                  <Lightbulb size={14} />
-                 <span className="text-[10px] font-black uppercase tracking-widest">Physics Insight</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest">{t('Physics Insight')}</span>
                </div>
-               <p className="text-xs text-slate-400 leading-relaxed">
-                 Observe how <span className="text-white font-bold">shorter wavelengths</span> (violet) produce tighter fringes, while <span className="text-white font-bold">longer wavelengths</span> (red) spread them further apart.
+               <p className="text-xs text-slate-400 leading-relaxed">{t('Observe how')}<span className="text-white font-bold">{t('shorter wavelengths')}</span> (violet) produce tighter fringes, while <span className="text-white font-bold">{t('longer wavelengths')}</span> (red) spread them further apart.
                </p>
             </div>
           </div>
@@ -151,10 +150,10 @@ const WaveOpticsVisualizer: React.FC = () => {
                 </div>
                 {/* Labels */}
                 <div className="absolute inset-x-0 bottom-2 px-8 flex justify-between items-center pointer-events-none">
-                  <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">Screen Intensity Pattern</span>
+                  <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">{t('Screen Intensity Pattern')}</span>
                   <div className="flex items-center gap-1">
                     <Zap size={10} className="text-amber-400/40" />
-                    <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">Live Simulation</span>
+                    <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">{t('Live Simulation')}</span>
                   </div>
                 </div>
              </div>
@@ -190,7 +189,7 @@ const WaveOpticsVisualizer: React.FC = () => {
                      <div className="absolute top-1/4 -left-1 w-3 h-0.5 bg-cyan-400 rounded-full" />
                      <div className="absolute bottom-1/4 -left-1 w-3 h-0.5 bg-cyan-400 rounded-full" />
                   </div>
-                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Double Slit</span>
+                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{t('Double Slit')}</span>
                 </div>
                 <div className="flex flex-col items-center gap-4">
                    <div className="w-40 h-[2px] bg-gradient-to-r from-cyan-400/40 to-transparent relative">
@@ -204,7 +203,7 @@ const WaveOpticsVisualizer: React.FC = () => {
                 </div>
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-1 h-20 bg-white/20 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.1)]" />
-                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Screen</span>
+                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{t('Screen')}</span>
                 </div>
              </div>
           </div>

@@ -1,4 +1,5 @@
 
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { ChartLine, Magnet } from 'lucide-react';
@@ -17,7 +18,8 @@ interface Lobe {
 }
 
 const OrbitalVisualizer: React.FC = () => {
-  const [shell, setShell] = useState<ShellType>('s');
+  
+  const { t } = useLanguage();const [shell, setShell] = useState<ShellType>('s');
   const [ml, setMl] = useState<number>(0);
   const [rotation, setRotation] = useState({ x: 0.5, y: 0.6 });
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -223,7 +225,7 @@ const OrbitalVisualizer: React.FC = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start mb-12 z-10 gap-8">
         <div>
-          <h4 className="text-[11px] font-black text-[var(--text-muted)]/60 uppercase tracking-[0.5em] mb-3 font-bold">Quantum Orbital Physics</h4>
+          <h4 className="text-[11px] font-black text-[var(--text-muted)]/60 uppercase tracking-[0.5em] mb-3 font-bold">{t('Quantum Orbital Physics')}</h4>
           <h2 className="text-6xl font-black text-[var(--text-primary)] tracking-tighter mb-2">
             {currentData.name} <span className="text-[var(--color-primary)]">(l={currentData.l})</span>
           </h2>
@@ -237,7 +239,7 @@ const OrbitalVisualizer: React.FC = () => {
         <div className="bg-[var(--bg-panel)] p-6 rounded-[32px] border border-[var(--border-glass)] shadow-2xl backdrop-blur-3xl min-w-[240px]">
            <div className="flex items-center justify-between gap-8">
               <div>
-                <p className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest mb-1 font-bold">Magnetic State</p>
+                <p className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest mb-1 font-bold">{t('Magnetic State')}</p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-black text-[var(--text-primary)] tracking-tighter">mₗ = {ml}</span>
                 </div>
@@ -268,7 +270,7 @@ const OrbitalVisualizer: React.FC = () => {
              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
              <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500"></span>
            </div>
-           <span className="text-[11px] font-mono text-[var(--text-muted)]/60 uppercase tracking-[0.3em] font-black">Real-time Wavefunction Mapping</span>
+           <span className="text-[11px] font-mono text-[var(--text-muted)]/60 uppercase tracking-[0.3em] font-black">{t('Real-time Wavefunction Mapping')}</span>
         </div>
 
         <div className="absolute top-10 right-10 flex flex-col items-end gap-3 opacity-20 pointer-events-none font-mono">
@@ -281,7 +283,7 @@ const OrbitalVisualizer: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
-            <h5 className="text-[11px] font-black text-[var(--text-muted)]/40 uppercase tracking-[0.4em] font-bold">Subshell Selection (L)</h5>
+            <h5 className="text-[11px] font-black text-[var(--text-muted)]/40 uppercase tracking-[0.4em] font-bold">{t('Subshell Selection (L)')}</h5>
             <span className="text-[10px] font-mono text-[var(--color-primary)]/60 font-bold">ANGULAR_MOMENTUM</span>
           </div>
           <div className="grid grid-cols-4 gap-4">
@@ -303,7 +305,7 @@ const OrbitalVisualizer: React.FC = () => {
 
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
-             <h5 className="text-[11px] font-black text-[var(--text-muted)]/40 uppercase tracking-[0.4em] font-bold">Magnetic Orientation (Ml)</h5>
+             <h5 className="text-[11px] font-black text-[var(--text-muted)]/40 uppercase tracking-[0.4em] font-bold">{t('Magnetic Orientation (Ml)')}</h5>
              <span className="text-[10px] font-mono text-[var(--color-primary)]/60 font-bold">Z_AXIS_PROJECTION</span>
           </div>
           <div className="flex flex-wrap gap-4">
@@ -329,9 +331,7 @@ const OrbitalVisualizer: React.FC = () => {
          <div className="w-16 h-16 rounded-[24px] bg-[var(--color-primary)]/20 flex items-center justify-center text-[var(--color-primary)] shadow-xl group-hover:scale-110 group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
            <ChartLine className="h-6 w-6" />
          </div>
-         <p className="text-xs text-[var(--text-muted)] leading-relaxed font-bold uppercase tracking-widest max-w-3xl">
-           These visual states represent <span className="text-[var(--text-primary)]">90% probability regions</span>. The <span className="text-[var(--color-primary)] font-black">Z-Axis</span> is the primary quantization axis for magnetic moments, defining how these orbitals align in external fields.
-         </p>
+         <p className="text-xs text-[var(--text-muted)] leading-relaxed font-bold uppercase tracking-widest max-w-3xl">{t('These visual states represent')}<span className="text-[var(--text-primary)]">90% probability regions</span>. The <span className="text-[var(--color-primary)] font-black">{t('Z-Axis')}</span>{t('is the primary quantization axis for magnetic moments, defining how these orbitals align in external fields.')}</p>
       </div>
     </div>
   );

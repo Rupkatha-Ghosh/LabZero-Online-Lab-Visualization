@@ -1,4 +1,5 @@
 
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useRef } from 'react';
 import { Zap, Loader } from 'lucide-react';
 import { ElementData } from '../../../types/types';
@@ -8,6 +9,8 @@ interface QuantumTransitionLabProps {
 }
 
 const QuantumTransitionLab: React.FC<QuantumTransitionLabProps> = ({ element }) => {
+ 
+  const { t } = useLanguage();
   const [isExcited, setIsExcited] = useState(false);
   const [emittedPhoton, setEmittedPhoton] = useState<{ color: string; id: number } | null>(null);
   const [spectralLines, setSpectralLines] = useState<string[]>([]);
@@ -16,6 +19,7 @@ const QuantumTransitionLab: React.FC<QuantumTransitionLabProps> = ({ element }) 
   const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#8b00ff'];
 
   const triggerExcitation = () => {
+  
     if (isExcited) return;
     setIsExcited(true);
     
@@ -44,8 +48,8 @@ const QuantumTransitionLab: React.FC<QuantumTransitionLabProps> = ({ element }) 
       <div className="flex flex-col lg:flex-row gap-12">
         <div className="flex-1 space-y-8">
           <div>
-            <h3 className="text-3xl font-black text-white mb-2">Quantum Transition Lab</h3>
-            <p className="text-sm text-white/40 max-w-md">Simulate photon absorption and emission. When electrons gain energy, they jump to higher states (Excitation), then release light as they fall back (Emission).</p>
+            <h3 className="text-3xl font-black text-white mb-2">{t('Quantum Transition Lab')}</h3>
+            <p className="text-sm text-white/40 max-w-md">{t('Simulate photon absorption and emission. When electrons gain energy, they jump to higher states (Excitation), then release light as they fall back (Emission).')}</p>
           </div>
 
           <div className="relative h-64 w-full bg-slate-900/60 rounded-3xl border border-white/5 flex items-center justify-center overflow-hidden">
@@ -97,14 +101,14 @@ const QuantumTransitionLab: React.FC<QuantumTransitionLabProps> = ({ element }) 
 
         <div className="w-full lg:w-80 space-y-6">
           <div className="glass-panel p-6 rounded-3xl border border-white/5 h-full">
-            <h4 className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-6">Emission Spectrum</h4>
+            <h4 className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-6">{t('Emission Spectrum')}</h4>
             <div className="h-48 w-full bg-black rounded-xl border border-white/10 relative overflow-hidden flex items-end p-2 gap-1">
               {/* Rainbow Background */}
               <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-green-500 to-purple-500 opacity-5"></div>
               
               {spectralLines.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[9px] text-white/10 uppercase font-bold">No Data Recorded</span>
+                  <span className="text-[9px] text-white/10 uppercase font-bold">{t('No Data Recorded')}</span>
                 </div>
               )}
               
@@ -116,9 +120,7 @@ const QuantumTransitionLab: React.FC<QuantumTransitionLabProps> = ({ element }) 
                 ></div>
               ))}
             </div>
-            <p className="text-[9px] text-white/30 mt-4 leading-relaxed italic">
-              Every element has a unique "Spectral Fingerprint" based on its electronic transitions. Scientists use this to identify elements in stars.
-            </p>
+            <p className="text-[9px] text-white/30 mt-4 leading-relaxed italic">{t('Every element has a unique "Spectral Fingerprint" based on its electronic transitions. Scientists use this to identify elements in stars.')}</p>
           </div>
         </div>
       </div>

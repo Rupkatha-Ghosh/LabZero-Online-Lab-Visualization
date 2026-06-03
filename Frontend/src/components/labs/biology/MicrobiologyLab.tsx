@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
@@ -135,7 +136,8 @@ function buildBacterium(scene: THREE.Scene): BacteriumResult {
   });
 
   const addBodyPart = (geo: THREE.BufferGeometry, pos: THREE.Vector3): void => {
-    const m = new THREE.Mesh(geo, bodyMat);
+    
+  const m = new THREE.Mesh(geo, bodyMat);
     m.position.copy(pos);
     m.userData = { label: "Cell Membrane & Wall", sub: "Protection & Structure" };
     group.add(m);
@@ -264,7 +266,8 @@ const LABELS: LabelEntry[] = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const MicrobiologyLab: React.FC = () => {
-  const mountRef   = useRef<HTMLDivElement>(null);
+  
+  const { t } = useLanguage();const mountRef   = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

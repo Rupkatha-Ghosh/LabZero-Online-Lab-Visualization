@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useRef } from 'react';
 import { RefreshCw, Plus, Minus } from 'lucide-react';
 import { SimulationProps } from '../../../types/types';
@@ -9,6 +10,8 @@ interface Charge {
 }
 
 const ElectromagnetismVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = 'light' }) => {
+ 
+  const { t } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [charges, setCharges] = useState<Charge[]>([
     { x: 300, y: 250, q: 1 },
@@ -87,20 +90,17 @@ const ElectromagnetismVisualizer: React.FC<Partial<SimulationProps>> = ({ theme 
           onClick={() => setCharges([...charges, { x: 500, y: 250, q: 1 }])} 
           className={`text-xs uppercase flex items-center gap-2 font-bold ${theme === 'dark' ? 'text-white hover:text-rose-400' : 'text-slate-700 hover:text-rose-500'}`}
         >
-          <Plus size={16}/> Add Positive
-        </button>
+          <Plus size={16}/>{t('Add Positive')}</button>
         <button 
           onClick={() => setCharges([...charges, { x: 500, y: 250, q: -1 }])} 
           className={`text-xs uppercase flex items-center gap-2 font-bold ${theme === 'dark' ? 'text-white hover:text-blue-400' : 'text-slate-700 hover:text-blue-500'}`}
         >
-          <Minus size={16}/> Add Negative
-        </button>
+          <Minus size={16}/>{t('Add Negative')}</button>
         <button 
           onClick={() => setCharges([])} 
           className="text-slate-400 text-xs uppercase flex items-center gap-2 hover:text-slate-200 ml-auto"
         >
-          <RefreshCw size={16}/> Clear Field
-        </button>
+          <RefreshCw size={16}/>{t('Clear Field')}</button>
       </div>
     </div>
   );

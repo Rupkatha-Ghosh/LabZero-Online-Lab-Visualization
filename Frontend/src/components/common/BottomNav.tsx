@@ -1,3 +1,4 @@
+import { translations } from '../../services/translations';
 
 import React from 'react';
 import { Home, Book, User as UserIcon, Settings, Database, GraduationCap, MessageSquareText } from 'lucide-react';
@@ -29,24 +30,26 @@ const BottomNav: React.FC<BottomNavProps> = ({
   showGlossary,
   showAuth,
   user,
+  language,
   theme = 'dark'
 }) => {
+  const t = (key: string) => translations[key]?.[language] || key;
   const isLight = theme === 'light';
 
   const navItems = [
-    { id: 'home', icon: Home, label: 'Home', action: () => onNavigate(ViewState.LANDING), active: currentView === ViewState.LANDING, color: 'bg-indigo-500' },
+    { id: 'home', icon: Home, label: t('Home'), action: () => onNavigate(ViewState.LANDING), active: currentView === ViewState.LANDING, color: 'bg-indigo-500' },
     ...(user ? [
-      { id: 'dash', icon: GraduationCap, label: 'Dash', action: () => onNavigate(ViewState.DASHBOARD), active: currentView === ViewState.DASHBOARD, color: 'bg-sky-500' }
+      { id: 'dash', icon: GraduationCap, label: t('Dash'), action: () => onNavigate(ViewState.DASHBOARD), active: currentView === ViewState.DASHBOARD, color: 'bg-sky-500' }
     ] : []),
     ...(user && (user.is_staff || user.is_superuser) ? [
-      { id: 'feedback', icon: MessageSquareText, label: 'Feedback', action: () => onNavigate(ViewState.FEEDBACK_ADMIN), active: currentView === ViewState.FEEDBACK_ADMIN, color: 'bg-cyan-500' }
+      { id: 'feedback', icon: MessageSquareText, label: t('Feedback'), action: () => onNavigate(ViewState.FEEDBACK_ADMIN), active: currentView === ViewState.FEEDBACK_ADMIN, color: 'bg-cyan-500' }
     ] : []),
-    { id: 'book', icon: Book, label: 'Glossary', action: onOpenGlossary, active: showGlossary, color: 'bg-amber-500' },
-    { id: 'user', icon: UserIcon, label: 'Profile', action: onOpenProfile, active: showAuth, color: 'bg-emerald-500' },
+    { id: 'book', icon: Book, label: t('Glossary'), action: onOpenGlossary, active: showGlossary, color: 'bg-amber-500' },
+    { id: 'user', icon: UserIcon, label: t('Profile'), action: onOpenProfile, active: showAuth, color: 'bg-emerald-500' },
     ...(user && (user.is_staff || user.is_superuser) ? [
-      { id: 'admin', icon: Database, label: 'Admin', action: () => onNavigate(ViewState.ADMIN), active: currentView === ViewState.ADMIN, color: 'bg-rose-500' }
+      { id: 'admin', icon: Database, label: t('Admin'), action: () => onNavigate(ViewState.ADMIN), active: currentView === ViewState.ADMIN, color: 'bg-rose-500' }
     ] : []),
-    { id: 'settings', icon: Settings, label: 'Settings', action: onOpenSettings, active: showSettings, color: 'bg-slate-600' }
+    { id: 'settings', icon: Settings, label: t('Settings'), action: onOpenSettings, active: showSettings, color: 'bg-slate-600' }
   ];
 
   return (

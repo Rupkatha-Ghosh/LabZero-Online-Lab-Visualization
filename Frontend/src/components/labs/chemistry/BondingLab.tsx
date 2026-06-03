@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { Link } from 'lucide-react';
@@ -8,6 +9,8 @@ interface BondingLabProps {
 }
 
 const BondingLab: React.FC<BondingLabProps> = ({ elements }) => {
+ 
+  const { t } = useLanguage();
   const [elA, setElA] = useState<ElementData | null>(null);
   const [elB, setElB] = useState<ElementData | null>(null);
   const [status, setStatus] = useState<'IDLE' | 'BONDED'>('IDLE');
@@ -25,6 +28,7 @@ const BondingLab: React.FC<BondingLabProps> = ({ elements }) => {
   const electronegativityDiff = elA && elB ? Math.abs(elA.electronegativity - elB.electronegativity) : 0;
 
   const determineBondType = () => {
+  
     if (electronegativityDiff >= 1.7) return 'Ionic';
     if (electronegativityDiff > 0.4) return 'Polar Covalent';
     return 'Covalent';
@@ -198,22 +202,20 @@ const BondingLab: React.FC<BondingLabProps> = ({ elements }) => {
 
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-10">
           <div className="space-y-1">
-            <h3 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">Interaction Laboratory</h3>
-            <p className="text-sm text-[var(--text-muted)] font-medium">Explore the electrostatic force between valence shells.</p>
+            <h3 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">{t('Interaction Laboratory')}</h3>
+            <p className="text-sm text-[var(--text-muted)] font-medium">{t('Explore the electrostatic force between valence shells.')}</p>
           </div>
 
           <div className="flex items-center gap-4 bg-[var(--bg-panel)] p-2 rounded-2xl border border-[var(--border-glass)] shadow-lg">
             <div className="flex flex-col items-end px-3">
-              <span className="text-[10px] font-black text-[var(--color-primary)] uppercase">Selected Pair</span>
+              <span className="text-[10px] font-black text-[var(--color-primary)] uppercase">{t('Selected Pair')}</span>
               <span className="text-xs font-bold text-[var(--text-primary)]/80">{elA.symbol} + {elB.symbol}</span>
             </div>
             <div className="w-px h-8 bg-[var(--border-glass)]"></div>
             <button
               onClick={reset}
               className="px-6 py-2.5 bg-[var(--color-primary)] hover:opacity-90 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-[var(--color-primary)]/20 active:scale-95 text-white"
-            >
-              Reset Environment
-            </button>
+            >{t('Reset Environment')}</button>
           </div>
         </div>
 
@@ -225,7 +227,7 @@ const BondingLab: React.FC<BondingLabProps> = ({ elements }) => {
             {status === 'IDLE' && (
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center">
                 <div className="w-16 h-16 border-2 border-[var(--border-glass)] border-dashed rounded-full mx-auto mb-4 animate-[spin_10s_linear_infinite]"></div>
-                <p className="text-[10px] font-black text-[var(--text-muted)]/40 uppercase tracking-[0.3em]">Drag atoms together</p>
+                <p className="text-[10px] font-black text-[var(--text-muted)]/40 uppercase tracking-[0.3em]">{t('Drag atoms together')}</p>
               </div>
             )}
 
@@ -235,11 +237,11 @@ const BondingLab: React.FC<BondingLabProps> = ({ elements }) => {
           {/* Real-time Telemetry */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-[var(--bg-panel)] p-6 rounded-3xl border border-[var(--border-glass)] space-y-6 shadow-md">
-              <h4 className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest font-bold">Bonding Telemetry</h4>
+              <h4 className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest font-bold">{t('Bonding Telemetry')}</h4>
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-[var(--text-muted)] font-bold">Electronegativity Diff</span>
+                  <span className="text-xs text-[var(--text-muted)] font-bold">{t('Electronegativity Diff')}</span>
                   <span className="text-sm font-mono font-bold text-[var(--color-primary)]">Δχ = {electronegativityDiff.toFixed(2)}</span>
                 </div>
                 <div className="h-2 bg-[var(--bg-deep)] rounded-full overflow-hidden border border-[var(--border-glass)]">
@@ -249,9 +251,9 @@ const BondingLab: React.FC<BondingLabProps> = ({ elements }) => {
                   ></div>
                 </div>
                 <div className="flex justify-between text-[9px] font-bold text-[var(--text-muted)]/40 uppercase tracking-tighter font-mono">
-                  <span>Covalent (0.0)</span>
-                  <span>Polar (0.5)</span>
-                  <span>Ionic (1.7+)</span>
+                  <span>{t('Covalent (0.0)')}</span>
+                  <span>{t('Polar (0.5)')}</span>
+                  <span>{t('Ionic (1.7+)')}</span>
                 </div>
               </div>
 

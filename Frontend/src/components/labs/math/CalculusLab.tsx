@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState } from 'react';
 import { SimulationProps } from '../../../types/types';
 
@@ -34,6 +35,8 @@ const presets: FunctionPreset[] = [
 ];
 
 const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light' }) => {
+ 
+  const { t } = useLanguage();
   const isDark = theme === 'dark';
   // --- State Variables ---
   const [selectedPreset, setSelectedPreset] = useState<string>('quadratic');
@@ -108,6 +111,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
 
   // Generate smooth path array for the main function curve
   const generateCurvePath = () => {
+  
     const points: string[] = [];
     const steps = 150; // Rendering fidelity
     for (let i = 0; i <= steps; i++) {
@@ -128,10 +132,8 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
       
       {/* Title Header */}
       <div className="text-center">
-        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>Interactive Calculus Simulator</h2>
-        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Explore derivatives (rates of change) and definite integrals (accumulation under curves)
-        </p>
+        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('Interactive Calculus Simulator')}</h2>
+        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('Explore derivatives (rates of change) and definite integrals (accumulation under curves)')}</p>
       </div>
 
       {/* Main Viewport Grid */}
@@ -144,7 +146,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
           
           {/* Preset Selector Dropdown */}
           <div className="w-full flex justify-between items-center mb-2 z-10 px-2">
-            <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Graph Viewport</span>
+            <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('Graph Viewport')}</span>
             <select
               value={selectedPreset}
               onChange={(e) => setSelectedPreset(e.target.value)}
@@ -228,9 +230,9 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
 
           {/* Visual State Color Legend */}
           <div className={`w-full flex justify-center gap-6 mt-3 text-[11px] font-medium transition-colors duration-500 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            <span className="flex items-center gap-1.5"><span className={`w-2.5 h-2.5 rounded-full inline-block ${isDark ? 'bg-slate-300' : 'bg-slate-700'}`}></span> Curve f(x)</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span> Tangent Slope f'(x)</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-sky-500 inline-block opacity-60"></span> Accumulated Area</span>
+            <span className="flex items-center gap-1.5"><span className={`w-2.5 h-2.5 rounded-full inline-block ${isDark ? 'bg-slate-300' : 'bg-slate-700'}`}></span>{t('Curve f(x)')}</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span>{t('Tangent Slope f'(x)')}</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-sky-500 inline-block opacity-60"></span>{t('Accumulated Area')}</span>
           </div>
         </div>
 
@@ -241,10 +243,10 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
           <div className={`p-4 rounded-xl space-y-3 border transition-colors duration-500 ${
             isDark ? 'bg-red-500/10 border-red-500/20' : 'bg-red-50/50 border-red-100'
           }`}>
-            <div className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-red-400' : 'text-red-800'}`}>Differential Parameters</div>
+            <div className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-red-400' : 'text-red-800'}`}>{t('Differential Parameters')}</div>
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
-                <span className={isDark ? 'text-slate-400' : 'text-slate-700'}>Evaluation Point (x)</span>
+                <span className={isDark ? 'text-slate-400' : 'text-slate-700'}>{t('Evaluation Point (x)')}</span>
                 <span className={`font-mono font-bold ${isDark ? 'text-red-400' : 'text-red-900'}`}>{targetX.toFixed(2)}</span>
               </div>
               <input
@@ -263,12 +265,12 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
           <div className={`p-4 rounded-xl space-y-3 border transition-colors duration-500 ${
             isDark ? 'bg-sky-500/10 border-sky-500/20' : 'bg-sky-50/50 border-sky-100'
           }`}>
-            <div className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-sky-400' : 'text-sky-800'}`}>Integral Parameters</div>
+            <div className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-sky-400' : 'text-sky-800'}`}>{t('Integral Parameters')}</div>
             
             {/* Bound A Slider */}
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
-                <span className={isDark ? 'text-slate-400' : 'text-slate-700'}>Interval Bound (a)</span>
+                <span className={isDark ? 'text-slate-400' : 'text-slate-700'}>{t('Interval Bound (a)')}</span>
                 <span className={`font-mono font-bold ${isDark ? 'text-sky-400' : 'text-sky-900'}`}>{boundA.toFixed(2)}</span>
               </div>
               <input
@@ -285,7 +287,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
             {/* Bound B Slider */}
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
-                <span className={isDark ? 'text-slate-400' : 'text-slate-700'}>Interval Bound (b)</span>
+                <span className={isDark ? 'text-slate-400' : 'text-slate-700'}>{t('Interval Bound (b)')}</span>
                 <span className={`font-mono font-bold ${isDark ? 'text-sky-400' : 'text-sky-900'}`}>{boundB.toFixed(2)}</span>
               </div>
               <input
@@ -302,7 +304,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
             {/* Partitions (n) Slider */}
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
-                <span className={isDark ? 'text-slate-400' : 'text-slate-700'}>Riemann Rectangles (n)</span>
+                <span className={isDark ? 'text-slate-400' : 'text-slate-700'}>{t('Riemann Rectangles (n)')}</span>
                 <span className={`font-mono font-bold ${isDark ? 'text-sky-400' : 'text-sky-900'}`}>{partitions}</span>
               </div>
               <input
@@ -317,7 +319,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
 
             {/* Evaluation Placement Multi-Toggle */}
             <div className="pt-1">
-              <span className={`text-[11px] font-semibold block mb-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Approximation Height Mapping</span>
+              <span className={`text-[11px] font-semibold block mb-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{t('Approximation Height Mapping')}</span>
               <div className={`grid grid-cols-3 gap-1 p-1 rounded-lg transition-colors duration-500 ${
                 isDark ? 'bg-slate-800' : 'bg-slate-200/70'
               }`}>
@@ -348,7 +350,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
         <div className={`p-3 border rounded-xl transition-colors duration-500 ${
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Function Output</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('Function Output')}</span>
           <span className={`text-sm font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>f({targetX.toFixed(1)}) = {fx.toFixed(2)}</span>
         </div>
 
@@ -356,7 +358,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
         <div className={`p-3 border rounded-xl transition-colors duration-500 ${
           isDark ? 'bg-red-500/10 border-red-500/20' : 'bg-red-50/40 border-red-100'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-red-400' : 'text-red-500'}`}>Instantaneous Slope</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-red-400' : 'text-red-500'}`}>{t('Instantaneous Slope')}</span>
           <span className={`text-sm font-mono font-bold ${isDark ? 'text-red-300' : 'text-red-900'}`}>f'({targetX.toFixed(1)}) = {slope.toFixed(2)}</span>
         </div>
 
@@ -364,7 +366,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
         <div className={`p-3 border rounded-xl transition-colors duration-500 ${
           isDark ? 'bg-sky-500/10 border-sky-500/20' : 'bg-sky-50/40 border-sky-100'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>Riemann Sum Area</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>{t('Riemann Sum Area')}</span>
           <span className={`text-sm font-mono font-bold ${isDark ? 'text-sky-300' : 'text-sky-900'}`}>≈ {riemannSumArea.toFixed(3)}</span>
         </div>
 
@@ -372,7 +374,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
         <div className={`p-3 border rounded-xl transition-colors duration-500 ${
           isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50/40 border-emerald-100'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>Exact Integral Area</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{t('Exact Integral Area')}</span>
           <span className={`text-sm font-mono font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-900'}`}>∫ f(x)dx = {exactArea.toFixed(3)}</span>
         </div>
 

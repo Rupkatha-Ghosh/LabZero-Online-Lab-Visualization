@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Float, Text, ContactShadows, Environment } from '@react-three/drei';
@@ -27,6 +28,8 @@ const Atom = ({ pos, symbol, color, size }: { pos: [number, number, number], sym
 );
 
 const Bond = ({ from, to }: { from: [number, number, number], to: [number, number, number] }) => {
+ 
+  const { t } = useLanguage();
   const start = new THREE.Vector3(...from);
   const end = new THREE.Vector3(...to);
   const distance = start.distanceTo(end);
@@ -66,6 +69,8 @@ interface GeometryLabProps {
 }
 
 const GeometryLab: React.FC<GeometryLabProps> = ({ rotation, zoom = 1, molecules }) => {
+ 
+  const { t } = useLanguage();
   const [selectedMolecule, setSelectedMolecule] = useState<Molecule | null>(null);
   const [mode, setMode] = useState<'Real' | 'Model'>('Real');
   const [showLonePairs, setShowLonePairs] = useState(true);
@@ -99,7 +104,7 @@ const GeometryLab: React.FC<GeometryLabProps> = ({ rotation, zoom = 1, molecules
   if (!molecules || molecules.length === 0 || !selectedMolecule) {
     return (
       <div className="bg-[var(--bg-panel)] rounded-[40px] p-8 border border-[var(--border-glass)] flex items-center justify-center h-[600px]">
-        <div className="text-[var(--text-primary)] text-xl font-mono font-bold">Loading Molecule Data...</div>
+        <div className="text-[var(--text-primary)] text-xl font-mono font-bold">{t('Loading Molecule Data...')}</div>
       </div>
     );
   }
@@ -132,11 +137,11 @@ const GeometryLab: React.FC<GeometryLabProps> = ({ rotation, zoom = 1, molecules
         <div className="flex flex-wrap gap-10 items-center bg-[var(--bg-deep)] px-8 py-3 rounded-2xl border border-[var(--border-glass)] shadow-sm">
           <label className="flex items-center gap-3 cursor-pointer group">
             <input type="checkbox" checked={showBondAngles} onChange={() => setShowBondAngles(!showBondAngles)} className="w-5 h-5 rounded accent-[var(--color-primary)]" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]/60 group-hover:text-[var(--text-primary)]">Bond Angles</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]/60 group-hover:text-[var(--text-primary)]">{t('Bond Angles')}</span>
           </label>
           <label className="flex items-center gap-3 cursor-pointer group">
              <input type="checkbox" checked={showLonePairs} onChange={() => setShowLonePairs(!showLonePairs)} className="w-5 h-5 rounded accent-[var(--color-primary)]" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]/60 group-hover:text-[var(--text-primary)]">Lone Pairs</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]/60 group-hover:text-[var(--text-primary)]">{t('Lone Pairs')}</span>
           </label>
         </div>
       </div>
@@ -194,17 +199,17 @@ const GeometryLab: React.FC<GeometryLabProps> = ({ rotation, zoom = 1, molecules
              </div>
              <div>
                <h4 className="text-2xl font-black text-[var(--text-primary)]">{selectedMolecule.name}</h4>
-               <p className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest">Three.js Engine</p>
+               <p className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest">{t('Three.js Engine')}</p>
              </div>
            </div>
            
            <div className="space-y-4 pt-4 border-t border-[var(--border-glass)]">
              <div className="flex justify-between items-center text-[10px] font-bold">
-               <span className="text-[var(--text-muted)]/40 uppercase">Framework</span>
+               <span className="text-[var(--text-muted)]/40 uppercase">{t('Framework')}</span>
                <span className="text-[var(--color-primary)]/80 uppercase font-black">VSEPR {mode}</span>
              </div>
              <div className="flex justify-between items-end">
-               <span className="text-[10px] font-bold text-[var(--text-muted)]/40 uppercase pb-1">Dynamics</span>
+               <span className="text-[10px] font-bold text-[var(--text-muted)]/40 uppercase pb-1">{t('Dynamics')}</span>
                <span className="text-2xl font-black text-[var(--text-primary)]">
                  {mode === 'Real' ? selectedMolecule.realAngle : selectedMolecule.modelAngle}
                </span>

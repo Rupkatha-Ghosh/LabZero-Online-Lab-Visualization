@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState } from 'react';
 import { SimulationProps } from '../../../types/types';
 
@@ -49,6 +50,8 @@ const presets: TransformationPreset[] = [
 ];
 
 const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = 'light' }) => {
+ 
+  const { t } = useLanguage();
   const isDark = theme === 'dark';
   // --- Core Transformational State ---
   const [a, setA] = useState<number>(1);
@@ -64,6 +67,7 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
 
   // --- Handle Quick Presets ---
   const applyPreset = (preset: TransformationPreset) => {
+  
     setActivePreset(preset.id);
     setA(preset.matrix[0]);
     setB(preset.matrix[1]);
@@ -163,17 +167,15 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
       
       {/* Structural Header */}
       <div className="text-center">
-        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>Linear Transformations Visualizer</h2>
-        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Observe matrices warping space by tracking where basis vectors <b>i-hat</b> and <b>j-hat</b> land
-        </p>
+        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('Linear Transformations Visualizer')}</h2>
+        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('Observe matrices warping space by tracking where basis vectors')}<b>{t('i-hat')}</b>{t('and')}<b>{t('j-hat')}</b>{t('land')}</p>
       </div>
 
       {/* Preset Application Navigation Bar */}
       <div className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border shadow-sm transition-colors duration-500 ${
         isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
       }`}>
-        <span className={`text-xs font-bold uppercase tracking-wider pl-1 ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>Matrix Presets:</span>
+        <span className={`text-xs font-bold uppercase tracking-wider pl-1 ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>{t('Matrix Presets:')}</span>
         <div className="flex flex-wrap gap-1.5">
           {presets.map((p) => (
             <button
@@ -200,7 +202,7 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
         }`}>
           
           <div className={`w-full flex justify-between items-center px-2 pb-2 z-10 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
-            <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>Vector Space (2D Plane)</span>
+            <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>{t('Vector Space (2D Plane)')}</span>
             <span className={`text-xs font-mono font-bold ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
               det(A) = {determinant.toFixed(2)}
             </span>
@@ -305,10 +307,10 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
           <div className={`w-full flex flex-wrap justify-center gap-4 pt-2 text-[11px] font-medium border-t transition-colors duration-500 ${
             isDark ? 'text-slate-400 border-slate-800' : 'text-slate-600 border-slate-100'
           }`}>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> Transformed i-hat</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block" /> Transformed j-hat</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block opacity-60" /> Original v</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> Resulting Av</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />{t('Transformed i-hat')}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block" />{t('Transformed j-hat')}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block opacity-60" />{t('Original v')}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />{t('Resulting Av')}</span>
           </div>
 
         </div>
@@ -321,9 +323,7 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
           }`}>
             <div className={`text-xs font-bold uppercase tracking-wider border-b pb-1 ${
               isDark ? 'text-slate-300 border-slate-800' : 'text-slate-700 border-slate-100'
-            }`}>
-              Transformation Operator Matrix
-            </div>
+            }`}>{t('Transformation Operator Matrix')}</div>
 
             <div className={`flex items-center justify-center gap-3 py-2 rounded-lg border font-mono transition-colors duration-500 ${
               isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'
@@ -372,23 +372,21 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
 
             <div className="grid grid-cols-2 gap-2 text-[10px] text-center text-slate-500 font-medium">
               <div>
-                <span className="block text-emerald-600 font-bold">Col 1 (i-hat Landing)</span>
+                <span className="block text-emerald-600 font-bold">{t('Col 1 (i-hat Landing)')}</span>
                 <span>[{a.toFixed(1)}, {c.toFixed(1)}]</span>
               </div>
               <div>
-                <span className="block text-cyan-600 font-bold">Col 2 (j-hat Landing)</span>
+                <span className="block text-cyan-600 font-bold">{t('Col 2 (j-hat Landing)')}</span>
                 <span>[{b.toFixed(1)}, {d.toFixed(1)}]</span>
               </div>
             </div>
 
             <div className={`pt-2 border-t space-y-2.5 ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
-              <span className={`text-xs font-bold uppercase tracking-wider block ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                Target Input Vector (v)
-              </span>
+              <span className={`text-xs font-bold uppercase tracking-wider block ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{t('Target Input Vector (v)')}</span>
               
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">X Coordinate</label>
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">{t('X Coordinate')}</label>
                   <input
                     type="range"
                     min="-4"
@@ -401,7 +399,7 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
                   <span className={`text-xs font-mono font-bold block text-center mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{vecX.toFixed(1)}</span>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Y Coordinate</label>
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">{t('Y Coordinate')}</label>
                   <input
                     type="range"
                     min="-4"
@@ -421,9 +419,7 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
           <div className={`p-3 rounded-xl border text-xs transition-colors duration-500 ${
             isDark ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
           }`}>
-            <span className={`font-bold block border-b pb-1 ${isDark ? 'text-slate-300 border-slate-700' : 'text-slate-700 border-slate-200'}`}>
-              Transformation Insight
-            </span>
+            <span className={`font-bold block border-b pb-1 ${isDark ? 'text-slate-300 border-slate-700' : 'text-slate-700 border-slate-200'}`}>{t('Transformation Insight')}</span>
             <p className="leading-relaxed mt-1">
               {presets.find((p) => p.id === activePreset)?.description || 
                'Custom linear map warping space based on individual matrix configuration input metrics.'}
@@ -441,7 +437,7 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
         <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Linear Transformation Equation</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('Linear Transformation Equation')}</span>
           <div className={`font-mono text-[11px] font-bold flex items-center justify-center gap-2 mt-2 transition-colors duration-500 ${
             isDark ? 'text-slate-300' : 'text-slate-800'
           }`}>
@@ -485,7 +481,7 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
         <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
           isDark ? 'bg-red-500/10 border-red-500/20' : 'bg-red-50/50 border-red-100'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-red-400' : 'text-red-700'}`}>Transformed Vector Mapping</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-red-400' : 'text-red-700'}`}>{t('Transformed Vector Mapping')}</span>
           <div className="mt-1">
             <span className={`text-lg font-mono font-bold ${isDark ? 'text-red-300' : 'text-red-900'}`}>
               T(v) = ({transVecX.toFixed(2)}, {transVecY.toFixed(2)})
@@ -497,7 +493,7 @@ const LinearAlgebraVisualizer: React.FC<Partial<SimulationProps>> = ({ theme = '
         <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
           isDark ? 'bg-sky-500/10 border-sky-500/20' : 'bg-sky-50/50 border-sky-100'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>Space & Area Scaling Impact</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>{t('Space & Area Scaling Impact')}</span>
           <span className={`text-xs font-bold mt-1 leading-tight ${isDark ? 'text-sky-300' : 'text-sky-950'}`}>
             {detStatus}
           </span>

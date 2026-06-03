@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { 
@@ -25,7 +26,8 @@ const REAGENTS: Reagent[] = [
 ];
 
 const RealExperimentLab: React.FC = () => {
-  const [contents, setContents] = useState<{ id: string; amount: number }[]>([]);
+  
+  const { t } = useLanguage();const [contents, setContents] = useState<{ id: string; amount: number }[]>([]);
   const [temperature, setTemperature] = useState(25);
   const [ph, setPh] = useState(7);
   const [isReacting, setIsReacting] = useState(false);
@@ -85,6 +87,7 @@ const RealExperimentLab: React.FC = () => {
   }, [contents]);
 
   const addReagent = (id: string) => {
+  
     if (pouring || totalVolume >= 500) return;
     setPouring(id);
     
@@ -134,18 +137,15 @@ const RealExperimentLab: React.FC = () => {
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-2 text-indigo-400 font-mono text-[10px] tracking-[0.5em] uppercase"
           >
-            <div className="w-8 h-px bg-indigo-500/50" />
-            Advanced Chemical Simulator
-          </motion.div>
-          <h2 className="text-4xl md:text-7xl font-display font-black text-white tracking-tighter uppercase leading-none">
-            Reaction <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">Dynamics</span>
+            <div className="w-8 h-px bg-indigo-500/50" />{t('Advanced Chemical Simulator')}</motion.div>
+          <h2 className="text-4xl md:text-7xl font-display font-black text-white tracking-tighter uppercase leading-none">{t('Reaction')}<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">{t('Dynamics')}</span>
           </h2>
         </div>
 
         <div className="flex gap-4">
           <MetricDisplay 
             icon={<Thermometer size={16} />} 
-            label="Temp" 
+            label={t('Temp')} 
             value={`${temperature.toFixed(1)}°C`} 
             color={temperature > 60 ? 'text-orange-500' : 'text-indigo-400'}
             warning={temperature > 75}
@@ -158,7 +158,7 @@ const RealExperimentLab: React.FC = () => {
           />
           <MetricDisplay 
             icon={<Droplet size={16} />} 
-            label="Volume" 
+            label={t('Volume')} 
             value={`${totalVolume}ml`} 
             color="text-sky-400"
           />
@@ -172,9 +172,7 @@ const RealExperimentLab: React.FC = () => {
           <div className="glass-panel p-8 rounded-[3rem] border border-white/5 bg-white/[0.01] backdrop-blur-3xl shadow-2xl space-y-8">
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
-                <Zap size={14} className="text-amber-400" />
-                Chemical Reagents
-              </h3>
+                <Zap size={14} className="text-amber-400" />{t('Chemical Reagents')}</h3>
               <span className="text-[10px] font-mono text-slate-600">Capacity: {totalVolume}/500ml</span>
             </div>
 
@@ -194,9 +192,7 @@ const RealExperimentLab: React.FC = () => {
               onClick={resetExperiment}
               className="w-full py-5 rounded-[2rem] bg-rose-500/5 border border-rose-500/10 hover:bg-rose-500/20 hover:border-rose-500/40 text-rose-400 transition-all duration-500 flex items-center justify-center gap-3 font-mono text-[10px] font-black uppercase tracking-[0.3em]"
             >
-              <RefreshCw size={14} className={isReacting ? 'animate-spin' : ''} />
-              Reset Lab Environment
-            </button>
+              <RefreshCw size={14} className={isReacting ? 'animate-spin' : ''} />{t('Reset Lab Environment')}</button>
           </div>
         </div>
 
@@ -347,8 +343,8 @@ const RealExperimentLab: React.FC = () => {
               <AlertCircle size={32} />
             </div>
             <div className="space-y-1">
-              <h4 className="text-xl font-display font-black text-white uppercase tracking-tighter">Thermal Breach</h4>
-              <p className="text-xs text-red-400/80 font-mono uppercase tracking-widest font-bold">Critical Reaction Temperature Detected</p>
+              <h4 className="text-xl font-display font-black text-white uppercase tracking-tighter">{t('Thermal Breach')}</h4>
+              <p className="text-xs text-red-400/80 font-mono uppercase tracking-widest font-bold">{t('Critical Reaction Temperature Detected')}</p>
             </div>
           </motion.div>
         )}

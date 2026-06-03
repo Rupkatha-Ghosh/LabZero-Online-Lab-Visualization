@@ -1,7 +1,10 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState } from 'react';
 import { SimulationProps } from '../../../types/types';
 
 const TrigonometrySimulation: React.FC<Partial<SimulationProps>> = ({ theme = 'light' }) => {
+ 
+  const { t } = useLanguage();
   const isDark = theme === 'dark';
   // --- State ---
   const [angleDeg, setAngleDeg] = useState<number>(30);
@@ -80,8 +83,8 @@ const TrigonometrySimulation: React.FC<Partial<SimulationProps>> = ({ theme = 'l
       
       {/* Header */}
       <div className="text-center">
-        <h2 className={`text-2xl font-bold margin-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>Unit Circle & Trigonometric Waves</h2>
-        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Explore the dynamic linkage between circular motion and periodic functions</p>
+        <h2 className={`text-2xl font-bold margin-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('Unit Circle & Trigonometric Waves')}</h2>
+        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('Explore the dynamic linkage between circular motion and periodic functions')}</p>
       </div>
 
       {/* Primary Layout: Circle + Metrics Viewport */}
@@ -91,7 +94,7 @@ const TrigonometrySimulation: React.FC<Partial<SimulationProps>> = ({ theme = 'l
         
         {/* Interactive Unit Circle Workspace */}
         <div className="flex flex-col items-center relative">
-          <span className={`text-xs font-semibold uppercase tracking-wider mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Unit Circle Projection</span>
+          <span className={`text-xs font-semibold uppercase tracking-wider mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('Unit Circle Projection')}</span>
           <svg viewBox="0 0 300 300" className={`w-full max-w-[280px] h-auto border rounded-lg transition-colors duration-500 ${
             isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50/50 border-slate-100'
           }`}>
@@ -162,8 +165,8 @@ const TrigonometrySimulation: React.FC<Partial<SimulationProps>> = ({ theme = 'l
           
           {/* Color Legend */}
           <div className={`flex gap-4 mt-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span> Sine (y)</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-sky-600 inline-block"></span> Cosine (x)</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span>{t('Sine (y)')}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-sky-600 inline-block"></span>{t('Cosine (x)')}</span>
           </div>
         </div>
 
@@ -172,7 +175,7 @@ const TrigonometrySimulation: React.FC<Partial<SimulationProps>> = ({ theme = 'l
           <div className={`p-4 rounded-xl border transition-colors duration-500 ${
             isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'
           }`}>
-            <div className={`text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Input Parameters</div>
+            <div className={`text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t('Input Parameters')}</div>
             
             {/* Angle Slider Controls */}
             <div className="flex items-center justify-between mb-1">
@@ -237,17 +240,11 @@ const TrigonometrySimulation: React.FC<Partial<SimulationProps>> = ({ theme = 'l
           {/* Graph View Visibility Checkboxes */}
           <div className={`flex gap-4 pt-1 justify-center text-xs border-t transition-colors duration-500 ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
             <label className={`flex items-center gap-1.5 cursor-pointer font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              <input type="checkbox" checked={showSinGraph} onChange={(e) => setShowSinGraph(e.target.checked)} className="accent-red-600" />
-              Show Sine Wave
-            </label>
+              <input type="checkbox" checked={showSinGraph} onChange={(e) => setShowSinGraph(e.target.checked)} className="accent-red-600" />{t('Show Sine Wave')}</label>
             <label className={`flex items-center gap-1.5 cursor-pointer font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              <input type="checkbox" checked={showCosGraph} onChange={(e) => setShowCosGraph(e.target.checked)} className="accent-sky-600" />
-              Show Cosine Wave
-            </label>
+              <input type="checkbox" checked={showCosGraph} onChange={(e) => setShowCosGraph(e.target.checked)} className="accent-sky-600" />{t('Show Cosine Wave')}</label>
             <label className={`flex items-center gap-1.5 cursor-pointer font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              <input type="checkbox" checked={showTanGraph} onChange={(e) => setShowTanGraph(e.target.checked)} className="accent-amber-600" />
-              Show Tangent Wave
-            </label>
+              <input type="checkbox" checked={showTanGraph} onChange={(e) => setShowTanGraph(e.target.checked)} className="accent-amber-600" />{t('Show Tangent Wave')}</label>
           </div>
         </div>
       </div>
@@ -316,7 +313,7 @@ const TrigonometrySimulation: React.FC<Partial<SimulationProps>> = ({ theme = 'l
           }`}>
             <div className="flex justify-between items-center mb-2">
               <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>Tangent Function Graph: y = tan(θ)</span>
-              <span className="text-xs font-mono text-slate-400">Asymptotes at 90° and 270°</span>
+              <span className="text-xs font-mono text-slate-400">{t('Asymptotes at 90° and 270°')}</span>
             </div>
             <svg viewBox="0 0 600 120" className={`w-full h-auto rounded border overflow-hidden transition-colors duration-500 ${
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50/30 border-slate-100'

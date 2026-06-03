@@ -1,3 +1,4 @@
+import { useLanguage } from '../../context/LanguageContext';
 import React from 'react';
 import { Subject, Topic, SubjectId } from '../../types/types';
 import { ArrowLeft, ArrowRight, Beaker, Zap, Calculator, Dna } from 'lucide-react';
@@ -39,8 +40,10 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
   theme,
   skeletonDebug = false
 }) => {
+ 
+  const { t } = useLanguage();
   const Icon = iconMap[subject.icon] || Beaker;
-  const t = (key: string) => translations[key]?.[language] || key;
+  
 
   const displayedTopics = selectedClass
     ? subject.topics.filter(topic =>
@@ -122,7 +125,7 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
           >
             <h2 className={`text-[clamp(48px,12vw,120px)] font-display font-bold tracking-tighter uppercase leading-[0.9] transition-colors duration-500 ${isDark ? 'text-white' : 'text-slate-900'
               }`}>
-              {subject.name}
+              {t(subject.name)}
             </h2>
             <div className="flex items-center gap-4 mt-4 sm:mt-6 justify-center sm:justify-start">
               <div className="h-px w-8 sm:w-12 bg-primary" />
@@ -175,10 +178,10 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
                     <div className={`h-px w-4 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
                   </div>
                   <h3 className={`text-2xl font-display font-bold mb-4 tracking-tight group-hover:text-primary transition-colors uppercase ${isDark ? 'text-white' : 'text-slate-900'
-                    }`}>{topic.name}</h3>
+                    }`}>{t(topic.name)}</h3>
                   <p className={`text-sm leading-relaxed font-light line-clamp-3 transition-colors ${isDark ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-600 group-hover:text-slate-800'
                     }`}>
-                    {topic.description}
+                    {t(topic.description)}
                   </p>
                 </div>
 
@@ -191,10 +194,10 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
                       ))}
                     </div>
                     <span className={`text-[8px] font-mono uppercase tracking-widest ${isDark ? 'text-slate-600' : 'text-slate-400'
-                      }`}>Active Learners</span>
+                      }`}>{t('Active Learners')}</span>
                   </div>
                   <span className={`text-[9px] font-mono uppercase tracking-[0.2em] transition-colors ${isDark ? 'text-slate-700 group-hover:text-primary/70' : 'text-slate-400 group-hover:text-primary/70'
-                    }`}>Launch Module</span>
+                    }`}>{t('Launch Module')}</span>
                 </div>
               </motion.button>
             ))}

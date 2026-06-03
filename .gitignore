@@ -28,3 +28,11 @@ repomix-output.xml
 .sixth/
 .bg-shell/
 .cursor/
+
+# Translation & Sync Debug / Utility files
+docs/qa/translate.py
+docs/qa/translate_labs.py
+Backend/sync_log.txt
+Backend/inspect_db_local.py
+Backend/lab_api/sync_helper.py
+Backend/lab_api/management/commands/sync_theories.py

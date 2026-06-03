@@ -1,8 +1,11 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState } from 'react';
 import { SimulationProps } from '../../../types/types';
 
 
 const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light' }) => {
+ 
+  const { t } = useLanguage();
   const isDark = theme === 'dark';
   // --- Interface State ---
   const [activeTab, setActiveTab] = useState<'photosynthesis' | 'transpiration'>('photosynthesis');
@@ -57,6 +60,7 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
 
   // Quick Preset Handlers
   const applyPreset = (type: 'optimal' | 'drought' | 'night' | 'heatwave') => {
+  
     setActivePreset(type);
     if (type === 'optimal') { setLight(85); setCo2(1000); setTemp(28); setHumidity(60); }
     if (type === 'drought') { setLight(90); setCo2(400); setTemp(38); setHumidity(15); }
@@ -87,10 +91,8 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
 
       {/* Header */}
       <div className="text-center">
-        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>Plant Physiology Chamber</h2>
-        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Model internal chemical energy synthesis and environmental fluid mechanics
-        </p>
+        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('Plant Physiology Chamber')}</h2>
+        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('Model internal chemical energy synthesis and environmental fluid mechanics')}</p>
       </div>
 
       {/* Lab Navigation / Toggles */}
@@ -133,9 +135,7 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
             </span>
             <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded border transition-colors duration-500 ${
               isDark ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-slate-100 text-slate-600 border-slate-200'
-            }`}>
-              Chamber Live
-            </span>
+            }`}>{t('Chamber Live')}</span>
           </div>
 
           {/* LAB 1: PHOTOSYNTHESIS VISUALIZATION */}
@@ -190,7 +190,7 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
               </svg>
 
               <div className="text-center mt-1">
-                <span className={`text-xs block ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Visual Indicator: Oxygen Evolution Rate</span>
+                <span className={`text-xs block ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{t('Visual Indicator: Oxygen Evolution Rate')}</span>
                 <span className={`text-xs font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                   {photoRate < 3 ? 'No Activity' : photoRate < 35 ? 'Slow Bubbling' : photoRate < 75 ? 'Moderate Bubbling' : 'Vigorous O₂ Saturation'}
                 </span>
@@ -253,7 +253,7 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
               </svg>
 
               <div className="text-center mt-1">
-                <span className={`text-xs block ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Microscopic Geometry: Stomatal Guard Cells</span>
+                <span className={`text-xs block ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{t('Microscopic Geometry: Stomatal Guard Cells')}</span>
                 <span className={`text-xs font-bold ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>
                   Pore Aperture Width: {Math.round(aperture * 100)}% ({stomatalStatus})
                 </span>
@@ -265,7 +265,7 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
           <div className={`w-full flex justify-between items-center border-t pt-2 px-1 text-xs transition-colors duration-500 ${
             isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'
           }`}>
-            <span className={`font-semibold ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Chamber Status:</span>
+            <span className={`font-semibold ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{t('Chamber Status:')}</span>
             <span className={`font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
               {temp > 42 ? '⚠️ High Temp Alert' : humidity < 25 ? '⚠️ High VPD / Arid' : 'Normal Equilibrium'}
             </span>
@@ -280,30 +280,28 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
           <div className={`p-3 rounded-xl border transition-colors duration-500 ${
             isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
           }`}>
-            <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
-              Chamber Presets
-            </span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{t('Chamber Presets')}</span>
             <div className="grid grid-cols-2 gap-1.5">
               <button onClick={() => applyPreset('optimal')}  className={`p-1 text-[11px] font-semibold border rounded transition-colors ${
                 activePreset === 'optimal'
                   ? isDark ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm' : 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                   : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}>Tropical Day</button>
+              }`}>{t('Tropical Day')}</button>
               <button onClick={() => applyPreset('drought')}  className={`p-1 text-[11px] font-semibold border rounded transition-colors ${
                 activePreset === 'drought'
                   ? isDark ? 'bg-amber-500 text-white border-amber-500 shadow-sm' : 'bg-amber-600 text-white border-amber-600 shadow-sm'
                   : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}>Arid Drought</button>
+              }`}>{t('Arid Drought')}</button>
               <button onClick={() => applyPreset('night')}    className={`p-1 text-[11px] font-semibold border rounded transition-colors ${
                 activePreset === 'night'
                   ? isDark ? 'bg-indigo-500 text-white border-indigo-500 shadow-sm' : 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                   : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}>Cool Night</button>
+              }`}>{t('Cool Night')}</button>
               <button onClick={() => applyPreset('heatwave')} className={`p-1 text-[11px] font-semibold border rounded transition-colors ${
                 activePreset === 'heatwave'
                   ? isDark ? 'bg-red-500 text-white border-red-500 shadow-sm' : 'bg-red-600 text-white border-red-600 shadow-sm'
                   : isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}>Heatwave</button>
+              }`}>{t('Heatwave')}</button>
             </div>
           </div>
 
@@ -313,9 +311,7 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
           }`}>
             <div className={`text-xs font-bold uppercase tracking-wider border-b pb-1 ${
               isDark ? 'text-slate-300 border-slate-800' : 'text-slate-700 border-slate-100'
-            }`}>
-              Environmental Controls
-            </div>
+            }`}>{t('Environmental Controls')}</div>
 
             {/* Light Intensity Slider */}
             <div>
@@ -394,7 +390,7 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
         <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
           isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50/50 border-emerald-100'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>Photosynthesis Rate</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>{t('Photosynthesis Rate')}</span>
           <div className="flex items-baseline gap-1 mt-1">
             <span className={`text-xl font-mono font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-900'}`}>{photoRate.toFixed(1)}</span>
             <span className={`text-[10px] font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>% max</span>
@@ -405,7 +401,7 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
         <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
           isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50/50 border-amber-100'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>Active Limiting Factor</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>{t('Active Limiting Factor')}</span>
           <span className={`text-xs font-bold mt-1 leading-tight ${isDark ? 'text-amber-300' : 'text-amber-900'}`}>{limitingFactor}</span>
         </div>
 
@@ -413,7 +409,7 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
         <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
           isDark ? 'bg-sky-500/10 border-sky-500/20' : 'bg-sky-50/50 border-sky-100'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>Transpiration Rate</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>{t('Transpiration Rate')}</span>
           <div className="flex items-baseline gap-1 mt-1">
             <span className={`text-xl font-mono font-bold ${isDark ? 'text-sky-300' : 'text-sky-900'}`}>{transpirationRate.toFixed(1)}</span>
             <span className={`text-[10px] font-bold ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>% max</span>
@@ -424,10 +420,10 @@ const PlantPhysiologySimulator: React.FC<Partial<SimulationProps>> = ({ theme = 
         <div className={`p-3 border rounded-xl flex flex-col justify-between transition-colors duration-500 ${
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100/70 border-slate-200'
         }`}>
-          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>Evaporative Pull (VPD)</span>
+          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>{t('Evaporative Pull (VPD)')}</span>
           <div className="flex items-baseline gap-1 mt-1">
             <span className={`text-xl font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>{vpd.toFixed(2)}</span>
-            <span className={`text-[10px] font-bold ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>kPa proxy</span>
+            <span className={`text-[10px] font-bold ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{t('kPa proxy')}</span>
           </div>
         </div>
 

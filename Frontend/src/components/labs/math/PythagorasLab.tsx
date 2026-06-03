@@ -1,9 +1,11 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Calculator, Triangle, Ruler, Sparkles } from 'lucide-react';
 
 const PythagorasLab: React.FC = () => {
-  const [base, setBase] = useState(150);
+  
+  const { t } = useLanguage();const [base, setBase] = useState(150);
   const [height, setHeight] = useState(150);
 
   const hypotenuse = Math.sqrt(base * base + height * height);
@@ -73,13 +75,12 @@ const PythagorasLab: React.FC = () => {
         <div className="p-8 rounded-[32px] bg-[var(--bg-panel)] border border-[var(--border-glass)] space-y-8 shadow-xl">
           <div>
             <div className="text-[var(--color-primary)] font-mono text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2 font-bold">
-              <Calculator size={12} /> Calculation Result
-            </div>
+              <Calculator size={12} />{t('Calculation Result')}</div>
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-display font-bold text-[var(--text-primary)] tracking-tighter italic">
                 {hypotenuse.toFixed(1)}
               </span>
-              <span className="text-[var(--text-muted)] text-sm font-mono uppercase tracking-widest italic font-bold">Hypotenuse</span>
+              <span className="text-[var(--text-muted)] text-sm font-mono uppercase tracking-widest italic font-bold">{t('Hypotenuse')}</span>
             </div>
           </div>
 
@@ -101,11 +102,8 @@ const PythagorasLab: React.FC = () => {
           </div>
           <div className="relative z-10 space-y-4">
             <h3 className="text-xl font-display font-bold italic tracking-tight uppercase flex items-center gap-2">
-              <Sparkles size={18} /> Deep Insight
-            </h3>
-            <p className="text-white/90 text-[11px] leading-relaxed font-bold">
-              This theorem is the bridge between distance and coordinate geometry. In computer science, we use it to calculate Euclidian distance in any dimensional space.
-            </p>
+              <Sparkles size={18} />{t('Deep Insight')}</h3>
+            <p className="text-white/90 text-[11px] leading-relaxed font-bold">{t('This theorem is the bridge between distance and coordinate geometry. In computer science, we use it to calculate Euclidian distance in any dimensional space.')}</p>
           </div>
         </div>
       </div>

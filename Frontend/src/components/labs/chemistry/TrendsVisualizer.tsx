@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useMemo } from 'react';
 import { MousePointer } from 'lucide-react';
 import { ElementData } from '../../../types/types';
@@ -9,6 +10,8 @@ interface TrendsVisualizerProps {
 }
 
 const TrendsVisualizer: React.FC<TrendsVisualizerProps> = ({ elements }) => {
+ 
+  const { t } = useLanguage();
   const [activeProperty, setActiveProperty] = useState<Property>('radius');
   const [hoveredElement, setHoveredElement] = useState<ElementData | null>(null);
   const isLightMode = document.body.classList.contains('light-mode');
@@ -24,6 +27,7 @@ const TrendsVisualizer: React.FC<TrendsVisualizerProps> = ({ elements }) => {
   }, [activeProperty, elements]);
 
   const getColor = (value: number) => {
+  
     if (value === 0 || isNaN(value)) return 'rgba(255, 255, 255, 0.05)';
     if (stats.max === stats.min) return 'rgba(255, 255, 255, 0.05)';
     const normalized = (value - stats.min) / (stats.max - stats.min);
@@ -55,7 +59,7 @@ const TrendsVisualizer: React.FC<TrendsVisualizerProps> = ({ elements }) => {
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div className="max-w-xl">
-            <h4 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.4em] mb-2">Full Periodicity Heatmap (1-118)</h4>
+            <h4 className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.4em] mb-2">{t('Full Periodicity Heatmap (1-118)')}</h4>
             <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight">{propertyLabels[activeProperty].name}</h2>
             <p className="text-[var(--text-muted)] text-xs font-medium leading-relaxed mt-2">{propertyLabels[activeProperty].desc}</p>
           </div>
@@ -149,25 +153,23 @@ const TrendsVisualizer: React.FC<TrendsVisualizerProps> = ({ elements }) => {
         <div className="mt-12 flex flex-col md:flex-row items-center justify-between p-8 bg-[var(--bg-panel)] rounded-[32px] border border-[var(--border-glass)] shadow-md">
           <div className="flex items-center gap-6">
              <div className="space-y-1">
-               <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] font-bold">Intensity Scale</span>
+               <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] font-bold">{t('Intensity Scale')}</span>
                <div className="w-80 h-4 rounded-full bg-gradient-to-r from-[var(--bg-deep)] via-[var(--color-primary)] to-[var(--color-cyan)] opacity-60 shadow-inner"></div>
              </div>
              <div className="flex gap-10 text-[11px] font-mono">
                 <div className="flex flex-col">
-                  <span className="text-[var(--text-muted)] uppercase text-[9px] font-bold">Min Value</span>
+                  <span className="text-[var(--text-muted)] uppercase text-[9px] font-bold">{t('Min Value')}</span>
                   <span className="text-[var(--text-primary)] font-black">{stats.min} {propertyLabels[activeProperty].unit}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[var(--text-muted)] uppercase text-[9px] font-bold">Max Value</span>
+                  <span className="text-[var(--text-muted)] uppercase text-[9px] font-bold">{t('Max Value')}</span>
                   <span className="text-[var(--color-primary)] font-black">{stats.max} {propertyLabels[activeProperty].unit}</span>
                 </div>
              </div>
           </div>
           
           <div className="flex items-center gap-3 text-[10px] font-black text-[var(--text-muted)]/60 uppercase tracking-widest bg-[var(--bg-deep)] px-4 py-2 rounded-xl border border-[var(--border-glass)]">
-            <MousePointer className="h-4 w-4 text-[var(--color-primary)]" />
-            Hover elements for detail
-          </div>
+            <MousePointer className="h-4 w-4 text-[var(--color-primary)]" />{t('Hover elements for detail')}</div>
         </div>
       </div>
 
@@ -195,9 +197,9 @@ const TrendsVisualizer: React.FC<TrendsVisualizerProps> = ({ elements }) => {
            </div>
 
            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-             <DataPoint label="Radius" value={hoveredElement.radius} unit="pm" />
-             <DataPoint label="Ionization" value={hoveredElement.ionization || '--'} unit="kJ" />
-             <DataPoint label="Electroneg." value={hoveredElement.electronegativity || 'N/A'} unit="χ" />
+             <DataPoint label={t('Radius')} value={hoveredElement.radius} unit="pm" />
+             <DataPoint label={t('Ionization')} value={hoveredElement.ionization || '--'} unit="kJ" />
+             <DataPoint label={t('Electroneg.')} value={hoveredElement.electronegativity || 'N/A'} unit="χ" />
            </div>
         </div>
       )}
@@ -213,6 +215,8 @@ const DataPoint = ({ label, value, unit }: { label: string, value: any, unit: st
 );
 
 const TrendCell = ({ el, activeProperty, getColor, stats, setHovered, hovered, isLightMode }: any) => {
+ 
+  const { t } = useLanguage();
   const val = el[activeProperty];
   const color = getColor(val);
   const isHovered = hovered?.symbol === el.symbol;

@@ -1,4 +1,5 @@
 
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useMemo } from 'react';
 import { ElementData } from '../../../types/types';
 import { FlaskConical, RefreshCw, Zap, Activity, Info, AlertTriangle, CheckCircle2, ArrowUp, ArrowDown, Layers, Binary } from 'lucide-react';
@@ -38,6 +39,8 @@ interface QuantumConfigLabProps {
 }
 
 const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
+ 
+  const { t } = useLanguage();
   const [userConfig, setUserConfig] = useState<Record<string, number[]>>({});
   const [violations, setViolations] = useState<string[]>([]);
 
@@ -87,6 +90,7 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
   }, [userConfig]);
 
   const handleBoxClick = (orbId: string, boxIdx: number) => {
+  
     const key = `${orbId}-${boxIdx}`;
     const current = userConfig[key] || [];
     
@@ -126,19 +130,16 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
   return (
     <div className="space-y-10">
       <div className="bg-[var(--bg-panel)] p-10 rounded-[48px] border border-[var(--border-glass)] shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none font-display font-black text-[12rem] uppercase select-none leading-none text-[var(--text-primary)]">
-          Quantum
-        </div>
+        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none font-display font-black text-[12rem] uppercase select-none leading-none text-[var(--text-primary)]">{t('Quantum')}</div>
 
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10 mb-16 relative z-10">
           <div className="space-y-3">
             <div className="flex items-center gap-2 mb-1">
               <Binary size={12} className="text-[var(--color-primary)]" />
-              <h4 className="text-[10px] font-mono font-bold text-[var(--color-primary)] uppercase tracking-[0.4em]">Electronic Configuration Lab / v2.0</h4>
+              <h4 className="text-[10px] font-mono font-bold text-[var(--color-primary)] uppercase tracking-[0.4em]">{t('Electronic Configuration Lab / v2.0')}</h4>
             </div>
-            <h2 className="text-5xl font-display font-bold text-[var(--text-primary)] tracking-tighter uppercase leading-none">Orbital Box Simulation</h2>
-            <p className="text-[var(--text-muted)] text-sm mt-4 max-w-2xl font-medium leading-relaxed">
-              Manually place electrons to explore the fundamental principles of quantum mechanics. Achieve the target <span className="text-[var(--color-primary)] font-bold font-mono">Z={element.number}</span> for <span className="text-[var(--text-primary)] font-bold">{element.name}</span>.
+            <h2 className="text-5xl font-display font-bold text-[var(--text-primary)] tracking-tighter uppercase leading-none">{t('Orbital Box Simulation')}</h2>
+            <p className="text-[var(--text-muted)] text-sm mt-4 max-w-2xl font-medium leading-relaxed">{t('Manually place electrons to explore the fundamental principles of quantum mechanics. Achieve the target')}<span className="text-[var(--color-primary)] font-bold font-mono">Z={element.number}</span>{t('for')}<span className="text-[var(--text-primary)] font-bold">{element.name}</span>.
             </p>
           </div>
           
@@ -147,16 +148,12 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
               onClick={autoFill}
               className="px-8 py-4 bg-[var(--color-primary)] hover:opacity-90 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(var(--color-primary-rgb),0.3)] active:scale-95 flex items-center gap-2 text-white"
             >
-              <Zap size={14} />
-              Auto-Fill
-            </button>
+              <Zap size={14} />{t('Auto-Fill')}</button>
             <button 
               onClick={reset}
               className="px-8 py-4 bg-[var(--bg-panel)] hover:bg-[var(--bg-panel)]/80 border border-[var(--border-glass)] rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 text-[var(--text-primary)]"
             >
-              <RefreshCw size={14} />
-              Reset
-            </button>
+              <RefreshCw size={14} />{t('Reset')}</button>
           </div>
         </div>
 
@@ -164,14 +161,14 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
           <div className="p-8 bg-[var(--bg-deep)] rounded-[32px] border border-[var(--border-glass)] shadow-inner group">
             <div className="flex items-center gap-2 mb-4">
               <Activity size={12} className="text-[var(--text-muted)]" />
-              <p className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest">Target Atomic Number</p>
+              <p className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest">{t('Target Atomic Number')}</p>
             </div>
             <p className="text-5xl font-display font-bold text-[var(--text-primary)] tracking-tighter">{element.number}</p>
           </div>
           <div className={`p-8 rounded-[32px] border transition-all duration-500 shadow-inner ${totalElectrons === element.number ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-[var(--bg-deep)] border-[var(--border-glass)]'}`}>
             <div className="flex items-center gap-2 mb-4">
               <Activity size={12} className={totalElectrons === element.number ? 'text-emerald-500' : 'text-[var(--text-muted)]'} />
-              <p className={`text-[10px] font-mono font-bold uppercase tracking-widest ${totalElectrons === element.number ? 'text-emerald-500/60' : 'text-[var(--text-muted)]'}`}>Electrons Placed</p>
+              <p className={`text-[10px] font-mono font-bold uppercase tracking-widest ${totalElectrons === element.number ? 'text-emerald-500/60' : 'text-[var(--text-muted)]'}`}>{t('Electrons Placed')}</p>
             </div>
             <p className={`text-5xl font-display font-bold tracking-tighter ${totalElectrons > element.number ? 'text-red-500' : totalElectrons === element.number ? 'text-emerald-400' : 'text-[var(--color-primary)]'}`}>
               {totalElectrons}
@@ -180,13 +177,13 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
           <div className={`p-8 rounded-[32px] border transition-all duration-500 shadow-inner ${violations.length > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-[var(--bg-deep)] border-[var(--border-glass)]'}`}>
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle size={12} className={violations.length > 0 ? 'text-red-500' : 'text-[var(--text-muted)]'} />
-              <p className={`text-[10px] font-mono font-bold uppercase tracking-widest ${violations.length > 0 ? 'text-red-500/60' : 'text-[var(--text-muted)]'}`}>Rule Status</p>
+              <p className={`text-[10px] font-mono font-bold uppercase tracking-widest ${violations.length > 0 ? 'text-red-500/60' : 'text-[var(--text-muted)]'}`}>{t('Rule Status')}</p>
             </div>
             <div className="flex items-center gap-3">
               {violations.length === 0 ? (
                 <div className="flex items-center gap-2 text-emerald-400">
                   <CheckCircle2 size={20} />
-                  <span className="text-sm font-display font-bold uppercase tracking-tight">All Principles Satisfied</span>
+                  <span className="text-sm font-display font-bold uppercase tracking-tight">{t('All Principles Satisfied')}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-red-500">
@@ -268,7 +265,7 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
                         </AnimatePresence>
                         
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center pointer-events-none transition-opacity">
-                           {spins.length === 0 && <span className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest font-bold">Add</span>}
+                           {spins.length === 0 && <span className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest font-bold">{t('Add')}</span>}
                         </div>
                       </button>
                     );
@@ -286,7 +283,7 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
         <div className="mt-16 p-10 bg-[var(--bg-deep)] rounded-[40px] border border-[var(--border-glass)] overflow-x-auto whitespace-nowrap shadow-2xl relative z-10">
            <div className="flex items-center gap-3 mb-6">
              <Layers size={14} className="text-[var(--text-muted)]" />
-             <span className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-[0.3em] font-bold">Computed Configuration String</span>
+             <span className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-[0.3em] font-bold">{t('Computed Configuration String')}</span>
            </div>
            <div className="inline-flex gap-6 items-center">
              {ORBITAL_LAYOUT.map(level => {
@@ -307,7 +304,7 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
                  </motion.div>
                );
              })}
-             {totalElectrons === 0 && <span className="text-2xl font-display font-bold text-[var(--text-muted)]/20 italic uppercase tracking-widest">Awaiting Input...</span>}
+             {totalElectrons === 0 && <span className="text-2xl font-display font-bold text-[var(--text-muted)]/20 italic uppercase tracking-widest">{t('Awaiting Input...')}</span>}
            </div>
         </div>
       </div>
@@ -315,17 +312,17 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
          <TheoryCard 
           icon={<ArrowUp size={20} />} 
-          title="Aufbau Principle" 
+          title={t('Aufbau Principle')} 
           desc="Electrons fill subshells of the lowest available energy first (e.g. 1s before 2s)." 
          />
          <TheoryCard 
           icon={<RefreshCw size={20} />} 
-          title="Pauli Principle" 
+          title={t('Pauli Principle')} 
           desc="An orbital can hold at most two electrons, and they must have opposite spins." 
          />
          <TheoryCard 
           icon={<Layers size={20} />} 
-          title="Hund's Rule" 
+          title={t('Hund's Rule')} 
           desc="Every orbital in a subshell is singly occupied with one electron before any orbital is doubly occupied." 
          />
       </div>

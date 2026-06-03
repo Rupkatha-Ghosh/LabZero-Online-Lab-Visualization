@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Play, RefreshCw, BarChart3, Binary, Info } from 'lucide-react';
 import { SimulationProps } from '../../../types/types';
@@ -12,6 +13,8 @@ interface Result {
 }
 
 const ProbabilityLab: React.FC<Partial<SimulationProps>> = ({ theme = 'light' }) => {
+ 
+  const { t } = useLanguage();
   const isDark = theme === 'dark';
   const [mode, setMode] = useState<ExperimentMode>('coin');
   const [trialInput, setTrialInput] = useState<number>(100);
@@ -62,10 +65,8 @@ const ProbabilityLab: React.FC<Partial<SimulationProps>> = ({ theme = 'light' })
       
       {/* Header */}
       <div className="text-center">
-        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>Probability & Statistics Lab</h2>
-        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Visualizing the Law of Large Numbers through iterative sampling
-        </p>
+        <h2 className={`text-2xl font-bold m-0 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('Probability & Statistics Lab')}</h2>
+        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('Visualizing the Law of Large Numbers through iterative sampling')}</p>
       </div>
 
       {/* Control Panel */}
@@ -75,7 +76,7 @@ const ProbabilityLab: React.FC<Partial<SimulationProps>> = ({ theme = 'light' })
         
         {/* Mode Toggle */}
         <div className="space-y-2">
-          <label className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Experiment Type</label>
+          <label className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('Experiment Type')}</label>
           <div className={`flex p-1 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
             <button
               onClick={() => setMode('coin')}
@@ -85,8 +86,7 @@ const ProbabilityLab: React.FC<Partial<SimulationProps>> = ({ theme = 'light' })
                   : isDark ? 'text-slate-500 hover:text-slate-400' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              <Binary size={14} /> Coin Flip
-            </button>
+              <Binary size={14} />{t('Coin Flip')}</button>
             <button
               onClick={() => setMode('die')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-xs font-bold transition-all ${
@@ -95,14 +95,13 @@ const ProbabilityLab: React.FC<Partial<SimulationProps>> = ({ theme = 'light' })
                   : isDark ? 'text-slate-500 hover:text-slate-400' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              <BarChart3 size={14} /> Die Roll
-            </button>
+              <BarChart3 size={14} />{t('Die Roll')}</button>
           </div>
         </div>
 
         {/* Trial Input Slider */}
         <div className="space-y-2">
-          <label className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Number of Trials (n)</label>
+          <label className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('Number of Trials (n)')}</label>
           <div className="flex items-center gap-3">
             <input
               type="range"
@@ -176,10 +175,10 @@ const ProbabilityLab: React.FC<Partial<SimulationProps>> = ({ theme = 'light' })
           <table className="w-full text-left text-xs">
             <thead>
               <tr className={`border-b text-[10px] uppercase tracking-wider ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'}`}>
-                <th className="pb-2 font-bold">Outcome</th>
-                <th className="pb-2 font-bold">Count</th>
-                <th className="pb-2 font-bold">Experimental Prob.</th>
-                <th className="pb-2 font-bold">Deviation (Error)</th>
+                <th className="pb-2 font-bold">{t('Outcome')}</th>
+                <th className="pb-2 font-bold">{t('Count')}</th>
+                <th className="pb-2 font-bold">{t('Experimental Prob.')}</th>
+                <th className="pb-2 font-bold">{t('Deviation (Error)')}</th>
               </tr>
             </thead>
             <tbody className={`font-mono ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>
@@ -207,10 +206,9 @@ const ProbabilityLab: React.FC<Partial<SimulationProps>> = ({ theme = 'light' })
       }`}>
         <Info className={isDark ? 'text-blue-400' : 'text-blue-500'} size={16} />
         <div>
-          <h4 className={`text-xs font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-blue-300' : 'text-blue-800'}`}>Law of Large Numbers</h4>
-          <p className={`text-xs leading-relaxed ${isDark ? 'text-blue-200/70' : 'text-blue-700'}`}>
-            Observation: As you increase <strong>n (trials)</strong>, the experimental probability 
-            stabilizes and the <strong>Deviation</strong> decreases. In small samples, randomness 
+          <h4 className={`text-xs font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-blue-300' : 'text-blue-800'}`}>{t('Law of Large Numbers')}</h4>
+          <p className={`text-xs leading-relaxed ${isDark ? 'text-blue-200/70' : 'text-blue-700'}`}>{t('Observation: As you increase')}<strong>{t('n (trials)')}</strong>, the experimental probability 
+            stabilizes and the <strong>{t('Deviation')}</strong> decreases. In small samples, randomness 
             causes high error; in large samples, results converge toward the theoretical value.
           </p>
         </div>

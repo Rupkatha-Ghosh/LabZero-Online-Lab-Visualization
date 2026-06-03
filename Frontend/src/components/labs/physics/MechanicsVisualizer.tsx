@@ -1,8 +1,10 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, RotateCcw, Pause } from 'lucide-react';
 
 const MechanicsVisualizer: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  const { t } = useLanguage();const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Physics State
   const [angle, setAngle] = useState(45);
@@ -21,6 +23,7 @@ const MechanicsVisualizer: React.FC = () => {
   }, [angle, velocity, gravity, mass]);
 
   const resetSim = () => {
+  
     setIsRunning(false);
     setTime(0);
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -138,21 +141,21 @@ const MechanicsVisualizer: React.FC = () => {
         {/* Sliders */}
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest flex justify-between font-bold">
-            <span>Angle</span> <span className="text-[var(--color-primary)]">{angle}°</span>
+            <span>{t('Angle')}</span> <span className="text-[var(--color-primary)]">{angle}°</span>
           </label>
           <input type="range" min="0" max="90" value={angle} onChange={(e) => setAngle(Number(e.target.value))} className="accent-[var(--color-primary)] cursor-pointer" />
         </div>
 
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest flex justify-between font-bold">
-            <span>Velocity</span> <span className="text-[var(--color-primary)]">{velocity} m/s</span>
+            <span>{t('Velocity')}</span> <span className="text-[var(--color-primary)]">{velocity} m/s</span>
           </label>
           <input type="range" min="5" max="50" value={velocity} onChange={(e) => setVelocity(Number(e.target.value))} className="accent-[var(--color-primary)] cursor-pointer" />
         </div>
 
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest flex justify-between font-bold">
-            <span>Gravity</span> <span className="text-[var(--color-primary)]">{gravity} m/s²</span>
+            <span>{t('Gravity')}</span> <span className="text-[var(--color-primary)]">{gravity} m/s²</span>
           </label>
           <input type="range" min="1" max="25" step="0.1" value={gravity} onChange={(e) => setGravity(Number(e.target.value))} className="accent-[var(--color-primary)] cursor-pointer" />
         </div>

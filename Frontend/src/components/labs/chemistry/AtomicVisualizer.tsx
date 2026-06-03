@@ -1,4 +1,5 @@
 
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { Box, LayoutGrid } from 'lucide-react';
@@ -11,6 +12,8 @@ interface AtomVisualizerProps {
 }
 
 const AtomVisualizer: React.FC<AtomVisualizerProps> = ({ element, rotation, zoom = 1 }) => {
+ 
+  const { t } = useLanguage();
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [is3D, setIs3D] = useState(false);
   const [manualRotation, setManualRotation] = useState({ x: 0, y: 0 });
@@ -18,7 +21,8 @@ const AtomVisualizer: React.FC<AtomVisualizerProps> = ({ element, rotation, zoom
   const ModeIcon = is3D ? Box : LayoutGrid;
 
   useEffect(() => {
-    if (rotation) {
+    
+  if (rotation) {
       setManualRotation(prev => ({
         x: prev.x + rotation.dx,
         y: prev.y + rotation.dy
@@ -97,6 +101,7 @@ const AtomVisualizer: React.FC<AtomVisualizerProps> = ({ element, rotation, zoom
     const spacing = numShells > 1 ? availableSpace / (numShells - 1) : 0;
 
     element.electrons.forEach((count: number, i: number) => {
+  
       const rx = innerPadding + (i * spacing);
       const ry = is3D ? rx * 0.35 : rx;
       const rot = is3D ? (i * 25) : 0;
@@ -164,11 +169,11 @@ const AtomVisualizer: React.FC<AtomVisualizerProps> = ({ element, rotation, zoom
               {element.name}
             </h2>
             <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Configuration:</span>
+              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t('Configuration:')}</span>
               <span className="text-sm font-mono text-indigo-400">{element.config}</span>
             </div>
           </div>
-          <p className="text-white/40 text-[10px] mt-2 uppercase tracking-[0.2em] font-black">Multi-Shell Quantum Simulator v4.2</p>
+          <p className="text-white/40 text-[10px] mt-2 uppercase tracking-[0.2em] font-black">{t('Multi-Shell Quantum Simulator v4.2')}</p>
         </div>
         
         <div className="flex gap-3">
@@ -194,18 +199,18 @@ const AtomVisualizer: React.FC<AtomVisualizerProps> = ({ element, rotation, zoom
         {/* Valence Highlight Overlay */}
         <div className="absolute top-8 left-8 pointer-events-none animate-in slide-in-from-left-4 duration-500">
           <div className="p-6 bg-white/5 border border-white/10 rounded-[32px] backdrop-blur-xl shadow-2xl">
-            <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: valenceColor }}>Valence Shell</p>
+            <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: valenceColor }}>{t('Valence Shell')}</p>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-black text-white tracking-tighter">{element.electrons[element.electrons.length - 1]}</span>
               <span className="text-xl font-black" style={{ color: valenceColor }}>e⁻</span>
             </div>
-            <p className="text-[9px] text-white/20 mt-2 font-bold uppercase tracking-widest leading-tight">Outer shell determines<br/>chemical properties</p>
+            <p className="text-[9px] text-white/20 mt-2 font-bold uppercase tracking-widest leading-tight">{t('Outer shell determines')}<br/>{t('chemical properties')}</p>
           </div>
         </div>
 
         {/* Shell Legend Overlay */}
         <div className="absolute bottom-8 left-8 flex flex-col gap-2">
-           <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-1 px-4">Particle Map</div>
+           <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-1 px-4">{t('Particle Map')}</div>
            <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-white/40 bg-white/5 px-4 py-2 rounded-2xl border border-white/5 backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_#ea580c]"></span> Nucleus ({element.number}P)
           </div>

@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../context/LanguageContext';
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { MousePointer2, Move3d, Terminal } from "lucide-react";
@@ -7,6 +8,7 @@ type Vec3 = { x: number; y: number; z: number };
 
 // ─── ORBIT CONTROLS (fixed cleanup) ────────────────────────────────────
 function createOrbitControls(camera: THREE.PerspectiveCamera, dom: HTMLElement) {
+  
   let isDown = false;
   let lastX = 0, lastY = 0;
   let theta = 0.8, phi = Math.PI / 3, radius = 30;
@@ -63,6 +65,8 @@ function createOrbitControls(camera: THREE.PerspectiveCamera, dom: HTMLElement) 
 
 // ─── MAIN COMPONENT ────────────────────────────────────────────────────
 export default function VectorCalculusLab() {
+ 
+  const { t } = useLanguage();
   const mountRef = useRef<HTMLDivElement>(null);
 
   const [vecA, setVecA] = useState<Vec3>({ x: 5, y: 0, z: 0 });
@@ -185,12 +189,11 @@ export default function VectorCalculusLab() {
       {/* Control Panel */}
       <div className="absolute top-6 left-6 bg-[var(--bg-panel)] backdrop-blur-xl border border-[var(--border-glass)] p-6 rounded-2xl w-[300px] space-y-6 shadow-2xl">
         <div className="flex items-center gap-2 text-[var(--color-primary)] text-xs uppercase font-bold tracking-widest">
-          <Move3d size={14} /> Coordinates
-        </div>
+          <Move3d size={14} />{t('Coordinates')}</div>
 
         {/* Vector A */}
         <div className="space-y-2">
-          <p className="text-blue-500 text-xs font-bold uppercase tracking-wider">Vector A</p>
+          <p className="text-blue-500 text-xs font-bold uppercase tracking-wider">{t('Vector A')}</p>
           <div className="grid grid-cols-3 gap-2">
             <InputField label="X" value={vecA.x} onChange={(v) => setVecA({ ...vecA, x: v })} color="text-blue-500"/>
             <InputField label="Y" value={vecA.y} onChange={(v) => setVecA({ ...vecA, y: v })} color="text-blue-500"/>
@@ -200,7 +203,7 @@ export default function VectorCalculusLab() {
 
         {/* Vector B */}
         <div className="space-y-2">
-          <p className="text-emerald-500 text-xs font-bold uppercase tracking-wider">Vector B</p>
+          <p className="text-emerald-500 text-xs font-bold uppercase tracking-wider">{t('Vector B')}</p>
           <div className="grid grid-cols-3 gap-2">
             <InputField label="X" value={vecB.x} onChange={(v) => setVecB({ ...vecB, x: v })} color="text-emerald-500"/>
             <InputField label="Y" value={vecB.y} onChange={(v) => setVecB({ ...vecB, y: v })} color="text-emerald-500"/>
@@ -216,8 +219,7 @@ export default function VectorCalculusLab() {
 
       {/* Helper */}
       <div className="absolute bottom-6 right-6 text-[10px] text-[var(--text-muted)] flex items-center gap-2 font-bold uppercase tracking-widest bg-[var(--bg-panel)]/50 backdrop-blur-sm px-4 py-2 rounded-full border border-[var(--border-glass)]">
-        <MousePointer2 size={12}/> Drag to rotate
-      </div>
+        <MousePointer2 size={12}/>{t('Drag to rotate')}</div>
 
     </div>
   );
