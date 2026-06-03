@@ -58,7 +58,7 @@ const WaveOpticsVisualizer: React.FC = () => {
       <div className="w-full flex flex-col md:flex-row items-center justify-between gap-8">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-indigo-400 font-mono text-[10px] tracking-[0.5em] uppercase">
-            <div className="w-8 h-px bg-indigo-500/50" />{t('Young's Double Slit Lab')}</div>
+            <div className="w-8 h-px bg-indigo-500/50" />{t("Young's Double Slit Lab")}</div>
           <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter uppercase leading-none">{t('Wave')}<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-600 animate-gradient-x">{t('Interference')}</span>
           </h2>
         </div>
