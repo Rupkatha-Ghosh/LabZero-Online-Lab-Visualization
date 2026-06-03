@@ -231,7 +231,7 @@ const CalculusSimulator: React.FC<Partial<SimulationProps>> = ({ theme = 'light'
           {/* Visual State Color Legend */}
           <div className={`w-full flex justify-center gap-6 mt-3 text-[11px] font-medium transition-colors duration-500 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             <span className="flex items-center gap-1.5"><span className={`w-2.5 h-2.5 rounded-full inline-block ${isDark ? 'bg-slate-300' : 'bg-slate-700'}`}></span>{t('Curve f(x)')}</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span>{t('Tangent Slope f'(x)')}</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span>{t("Tangent Slope f'(x)")}</span>
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-sky-500 inline-block opacity-60"></span>{t('Accumulated Area')}</span>
           </div>
         </div>

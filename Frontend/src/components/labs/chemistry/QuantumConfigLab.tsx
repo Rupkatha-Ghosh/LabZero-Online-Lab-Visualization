@@ -322,7 +322,7 @@ const QuantumConfigLab: React.FC<QuantumConfigLabProps> = ({ element }) => {
          />
          <TheoryCard 
           icon={<Layers size={20} />} 
-          title={t('Hund's Rule')} 
+          title={t("Hund's Rule")} 
           desc="Every orbital in a subshell is singly occupied with one electron before any orbital is doubly occupied." 
          />
       </div>
