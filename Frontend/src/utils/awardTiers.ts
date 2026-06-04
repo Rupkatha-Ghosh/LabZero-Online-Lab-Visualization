@@ -66,13 +66,13 @@ export const TIER_META: Record<AwardTier, TierMeta> = {
     id: 'tier4',
     ordinal: 4,
     title: 'Pioneer',
-    subtitle: 'Deep mastery (10+ min)',
+    subtitle: 'Deep mastery (1+ min)',
     color: 'sky',
     accent: '#0369a1',
     ribbonGradient: 'linear-gradient(135deg, #7dd3fc 0%, #0369a1 100%)',
     sealGradient: 'linear-gradient(135deg, #bae6fd 0%, #0c4a6e 100%)',
     icon: 'rocket',
-    criteria: 'Tier 3 + spend 10+ minutes on the topic.',
+    criteria: 'Tier 3 + spend 1+ minute on the topic.',
   },
 };
 
@@ -103,7 +103,7 @@ export const meetsTierCriteria = (
         progress.theoryRead &&
         progress.simulationRun &&
         progress.quizCompleted &&
-        progress.timeSpentMs >= 10 * 60 * 1000
+        progress.timeSpentMs >= 60 * 1000
       );
   }
 };
