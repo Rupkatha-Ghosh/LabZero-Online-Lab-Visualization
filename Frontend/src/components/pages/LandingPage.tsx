@@ -498,33 +498,63 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
   // "Continue where you left off" — visible if there is at least one
   // topic with a recent visit AND the user hasn't dismissed the card in
-  // the last 24 hours. Reappears automatically when a new topic is visited.
-  const [showResume, setShowResume] = React.useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
+  // the last 24 hours. Reappears automatically when a new topic is visited
+  // and also when the user comes back to the tab.
+  const recheckResume = React.useCallback(() => {
+    if (typeof window === 'undefined') return;
     const dismissedAt = Number(safeLocalStorage.getItem(RESUME_DISMISS_KEY) ?? 0);
-    if (dismissedAt && Date.now() - dismissedAt < 24 * 60 * 60 * 1000) return false;
-    try {
-      const raw = safeLocalStorage.getItem('labzero_awards_v1');
-      if (!raw) return false;
-      const parsed = JSON.parse(raw) as { progress?: Record<string, { lastVisitAt?: number | null }> };
-      return Boolean(
-        parsed.progress &&
-          Object.values(parsed.progress).some((p) => typeof p.lastVisitAt === 'number')
-      );
-    } catch {
-      return false;
+    if (dismissedAt && Date.now() - dismissedAt < 24 * 60 * 60 * 1000) {
+      setShowResume(false);
+      return;
     }
-  });
-
-  React.useEffect(() => {
+    // Prefer the live awards store state (in-memory) — it has the freshest
+    // lastVisitAt values even before the next localStorage write.
     const all = getAllProgress();
     const hasAny = Object.values(all).some((p) => typeof p.lastVisitAt === 'number');
     if (hasAny) {
-      const dismissedAt = Number(safeLocalStorage.getItem(RESUME_DISMISS_KEY) ?? 0);
-      if (dismissedAt && Date.now() - dismissedAt < 24 * 60 * 60 * 1000) return;
       setShowResume(true);
+      return;
+    }
+    // Fallback: read directly from localStorage (covers the case where the
+    // awards store has not yet been hydrated on first mount).
+    try {
+      const raw = safeLocalStorage.getItem('labzero_awards_v1');
+      if (!raw) {
+        setShowResume(false);
+        return;
+      }
+      const parsed = JSON.parse(raw) as { progress?: Record<string, { lastVisitAt?: number | null }> };
+      setShowResume(
+        Boolean(
+          parsed.progress &&
+            Object.values(parsed.progress).some((p) => typeof p.lastVisitAt === 'number')
+        )
+      );
+    } catch {
+      setShowResume(false);
     }
   }, [getAllProgress]);
+
+  const [showResume, setShowResume] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    recheckResume();
+  }, [recheckResume]);
+
+  React.useEffect(() => {
+    const onFocus = () => recheckResume();
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') recheckResume();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pageshow', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pageshow', onFocus);
+    };
+  }, [recheckResume]);
 
   const feedbackCount = Math.max(0, Number(stats.feedback_count ?? 0));
   const averageRating = Math.max(0, Math.min(5, Number(stats.average_rating ?? 0)));
