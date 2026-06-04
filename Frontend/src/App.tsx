@@ -145,7 +145,7 @@ const useAnimatedFavicon = () => {
 };
 
 import { HeroSkeleton } from './components/common/Skeleton';
-import { Molecule, ElementData, Subject, Topic, ViewState, TopicId } from './types/types';
+import { Molecule, ElementData, Subject, Topic, ViewState, TopicId, TopicView } from './types/types';
 import { Language } from './services/translations';
 import { useLanguage } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -158,6 +158,7 @@ import { MeetingConfig } from './context/MeetingContext';
 import { getDefaultSignalingUrl } from './utils/urlUtils';
 import { EvaluationProvider } from './store/evaluationStore';
 import EvaluationProgressWidget from './components/evaluation/EvaluationProgressWidget';
+import AmbientAudioController from './components/common/AmbientAudioController';
 import {
   FeedbackModuleBoundary,
   LazyAnalyticsDashboardPage,
@@ -218,6 +219,7 @@ const AppContent: React.FC = () => {
     useState<FeedbackThankYouDetails | undefined>();
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [topicInitialView, setTopicInitialView] = useState<TopicView>(TopicView.THEORY);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [meetingConfig, setMeetingConfig] = useState<MeetingConfig | null>(null);
 
@@ -234,6 +236,11 @@ const AppContent: React.FC = () => {
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => (safeLocalStorage.getItem('labzero_theme') as 'dark' | 'light') || 'light');
   const [colorBlindMode, setColorBlindMode] = useState(() => safeLocalStorage.getItem('labzero_colorblind') === 'true');
+  const [dyslexiaMode, setDyslexiaMode] = useState(() => safeLocalStorage.getItem('labzero_dyslexia') === 'true');
+  const [mathMode, setMathMode] = useState(() => safeLocalStorage.getItem('labzero_math') === 'true');
+  const [ambientTrack, setAmbientTrack] = useState<'off' | 'lab' | 'bubbles' | 'noise'>(
+    () => (safeLocalStorage.getItem('labzero_ambient') as 'off' | 'lab' | 'bubbles' | 'noise') || 'off'
+  );
   const { language, setLanguage, t } = useLanguage();
 
   const [isGestureActive, setIsGestureActive] = useState(false);
@@ -374,6 +381,19 @@ const AppContent: React.FC = () => {
   }, [colorBlindMode]);
 
   useEffect(() => {
+    document.body.classList.toggle('dyslexia-mode', dyslexiaMode);
+    safeLocalStorage.setItem('labzero_dyslexia', dyslexiaMode.toString());
+  }, [dyslexiaMode]);
+
+  useEffect(() => {
+    safeLocalStorage.setItem('labzero_math', mathMode.toString());
+  }, [mathMode]);
+
+  useEffect(() => {
+    safeLocalStorage.setItem('labzero_ambient', ambientTrack);
+  }, [ambientTrack]);
+
+  useEffect(() => {
     if (
       viewState === ViewState.FEEDBACK_FORM ||
       viewState === ViewState.FEEDBACK_THANK_YOU
@@ -450,6 +470,14 @@ const AppContent: React.FC = () => {
   }, [markTaskComplete, user]);
 
   const handleSelectTopic = useCallback((topic: Topic) => {
+    setTopicInitialView(TopicView.THEORY);
+    setSelectedTopic(topic);
+    setViewState(ViewState.TOPIC);
+    window.dispatchEvent(new CustomEvent('labzero:guide-topic-opened'));
+  }, []);
+
+  const handleLaunchVisualization = useCallback((topic: Topic) => {
+    setTopicInitialView(TopicView.VISUALIZATION);
     setSelectedTopic(topic);
     setViewState(ViewState.TOPIC);
     window.dispatchEvent(new CustomEvent('labzero:guide-topic-opened'));
@@ -787,6 +815,7 @@ const AppContent: React.FC = () => {
                       <SubjectPage
                         subject={selectedSubject}
                         onSelectTopic={handleSelectTopic}
+                        onLaunchVisualization={handleLaunchVisualization}
                         onBack={() => setViewState(ViewState.LANDING)} // Directly back to landing!
                         language={language}
                         theme={theme}
@@ -807,12 +836,15 @@ const AppContent: React.FC = () => {
                   <div key="topic" className="h-full w-full">
                     <React.Suspense fallback={null}>
                       <TopicPage
+                        key={`${selectedTopic.id}-${topicInitialView}`}
                         topic={selectedTopic}
                         onBack={handleBackToSubject}
                         visualization={renderVisualization(selectedTopic.slug, selectedTopic)}
                         language={language}
                         onStartQuiz={startQuiz}
                         onStartMeeting={handleStartTopicMeeting}
+                        mathMode={mathMode}
+                        initialView={topicInitialView}
                       />
                     </React.Suspense>
                   </div>
@@ -960,6 +992,12 @@ const AppContent: React.FC = () => {
                     onCopyPhoneLink={copyPhoneLink}
                     colorBlindMode={colorBlindMode}
                     onToggleColorBlind={() => setColorBlindMode(prev => !prev)}
+                    dyslexiaMode={dyslexiaMode}
+                    onToggleDyslexia={() => setDyslexiaMode(prev => !prev)}
+                    mathMode={mathMode}
+                    onToggleMath={() => setMathMode(prev => !prev)}
+                    ambientTrack={ambientTrack}
+                    onAmbientChange={setAmbientTrack}
                     user={user}
                   />
                 </React.Suspense>
@@ -1041,6 +1079,8 @@ const AppContent: React.FC = () => {
           )}
         </>
       )}
+
+      <AmbientAudioController track={ambientTrack} />
     </div>
   );
 };

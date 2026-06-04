@@ -368,6 +368,86 @@
   accent-color: #0072B2;
 }
 
+/* ====================================================================
+   DYSLEXIA MODE
+   Widens letter-spacing, loosens line-height, and switches the body
+   font to a more readable stack. Toggle is applied as a class on
+   <body> by App.tsx (labzero_dyslexia in localStorage).
+   ==================================================================== */
+.dyslexia-mode {
+  --font-sans: "Comic Sans MS", "Comic Neue", "Trebuchet MS", "Verdana", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dyslexia-mode p,
+.dyslexia-mode li,
+.dyslexia-mode dd,
+.dyslexia-mode dt,
+.dyslexia-mode blockquote,
+.dyslexia-mode label,
+.dyslexia-mode span,
+.dyslexia-mode button,
+.dyslexia-mode input,
+.dyslexia-mode textarea,
+.dyslexia-mode select,
+.dyslexia-mode .prose,
+.dyslexia-mode .prose p,
+.dyslexia-mode .prose li,
+.dyslexia-mode .prose blockquote {
+  letter-spacing: 0.04em;
+  word-spacing: 0.14em;
+  line-height: 1.85;
+}
+
+.dyslexia-mode .prose h1,
+.dyslexia-mode .prose h2,
+.dyslexia-mode .prose h3,
+.dyslexia-mode .prose h4,
+.dyslexia-mode .prose h5,
+.dyslexia-mode .prose h6 {
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+.dyslexia-mode .font-mono,
+.dyslexia-mode code,
+.dyslexia-mode pre,
+.dyslexia-mode kbd {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace !important;
+  letter-spacing: 0;
+  word-spacing: 0;
+}
+
+/* KaTeX tweaks — make rendered math integrate with prose styling */
+.prose .katex {
+  font-size: 1.05em;
+}
+.prose .katex-display {
+  margin: 1em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}
+.prose .katex-display > .katex {
+  color: inherit;
+}
+.dark-mode .prose .katex,
+.dark-mode .prose .katex .mord,
+.dark-mode .prose .katex .mrel,
+.dark-mode .prose .katex .mop,
+.dark-mode .prose .katex .mbin,
+.dark-mode .prose .katex .mopen,
+.dark-mode .prose .katex .mclose,
+.dark-mode .prose .katex .mpunct {
+  color: #e2e8f0;
+}
+.dyslexia-mode .katex,
+.dyslexia-mode .katex * {
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  line-height: normal !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

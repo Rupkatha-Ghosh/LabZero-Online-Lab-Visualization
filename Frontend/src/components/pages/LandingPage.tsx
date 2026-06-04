@@ -6,6 +6,7 @@ import { Language, translations } from '../../services/translations';
 import { useLanguage } from '../../context/LanguageContext';
 import { Logo } from '../common/Logo';
 import Footer from '../common/Footer';
+import LoadingTriviaCard from '../common/LoadingTriviaCard';
 // Inline skeleton components (replaces missing '../common/Skeleton')
 const Hero3DModelFallback = ({ theme }: { theme: 'dark' | 'light' }) => {
  
@@ -184,13 +185,16 @@ const Hero3DModelFallback = ({ theme }: { theme: 'dark' | 'light' }) => {
       </div>
       
       {/* Subtle loading hint text */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none z-20">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none z-20 w-[min(92vw,420px)]">
         <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-200/40 dark:bg-slate-950/45 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-lg">
           <div className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
           </div>
           <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-slate-600 dark:text-sky-300 font-semibold">{t('Loading Interactive 3D...')}</span>
+        </div>
+        <div className="pointer-events-auto w-full">
+          <LoadingTriviaCard theme={theme} />
         </div>
       </div>
     </div>
@@ -260,9 +264,12 @@ const ElectricFieldSimulationFallback = () => {
  
   const { t } = useLanguage();
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent min-h-[300px] select-none">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent min-h-[300px] select-none gap-4 p-4">
       <div className="w-8 h-8 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
-      <div className="mt-4 text-[10px] font-mono tracking-widest text-teal-500/50 uppercase">{t('Loading field grid...')}</div>
+      <div className="text-[10px] font-mono tracking-widest text-teal-500/50 uppercase">{t('Loading field grid...')}</div>
+      <div className="w-full max-w-[280px]">
+        <LoadingTriviaCard theme="dark" />
+      </div>
     </div>
   );
 };

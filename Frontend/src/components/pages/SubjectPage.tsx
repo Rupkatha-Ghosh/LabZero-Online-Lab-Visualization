@@ -1,7 +1,7 @@
 import { useLanguage } from '../../context/LanguageContext';
 import React from 'react';
 import { Subject, Topic, SubjectId } from '../../types/types';
-import { ArrowLeft, ArrowRight, Beaker, Zap, Calculator, Dna } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Beaker, Zap, Calculator, Dna, Play } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Language, translations } from '../../services/translations';
 import { Skeleton } from '../common/Skeleton';
@@ -11,6 +11,7 @@ import DailyChallenges from '../shared/DailyChallenges';
 interface SubjectPageProps {
   subject: Subject;
   onSelectTopic: (topic: Topic) => void;
+  onLaunchVisualization?: (topic: Topic) => void;
   onBack: () => void;
   language: Language;
   onStartQuiz: () => void;
@@ -31,6 +32,7 @@ const iconMap: Record<string, any> = {
 const SubjectPage: React.FC<SubjectPageProps> = ({
   subject,
   onSelectTopic,
+  onLaunchVisualization,
   onBack,
   language,
   onStartQuiz,
@@ -159,16 +161,38 @@ const SubjectPage: React.FC<SubjectPageProps> = ({
                   : 'bg-white/70 hover:bg-white/90 border-slate-200'
                   }`}
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shrink-0 shadow-lg ${isDark
                     ? 'bg-white/10 text-[var(--color-primary)] shadow-[var(--color-primary)]/10'
                     : 'bg-slate-100 text-slate-400'
                     } group-hover:bg-primary group-hover:text-white group-hover:shadow-primary/40`}>
                     <Icon size={32} strokeWidth={2} className="brightness-[1.2]" />
                   </div>
-                  <div className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${isDark ? 'border-white/5' : 'border-slate-200'
-                    } group-hover:border-primary/50`}>
-                    <ArrowRight size={16} className="text-primary transition-all duration-500 -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100" />
+                  <div className="flex items-center gap-2">
+                    {topic.simulation_id && onLaunchVisualization && (
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.92 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onLaunchVisualization(topic);
+                        }}
+                        title="Launch 3D simulation directly"
+                        aria-label="Launch 3D simulation"
+                        data-tour="quick-launch-3d"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-md ${
+                          isDark
+                            ? 'bg-[var(--color-primary)]/15 hover:bg-[var(--color-primary)] text-[var(--color-primary)] hover:text-white border border-[var(--color-primary)]/30'
+                            : 'bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200'
+                        }`}
+                      >
+                        <Play size={14} fill="currentColor" className="ml-0.5" />
+                      </motion.button>
+                    )}
+                    <div className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${isDark ? 'border-white/5' : 'border-slate-200'
+                      } group-hover:border-primary/50`}>
+                      <ArrowRight size={16} className="text-primary transition-all duration-500 -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100" />
+                    </div>
                   </div>
                 </div>
 

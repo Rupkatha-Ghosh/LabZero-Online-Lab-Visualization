@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Topic, TopicView, Resource } from '../../types/types';
 import { ArrowLeft, BookOpen, Play, Sparkles, FileText, Trash2, Download, Presentation, GraduationCap, Volume2, VolumeX, Zap } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 import ResourceUpload from '../shared/ResourceUpload';
 import ResourceViewer from '../shared/ResourceViewer';
 import Classroom from '../shared/Classroom';
@@ -28,13 +30,39 @@ interface TopicPageProps {
   onStartQuiz: () => void;
   onStartMeeting?: (topic: Topic) => void;
   skeletonDebug?: boolean;
+  mathMode?: boolean;
+  initialView?: TopicView;
 }
 
-const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, language, onStartQuiz, onStartMeeting }) => {
+const isLikelyMath = (text: string): boolean => {
+  const t = text.trim();
+  if (!t) return false;
+  if (t.length > 200) return false;
+  if (/^[A-Za-z]{4,}/.test(t) && !/[=^_+\-/*\\]/.test(t)) return false;
+  const hasOperator = /[=^_+\-*/\\]/.test(t);
+  const hasGreek = /(?:\\?[a-zA-Z]|[α-ωΑ-Ω])/.test(t);
+  const hasDigits = /\d/.test(t);
+  const hasMathKeyword = /\\frac|\\sqrt|\\sum|\\int|\\pi|\\theta|\\lambda|\\alpha|\\beta|\\gamma|\\delta|\\varepsilon|\\varepsilon|\\omega|\\mu|\\sigma|\\phi|\\to|\\rightarrow|\\Rightarrow|\\infty|\\cdot|\\pm|\\times|\\div|\\leq|\\geq|\\neq|\\approx|\\sim|\\propto|\\sin|\\cos|\\tan|\\sec|\\csc|\\cot|\\log|\\ln|\\lim/.test(t);
+  if (hasMathKeyword) return true;
+  if (t.startsWith('\\(') || t.startsWith('\\[') || t.startsWith('$')) return true;
+  if (hasOperator && (hasGreek || hasDigits)) return true;
+  if (hasOperator && t.split(/[=^_+\-*/\\]/).length >= 3) return true;
+  return false;
+};
+
+const stripMathDelimiters = (text: string): string => {
+  let t = text.trim();
+  if (t.startsWith('\\(') && t.endsWith('\\)')) t = t.slice(2, -2).trim();
+  else if (t.startsWith('\\[') && t.endsWith('\\]')) t = t.slice(2, -2).trim();
+  else if (t.startsWith('$') && t.endsWith('$')) t = t.slice(1, -1).trim();
+  return t;
+};
+
+const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, language, onStartQuiz, onStartMeeting, mathMode = false, initialView }) => {
  
   const { t } = useLanguage();
   const { user } = useAuth();
-  const [activeView, setActiveView] = useState<TopicView>(TopicView.THEORY);
+  const [activeView, setActiveView] = useState<TopicView>(initialView ?? TopicView.THEORY);
   
   const [resources, setResources] = useState<Resource[]>([]);
   const [assignmentMaterials, setAssignmentMaterials] = useState<TheoryMaterial[]>([]);
@@ -274,7 +302,27 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
                   <div className="relative pl-4 sm:pl-8">
                     <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/10 to-transparent" />
                     <div className="prose prose-sm sm:prose-invert max-w-none prose-headings:uppercase prose-headings:tracking-tighter prose-headings:font-display">
-                      <ReactMarkdown>{theoryContent}</ReactMarkdown>
+                      <ReactMarkdown
+                        components={{
+                          code({ inline, className, children, ...props }: any) {
+                            const text = String(children ?? '');
+                            if (mathMode && isLikelyMath(text)) {
+                              const expr = stripMathDelimiters(text);
+                              try {
+                                if (inline) {
+                                  return <InlineMath math={expr} />;
+                                }
+                                return <BlockMath math={expr} />;
+                              } catch {
+                                return <code className={className} {...props}>{children}</code>;
+                              }
+                            }
+                            return <code className={className} {...props}>{children}</code>;
+                          },
+                        }}
+                      >
+                        {theoryContent}
+                      </ReactMarkdown>
                     </div>
                     {whyItMattersItems && (
                       <div className="mt-8">
