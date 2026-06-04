@@ -1,9 +1,9 @@
 import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
-import { 
-  Beaker, Droplets, Thermometer, Wind, RefreshCw, 
-  AlertCircle, Info, Zap, FlaskConical, Droplet 
+import {
+  Beaker, Droplets, Thermometer, Wind, RefreshCw,
+  AlertCircle, Info, Zap, FlaskConical, Droplet, Skull, Sparkles, X
 } from 'lucide-react';
 
 // Types for our reagents
@@ -33,6 +33,14 @@ const RealExperimentLab: React.FC = () => {
   const [isReacting, setIsReacting] = useState(false);
   const [pouring, setPouring] = useState<string | null>(null);
   const [totalVolume, setTotalVolume] = useState(0);
+  const [oopsie, setOopsie] = useState<{
+    id: number;
+    title: string;
+    body: string;
+    severity: 'info' | 'warning' | 'danger';
+    icon: 'skull' | 'sparkles' | 'alert';
+  } | null>(null);
+  const oopsieCounterRef = useRef(0);
   
   const controls = useAnimation();
   const beakerRef = useRef<HTMLDivElement>(null);
@@ -82,9 +90,82 @@ const RealExperimentLab: React.FC = () => {
         return prev + (diff * 0.1); // Smooth transition
       });
 
+      // OOPSIE! Wrong-One detection — encourage students to try
+      // "wrong" combos and see safe visual feedback (no explosions).
+      const distinctIds = new Set(contents.map((c) => c.id));
+      const distinctReagents = contents
+        .map((c) => REAGENTS.find((r) => r.id === c.id))
+        .filter((r): r is Reagent => Boolean(r));
+      const acidCount = distinctReagents.filter((r) => r.type === 'acid').length;
+      const baseCount = distinctReagents.filter((r) => r.type === 'base').length;
+      const hasWater = distinctReagents.some((r) => r.id === 'h2o');
+
+      // Only fire OOPSIE on the *latest* add (contents changed), and
+      // when there's at least 2 distinct reagents (a real "combination").
+      const triggerOopsie = (
+        title: string,
+        body: string,
+        severity: 'info' | 'warning' | 'danger',
+        icon: 'skull' | 'sparkles' | 'alert'
+      ) => {
+        oopsieCounterRef.current += 1;
+        setOopsie({
+          id: oopsieCounterRef.current,
+          title,
+          body,
+          severity,
+          icon,
+        });
+      };
+
+      if (distinctIds.size >= 2) {
+        if (acidCount >= 2 && baseCount === 0) {
+          triggerOopsie(
+            'OOPSIE! Two acids',
+            'You just added an acid to an acid — they do not react! In a real lab, this would just make a stronger acid solution. Try pairing an acid with a base to see neutralization.',
+            'info',
+            'sparkles'
+          );
+        } else if (baseCount >= 2 && acidCount === 0) {
+          triggerOopsie(
+            'OOPSIE! Two bases',
+            'Bases do not react with other bases — there is nothing to neutralize here. Add a strong acid like HCl or H₂SO₄ to trigger a real reaction.',
+            'info',
+            'sparkles'
+          );
+        } else if (hasWater && distinctReagents.length === 1) {
+          triggerOopsie(
+            'OOPSIE! Just water',
+            'Distilled water does not react on its own — it only dilutes. Mix water with an acid or base if you want to see a change in pH.',
+            'info',
+            'sparkles'
+          );
+        } else if (newVolume >= 500) {
+          triggerOopsie(
+            'OOPSIE! Beaker overflow',
+            'The beaker cannot safely hold more than 500ml of reagent. In a real lab this is a serious spill hazard — always add in small, measured amounts.',
+            'warning',
+            'alert'
+          );
+        } else if (reactivityFactor >= 80) {
+          triggerOopsie(
+            'OOPSIE! Exothermic burst',
+            'Concentrated acid + concentrated base in one beaker releases a LOT of heat. In a real lab this can crack glassware and splash — always add acid to water slowly, never the other way around.',
+            'warning',
+            'alert'
+          );
+        }
+      }
+
       return () => clearTimeout(timer);
     }
   }, [contents]);
+
+  useEffect(() => {
+    if (!oopsie) return;
+    const id = window.setTimeout(() => setOopsie(null), 5_000);
+    return () => window.clearTimeout(id);
+  }, [oopsie]);
 
   const addReagent = (id: string) => {
   
@@ -345,6 +426,57 @@ const RealExperimentLab: React.FC = () => {
             <div className="space-y-1">
               <h4 className="text-xl font-display font-black text-white uppercase tracking-tighter">{t('Thermal Breach')}</h4>
               <p className="text-xs text-red-400/80 font-mono uppercase tracking-widest font-bold">{t('Critical Reaction Temperature Detected')}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* OOPSIE! Wrong-One Toast — encourages safe experimentation */}
+      <AnimatePresence>
+        {oopsie && (
+          <motion.div
+            key={oopsie.id}
+            initial={{ opacity: 0, y: 40, scale: 0.92, rotate: -2 }}
+            animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.25 } }}
+            transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+            className="fixed top-8 left-1/2 -translate-x-1/2 z-[110] max-w-xl w-[92vw] md:w-auto"
+          >
+            <div
+              className={`flex items-start gap-4 px-5 py-4 rounded-2xl backdrop-blur-2xl border-2 shadow-2xl ${
+                oopsie.severity === 'danger'
+                  ? 'bg-rose-950/85 border-rose-500/60 shadow-rose-500/30'
+                  : oopsie.severity === 'warning'
+                  ? 'bg-amber-950/85 border-amber-500/60 shadow-amber-500/30'
+                  : 'bg-indigo-950/85 border-indigo-500/60 shadow-indigo-500/30'
+              }`}
+            >
+              <div
+                className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                  oopsie.severity === 'danger'
+                    ? 'bg-rose-600 text-white'
+                    : oopsie.severity === 'warning'
+                    ? 'bg-amber-500 text-black'
+                    : 'bg-indigo-500 text-white'
+                }`}
+              >
+                {oopsie.icon === 'skull' ? <Skull size={22} /> : oopsie.icon === 'sparkles' ? <Sparkles size={22} /> : <AlertCircle size={22} />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-display font-black uppercase tracking-tighter text-white">
+                  {oopsie.title}
+                </h4>
+                <p className="text-xs text-slate-200/90 mt-1 leading-relaxed">
+                  {oopsie.body}
+                </p>
+              </div>
+              <button
+                onClick={() => setOopsie(null)}
+                className="shrink-0 p-1 rounded-md text-white/60 hover:text-white hover:bg-white/10"
+                aria-label="Dismiss"
+              >
+                <X size={16} />
+              </button>
             </div>
           </motion.div>
         )}
