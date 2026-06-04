@@ -473,10 +473,13 @@ const parseWhyItMattersItems = (englishTheory: string, translatedTheory: string)
   const englishWimRegex = /##\s*Why It Matters/i;
   const englishMatch = englishTheory.match(englishWimRegex);
   const englishEmojis: string[] = [];
-  
+
+  let englishWimTitles: string[] = [];
   if (englishMatch) {
     const englishIndex = englishMatch.index!;
-    const englishWimSection = englishTheory.substring(englishIndex + englishMatch[0].length).trim();
+    const englishWimSection = englishTheory
+      .substring(englishIndex + englishMatch[0].length)
+      .trim();
     const englishLines = englishWimSection.split('\n');
     for (let line of englishLines) {
       line = line.trim();
@@ -485,51 +488,76 @@ const parseWhyItMattersItems = (englishTheory: string, translatedTheory: string)
         const itemMatch = content.match(/\*\*(.*?)\*\*:(.*)/);
         if (itemMatch) {
           const title = itemMatch[1].trim();
+          englishWimTitles.push(title);
           englishEmojis.push(getEmojiForEnglishTitle(title));
         }
       }
     }
   }
-  
+
   const wimHeaderRegex = /##\s*(Why It Matters|কেন এটি গুরুত্বপূর্ণ|यह क्यों महत्वपूर्ण है)/i;
   const translatedMatch = translatedTheory.match(wimHeaderRegex);
-  
-  if (!translatedMatch) {
-    return {
-      theoryContent: translatedTheory,
-      whyItMattersItems: null
-    };
-  }
-  
-  const index = translatedMatch.index!;
-  const headerText = translatedMatch[0];
-  const theoryContent = translatedTheory.substring(0, index).trim();
-  const wimSection = translatedTheory.substring(index + headerText.length).trim();
-  
-  const items: { icon: string; title: string; description: string }[] = [];
-  const lines = wimSection.split('\n');
-  let itemIndex = 0;
-  for (let line of lines) {
-    line = line.trim();
-    if (line.startsWith('-') || line.startsWith('*')) {
-      const content = line.substring(1).trim();
-      const itemMatch = content.match(/\*\*(.*?)\*\*:(.*)/);
-      if (itemMatch) {
-        const title = itemMatch[1].trim();
-        const description = itemMatch[2].trim();
-        items.push({
-          icon: englishEmojis[itemIndex] || '💡',
-          title,
-          description
-        });
-        itemIndex++;
+
+  let theoryContent: string = translatedTheory;
+  let itemTitles: string[] = [];
+  let itemDescriptions: string[] = [];
+
+  if (translatedMatch) {
+    const index = translatedMatch.index!;
+    const headerText = translatedMatch[0];
+    theoryContent = translatedTheory.substring(0, index).trim();
+    const wimSection = translatedTheory
+      .substring(index + headerText.length)
+      .trim();
+    for (let line of wimSection.split('\n')) {
+      line = line.trim();
+      if (line.startsWith('-') || line.startsWith('*')) {
+        const content = line.substring(1).trim();
+        const itemMatch = content.match(/\*\*(.*?)\*\*:(.*)/);
+        if (itemMatch) {
+          itemTitles.push(itemMatch[1].trim());
+          itemDescriptions.push(itemMatch[2].trim());
+        }
       }
     }
+  } else if (englishMatch && englishWimTitles.length) {
+    const enIndex = englishMatch.index!;
+    const headerLen = englishMatch[0].length;
+    const englishWimSection = englishTheory.substring(enIndex + headerLen).trim();
+    for (let line of englishWimSection.split('\n')) {
+      line = line.trim();
+      if (line.startsWith('-') || line.startsWith('*')) {
+        const content = line.substring(1).trim();
+        const itemMatch = content.match(/\*\*(.*?)\*\*:(.*)/);
+        if (itemMatch) {
+          itemTitles.push(itemMatch[1].trim());
+          itemDescriptions.push(itemMatch[2].trim());
+        }
+      }
+    }
+  } else {
+    return {
+      theoryContent: translatedTheory,
+      whyItMattersItems: null,
+    };
   }
-  
+
+  const items: { icon: string; title: string; description: string }[] = [];
+  for (let i = 0; i < itemTitles.length; i++) {
+    let emoji = englishEmojis[i];
+    if (!emoji && englishWimTitles[i]) {
+      emoji = getEmojiForEnglishTitle(englishWimTitles[i]);
+    }
+    items.push({
+      icon: emoji || '💡',
+      title: itemTitles[i],
+      description: itemDescriptions[i],
+    });
+  }
+
   return {
     theoryContent,
-    whyItMattersItems: items.length > 0 ? items : null
+    whyItMattersItems: items.length > 0 ? items : null,
   };
 };
 

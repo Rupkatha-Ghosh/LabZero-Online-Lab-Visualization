@@ -11,7 +11,7 @@ interface WhyItMattersProps {
 }
 
 const WhyItMatters: React.FC<WhyItMattersProps> = ({ theme = 'dark', items }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const isDark = theme === 'dark';
 
   return (

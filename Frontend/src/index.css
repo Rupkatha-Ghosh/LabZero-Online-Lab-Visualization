@@ -139,6 +139,235 @@
   text-underline-offset: 4px;
 }
 
+/* ====================================================================
+   COLORBLIND-SAFE PALETTE
+   Wong palette (Nature Methods 2011) — distinguishable for the major
+   forms of color vision deficiency:
+     #0072B2  Blue
+     #E69F00  Orange
+     #F0E442  Yellow
+     #009E73  Bluish green
+     #56B4E9  Sky blue
+     #D55E00  Vermillion
+     #CC79A7  Reddish purple
+   These remap every "danger / warning / success" colour used in the
+   landing page to safe, distinguishable values.
+   ==================================================================== */
+
+/* ---------- Tailwind text / bg / border remaps ---------- */
+.colorblind-mode [class*="text-rose-"],
+.colorblind-mode [class*="text-red-"],
+.colorblind-mode [class*="text-pink-"],
+.colorblind-mode [class*="text-fuchsia-"] {
+  color: #E69F00 !important; /* Orange (safe) */
+}
+.colorblind-mode [class*="bg-rose-"],
+.colorblind-mode [class*="bg-red-"],
+.colorblind-mode [class*="bg-pink-"],
+.colorblind-mode [class*="bg-fuchsia-"] {
+  background-color: rgba(230, 159, 0, 0.18) !important;
+}
+.colorblind-mode [class*="border-rose-"],
+.colorblind-mode [class*="border-red-"],
+.colorblind-mode [class*="border-pink-"],
+.colorblind-mode [class*="border-fuchsia-"] {
+  border-color: #E69F00 !important;
+}
+.colorblind-mode [class*="ring-rose-"],
+.colorblind-mode [class*="ring-red-"],
+.colorblind-mode [class*="ring-pink-"] {
+  --tw-ring-color: #E69F00 !important;
+}
+
+.colorblind-mode [class*="text-amber-"],
+.colorblind-mode [class*="text-yellow-"],
+.colorblind-mode [class*="text-orange-"] {
+  color: #F0E442 !important; /* Yellow (safe) */
+}
+.colorblind-mode [class*="bg-amber-"],
+.colorblind-mode [class*="bg-yellow-"],
+.colorblind-mode [class*="bg-orange-"] {
+  background-color: rgba(240, 228, 66, 0.18) !important;
+}
+.colorblind-mode [class*="border-amber-"],
+.colorblind-mode [class*="border-yellow-"],
+.colorblind-mode [class*="border-orange-"] {
+  border-color: #F0E442 !important;
+}
+
+.colorblind-mode [class*="text-green-"],
+.colorblind-mode [class*="text-emerald-"],
+.colorblind-mode [class*="text-lime-"] {
+  color: #0072B2 !important; /* Blue (safe) */
+}
+.colorblind-mode [class*="bg-green-"],
+.colorblind-mode [class*="bg-emerald-"],
+.colorblind-mode [class*="bg-lime-"] {
+  background-color: rgba(0, 114, 178, 0.18) !important;
+}
+.colorblind-mode [class*="border-green-"],
+.colorblind-mode [class*="border-emerald-"],
+.colorblind-mode [class*="border-lime-"] {
+  border-color: #0072B2 !important;
+}
+
+.colorblind-mode [class*="text-indigo-"],
+.colorblind-mode [class*="text-violet-"],
+.colorblind-mode [class*="text-purple-"] {
+  color: #56B4E9 !important; /* Sky blue (safe) */
+}
+.colorblind-mode [class*="bg-indigo-"],
+.colorblind-mode [class*="bg-violet-"],
+.colorblind-mode [class*="bg-purple-"] {
+  background-color: rgba(86, 180, 233, 0.18) !important;
+}
+.colorblind-mode [class*="border-indigo-"],
+.colorblind-mode [class*="border-violet-"],
+.colorblind-mode [class*="border-purple-"] {
+  border-color: #56B4E9 !important;
+}
+
+.colorblind-mode [class*="text-teal-"],
+.colorblind-mode [class*="text-cyan-"] {
+  color: #56B4E9 !important; /* Sky blue (safe) */
+}
+.colorblind-mode [class*="bg-teal-"],
+.colorblind-mode [class*="bg-cyan-"] {
+  background-color: rgba(86, 180, 233, 0.18) !important;
+}
+.colorblind-mode [class*="border-teal-"],
+.colorblind-mode [class*="border-cyan-"] {
+  border-color: #56B4E9 !important;
+}
+
+/* Sky is already a safe blue — make sure it stays in the same family */
+.colorblind-mode [class*="text-sky-"] {
+  color: #0072B2 !important;
+}
+.colorblind-mode [class*="bg-sky-"] {
+  background-color: rgba(0, 114, 178, 0.18) !important;
+}
+.colorblind-mode [class*="border-sky-"] {
+  border-color: #0072B2 !important;
+}
+
+/* Gradient stops used in landing page (e.g. hero "Understand." text) */
+.colorblind-mode [class*="from-[var(--color-primary)]"],
+.colorblind-mode [class*="from-sky-"],
+.colorblind-mode [class*="from-blue-"] {
+  --tw-gradient-from: #0072B2 !important;
+}
+.colorblind-mode [class*="to-[var(--color-secondary)]"],
+.colorblind-mode [class*="to-emerald-"],
+.colorblind-mode [class*="to-green-"],
+.colorblind-mode [class*="to-amber-"] {
+  --tw-gradient-to: #E69F00 !important;
+}
+
+/* ---------- Hex arbitrary values used in the landing page ---------- */
+/* Primary CTA: Start Exploring button (teal) → safe blue */
+.colorblind-mode [class*="bg-[#14b8a6]"] {
+  background-color: #0072B2 !important;
+  background-image: none !important;
+}
+.colorblind-mode [class*="hover:bg-[#0f766e]"]:hover {
+  background-color: #005a8a !important;
+}
+.colorblind-mode [class*="shadow-[#14b8a6]"] {
+  --tw-shadow-color: #0072B2 !important;
+}
+
+/* Connector arrow & "Abstract Theory" badge (rose-500) → safe orange */
+.colorblind-mode [class*="text-[#f43f5e]"] {
+  color: #E69F00 !important;
+}
+
+/* 3D Visualization card icon (teal) → safe sky */
+.colorblind-mode [class*="text-[#14B8A6]"] {
+  color: #56B4E9 !important;
+}
+
+/* Custom violet (subject icon variant) → safe sky */
+.colorblind-mode [class*="text-[#8b5cf6]"] {
+  color: #56B4E9 !important;
+}
+
+/* Hero badge: 3D Educational Virtual Lab — light sky already safe, force tone */
+.colorblind-mode [class*="bg-[#E0F2FE]"] {
+  background-color: rgba(0, 114, 178, 0.15) !important;
+}
+.colorblind-mode [class*="border-[#BAE6FD]"] {
+  border-color: rgba(0, 114, 178, 0.45) !important;
+}
+.colorblind-mode [class*="text-[#0284c7]"] {
+  color: #0072B2 !important;
+}
+
+/* Star fill in hero "Loved by N students" */
+.colorblind-mode .fill-amber-400,
+.colorblind-mode [class*="fill-amber"] {
+  fill: #F0E442 !important;
+}
+.colorblind-mode .text-amber-400,
+.colorblind-mode [class*="text-amber-400"] {
+  color: #F0E442 !important;
+}
+.colorblind-mode [class*="text-amber-500"] {
+  color: #F0E442 !important;
+}
+
+/* Inline style overrides for hex fallbacks (e.g. inline style attribute) */
+.colorblind-mode [style*="rgb(244, 63, 94)"],
+.colorblind-mode [style*="#f43f5e"] {
+  color: #E69F00 !important;
+}
+.colorblind-mode [style*="rgb(20, 184, 166)"],
+.colorblind-mode [style*="#14b8a6"] {
+  background-color: #0072B2 !important;
+  border-color: #0072B2 !important;
+}
+
+/* ---------- Inline dynamic styles in the Hero3DModelFallback (CSS vars
+   inside <style> tag with --glow-color / border / background) ----------
+   We re-emit safe palette values via override variables. */
+.colorblind-mode {
+  --cb-glow: #0072B2;
+  --cb-flask-grad-top: #0072B2;
+  --cb-flask-grad-bottom: #E69F00;
+  --cb-electron-1: #0072B2;
+  --cb-electron-2: #E69F00;
+  --cb-electron-3: #F0E442;
+  --cb-nucleus-inner: #56B4E9;
+  --cb-nucleus-outer: #0072B2;
+  --cb-orbit: rgba(0, 114, 178, 0.35);
+  --cb-border: rgba(0, 114, 178, 0.45);
+  --cb-flask-fill: rgba(0, 114, 178, 0.5);
+}
+
+/* Stats row pill icons (Maximize/Layers/Users/Star) live inside circular
+   tinted containers; ensure the container tints match safe palette. */
+.colorblind-mode [class*="border-[var(--color-primary)]"] {
+  border-color: #0072B2 !important;
+}
+.colorblind-mode [class*="bg-[var(--color-primary)]"] {
+  background-color: rgba(0, 114, 178, 0.15) !important;
+}
+
+/* Try Live Simulations title uses var(--color-secondary) — already remapped
+   by the :root-level CSS variable override above, but force it here
+   to win over Tailwind opacity utilities. */
+.colorblind-mode [class*="text-[var(--color-secondary)]"] {
+  color: #E69F00 !important;
+}
+.colorblind-mode [class*="text-[var(--color-primary)]"] {
+  color: #0072B2 !important;
+}
+
+/* Accent the active state of the navbar so users know the toggle is on */
+.colorblind-mode {
+  accent-color: #0072B2;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

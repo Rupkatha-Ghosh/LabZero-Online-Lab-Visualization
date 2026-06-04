@@ -364,7 +364,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
   selectedClass,
   onSelectClass,
   onLaunchSimulation,
-  stats = { subjects: 0, topics: 0, students: 0, average_rating: 0.0, feedback_count: 0 }
+  stats = { subjects: 0, topics: 0, students: 0, average_rating: 0.0, feedback_count: 0 },
 }) => {
  
   const { t } = useLanguage();

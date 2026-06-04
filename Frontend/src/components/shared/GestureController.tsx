@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence, useSpring, useTransform } from 'motion/react';
 import Receiver from "./Receiver";
 import QRCodePairing from "./QRCodePairing";
+import { getDefaultSignalingUrl } from '../../utils/urlUtils';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -404,16 +405,6 @@ async function hasWebcam(): Promise<boolean> {
   return devices.some(d => d.kind === "videoinput");
 }
 
-const getDefaultSignalingUrl = () => {
-  // Check for environment variable first (Production)
-  const envUrl = import.meta.env.VITE_SIGNALING_URL;
-  if (envUrl) return envUrl;
-
-  // Fallback to local proxy (Development)
-  const host = window.location.host;
-  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-  return `${protocol}://${host}/signal`;
-};
 
 const getPhoneSenderUrl = (signalingUrl: string, roomId: string) => {
   const url = new URL(window.location.href);
