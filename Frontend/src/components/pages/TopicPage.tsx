@@ -1,7 +1,7 @@
 import { useLanguage } from '../../context/LanguageContext';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Topic, TopicView, Resource } from '../../types/types';
-import { ArrowLeft, BookOpen, Play, Sparkles, FileText, Trash2, Download, Presentation, GraduationCap, Volume2, VolumeX, Zap } from 'lucide-react';
+import { ArrowLeft, BookOpen, Play, FileText, Trash2, Download, Presentation, GraduationCap, Volume2, VolumeX, Zap, Printer } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
@@ -15,6 +15,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Language, translations } from '../../services/translations';
 import { useAuth } from '../../context/AuthContext';
 import { Skeleton } from '../common/Skeleton';
+import { useAwards } from '../../store/awardsStore';
+import AwardBadge from '../awards/AwardBadge';
+import CertificateModal from '../awards/CertificateModal';
+import { SUBJECTS } from '../../utils/constants';
 
 type TheoryMaterial = Resource & {
   assignmentId?: number | string;
@@ -110,7 +114,7 @@ const wordEquationToLatex = (text: string): string => {
 };
 
 const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, language, onStartQuiz, onStartMeeting, mathMode = false, initialView }) => {
- 
+  
   const { t } = useLanguage();
   const { user } = useAuth();
   const [activeView, setActiveView] = useState<TopicView>(initialView ?? TopicView.THEORY);
@@ -119,6 +123,45 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
   const [assignmentMaterials, setAssignmentMaterials] = useState<TheoryMaterial[]>([]);
   const [viewingResource, setViewingResource] = useState<Resource | null>(null);
   const [isReading, setIsReading] = useState(false);
+  const [certificateOpen, setCertificateOpen] = useState(false);
+  const theoryReadTimerRef = useRef<number | null>(null);
+
+  const {
+    startSession: startAwardSession,
+    markTheoryRead,
+    markSimulationRun,
+    markQuizCompleted,
+    getEarnedTier,
+    hasCertificate,
+  } = useAwards();
+  const earnedTier = getEarnedTier(String(topic.id));
+  const certificateIssued = hasCertificate(String(topic.id));
+
+  useEffect(() => {
+    const stop = startAwardSession(String(topic.id));
+    return stop;
+  }, [topic.id, startAwardSession]);
+
+  useEffect(() => {
+    if (activeView !== TopicView.THEORY) {
+      if (theoryReadTimerRef.current) {
+        window.clearTimeout(theoryReadTimerRef.current);
+        theoryReadTimerRef.current = null;
+      }
+      return;
+    }
+    if (theoryReadTimerRef.current) return;
+    theoryReadTimerRef.current = window.setTimeout(() => {
+      markTheoryRead(String(topic.id));
+      theoryReadTimerRef.current = null;
+    }, 8_000);
+    return () => {
+      if (theoryReadTimerRef.current) {
+        window.clearTimeout(theoryReadTimerRef.current);
+        theoryReadTimerRef.current = null;
+      }
+    };
+  }, [activeView, topic.id, markTheoryRead]);
 
   const inferResourceType = (url: string) => {
     const path = url.split('?')[0].toLowerCase();
@@ -228,7 +271,13 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
     setActiveView(view);
     if (view === TopicView.VISUALIZATION) {
       window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'simulationViewed' }));
+      markSimulationRun(String(topic.id));
     }
+  };
+
+  const handleStartQuizWithAward = () => {
+    markQuizCompleted(String(topic.id));
+    onStartQuiz();
   };
 
   const materials: TheoryMaterial[] = [
@@ -271,7 +320,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
 
             {/* Mobile-only quiz button if space allows, or handle in nav */}
             <button
-              onClick={onStartQuiz}
+              onClick={handleStartQuizWithAward}
               className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all shrink-0"
             >
               <Zap size={16} />
@@ -308,11 +357,25 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
             <div className="hidden sm:block w-px h-6 bg-[var(--border-glass)] mx-2" />
 
             <button
-              onClick={onStartQuiz}
+              onClick={handleStartQuizWithAward}
               className="hidden lg:flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300 shrink-0"
             >
               <Zap size={14} />
               <span>{t('Take Quiz')}</span>
+            </button>
+
+            <div className="hidden lg:block w-px h-6 bg-[var(--border-glass)] mx-2" />
+
+            <button
+              onClick={() => setCertificateOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] border border-[var(--border-glass)] hover:bg-white/5 transition-all duration-300 shrink-0 group"
+              title={certificateIssued ? 'View your certificate' : 'Earn your certificate'}
+            >
+              <AwardBadge tier={earnedTier} size="sm" />
+              <span className="text-[var(--text-primary)]">
+                {certificateIssued ? 'Certificate' : 'Earn Certificate'}
+              </span>
+              <Printer size={12} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" />
             </button>
           </nav>
         </div>
@@ -535,6 +598,18 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
           />
         )}
       </AnimatePresence>
+
+      <CertificateModal
+        open={certificateOpen}
+        onClose={() => setCertificateOpen(false)}
+        topicId={String(topic.id)}
+        topicName={t(topic.name)}
+        subjectName={(() => {
+          const parent = SUBJECTS.find((s) => s.topics?.some((tt) => String(tt.id) === String(topic.id)));
+          return parent ? t(parent.name) : 'Science';
+        })()}
+        studentName={user ? `${user.first_name} ${user.last_name}`.trim() || user.username : 'Student'}
+      />
     </div>
   );
 };

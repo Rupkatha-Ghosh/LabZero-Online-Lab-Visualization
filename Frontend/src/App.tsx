@@ -157,6 +157,7 @@ import { useEvaluationTaskTracking } from './hooks/useEvaluationTaskTracking';
 import { MeetingConfig } from './context/MeetingContext';
 import { getDefaultSignalingUrl } from './utils/urlUtils';
 import { EvaluationProvider } from './store/evaluationStore';
+import { AwardsProvider } from './store/awardsStore';
 import EvaluationProgressWidget from './components/evaluation/EvaluationProgressWidget';
 import AmbientAudioController from './components/common/AmbientAudioController';
 import {
@@ -1088,7 +1089,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => (
   <AuthProvider>
     <EvaluationProvider>
-      <AppContent />
+      <AwardsProvider>
+        <AppContent />
+      </AwardsProvider>
     </EvaluationProvider>
   </AuthProvider>
 );
