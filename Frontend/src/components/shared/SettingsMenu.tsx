@@ -4,7 +4,8 @@ import {
   Sun, Moon, Globe, Brain, BookOpen, Download, 
   MessageSquare, Star, X, ChevronRight, Settings2,
   Heart, Sparkles, Camera, Smartphone, Eye,
-  ChevronDown, ChevronUp, CheckCircle, Info
+  ChevronDown, ChevronUp, CheckCircle, Info,
+  Type, Sigma, Volume2, Waves
 } from 'lucide-react';
 import QRCodePairing from './QRCodePairing';
 import { safeLocalStorage } from '../../utils/safeStorage';
@@ -26,6 +27,12 @@ interface SettingsMenuProps {
   onCopyPhoneLink: () => void;
   colorBlindMode: boolean;
   onToggleColorBlind: () => void;
+  dyslexiaMode: boolean;
+  onToggleDyslexia: () => void;
+  mathMode: boolean;
+  onToggleMath: () => void;
+  ambientTrack: 'off' | 'lab' | 'bubbles' | 'noise';
+  onAmbientChange: (track: 'off' | 'lab' | 'bubbles' | 'noise') => void;
   user: any;
 }
 
@@ -46,6 +53,12 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   onCopyPhoneLink,
   colorBlindMode,
   onToggleColorBlind,
+  dyslexiaMode,
+  onToggleDyslexia,
+  mathMode,
+  onToggleMath,
+  ambientTrack,
+  onAmbientChange,
   user
 }) => {
   const isDark = theme === 'dark';
@@ -402,6 +415,144 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                 className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
               />
             </motion.button>
+          </div>
+
+          {/* Dyslexia Mode Toggle */}
+          <div className={`p-5 rounded-[28px] border flex items-center justify-between mb-4 transition-all ${
+            isDark 
+              ? 'bg-gradient-to-br from-indigo-500/10 to-transparent border-indigo-500/20' 
+              : 'bg-gradient-to-br from-indigo-50 to-white border-indigo-100'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-2.5 rounded-xl ${
+                isDark ? 'bg-amber-400/20 text-amber-400' : 'bg-amber-100 text-amber-600'
+              }`}>
+                <Type size={18} />
+              </div>
+              <div>
+                <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Dyslexia Mode</p>
+                <p className={`text-[10px] font-medium opacity-50 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {dyslexiaMode ? 'Active' : 'Off'}
+                </p>
+              </div>
+            </div>
+            
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onToggleDyslexia}
+              className={`w-12 h-6 rounded-full relative transition-all ${
+                dyslexiaMode 
+                  ? 'bg-indigo-600' 
+                  : isDark ? 'bg-white/10' : 'bg-slate-300'
+              }`}
+            >
+              <motion.div 
+                animate={{ x: dyslexiaMode ? 24 : 4 }}
+                className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
+              />
+            </motion.button>
+          </div>
+
+          {/* Math Mode Toggle */}
+          <div className={`p-5 rounded-[28px] border flex items-center justify-between mb-4 transition-all ${
+            isDark 
+              ? 'bg-gradient-to-br from-indigo-500/10 to-transparent border-indigo-500/20' 
+              : 'bg-gradient-to-br from-indigo-50 to-white border-indigo-100'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-2.5 rounded-xl ${
+                isDark ? 'bg-sky-400/20 text-sky-400' : 'bg-sky-100 text-sky-600'
+              }`}>
+                <Sigma size={18} />
+              </div>
+              <div>
+                <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Show Math Equations</p>
+                <p className={`text-[10px] font-medium opacity-50 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {mathMode ? 'KaTeX Rendering' : 'Plain Text'}
+                </p>
+              </div>
+            </div>
+            
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onToggleMath}
+              className={`w-12 h-6 rounded-full relative transition-all ${
+                mathMode 
+                  ? 'bg-indigo-600' 
+                  : isDark ? 'bg-white/10' : 'bg-slate-300'
+              }`}
+            >
+              <motion.div 
+                animate={{ x: mathMode ? 24 : 4 }}
+                className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
+              />
+            </motion.button>
+          </div>
+
+          {/* Lab Audio (2x2 grid of mode chips) */}
+          <div className={`p-5 rounded-[28px] border mb-4 transition-all ${
+            isDark 
+              ? 'bg-gradient-to-br from-indigo-500/10 to-transparent border-indigo-500/20' 
+              : 'bg-gradient-to-br from-indigo-50 to-white border-indigo-100'
+          }`}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`p-2.5 rounded-xl ${
+                isDark ? 'bg-cyan-400/20 text-cyan-400' : 'bg-cyan-100 text-cyan-600'
+              }`}>
+                <Volume2 size={18} />
+              </div>
+              <div>
+                <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Lab Audio</p>
+                <p className={`text-[10px] font-medium opacity-50 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Ambient Background
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { id: 'off', label: 'Off', icon: X },
+                { id: 'lab', label: 'Lab Hum', icon: Volume2 },
+                { id: 'bubbles', label: 'Bubbles', icon: Waves },
+                { id: 'noise', label: 'Atmosphere', icon: Sparkles },
+              ] as const).map((opt) => {
+                const Icon = opt.icon;
+                const isActive = ambientTrack === opt.id;
+                return (
+                  <motion.button
+                    key={opt.id}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => onAmbientChange(opt.id)}
+                    className={`relative p-3 rounded-2xl border flex items-center justify-center gap-2 transition-all overflow-hidden ${
+                      isActive
+                        ? isDark 
+                          ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.25)]' 
+                          : 'bg-cyan-50 border-cyan-300 text-cyan-700 shadow-sm'
+                        : isDark 
+                          ? 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-slate-200' 
+                          : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="ambient-highlight"
+                        className={`absolute inset-0 rounded-2xl ${
+                          isDark ? 'bg-cyan-500/15' : 'bg-cyan-100/50'
+                        }`}
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <Icon size={14} className="relative z-10" />
+                    <span className={`text-[10px] font-bold uppercase tracking-wider relative z-10 ${isActive ? '' : 'opacity-70'}`}>
+                      {opt.label}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
           </div>
 
           {/* App Install / Status (Always visible now) */}

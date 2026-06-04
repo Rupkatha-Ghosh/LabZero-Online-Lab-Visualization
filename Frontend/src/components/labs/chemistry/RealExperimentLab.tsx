@@ -1,9 +1,9 @@
 import { useLanguage } from '../../../context/LanguageContext';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
-import { 
-  Beaker, Droplets, Thermometer, Wind, RefreshCw, 
-  AlertCircle, Info, Zap, FlaskConical, Droplet 
+import {
+  Beaker, Droplets, Thermometer, Wind, RefreshCw,
+  AlertCircle, Info, Zap, FlaskConical, Droplet, Skull, Sparkles, X
 } from 'lucide-react';
 
 // Types for our reagents
@@ -33,6 +33,19 @@ const RealExperimentLab: React.FC = () => {
   const [isReacting, setIsReacting] = useState(false);
   const [pouring, setPouring] = useState<string | null>(null);
   const [totalVolume, setTotalVolume] = useState(0);
+  const [oopsie, setOopsie] = useState<{
+    id: number;
+    title: string;
+    body: string;
+    severity: 'info' | 'warning' | 'danger';
+    icon: 'skull' | 'sparkles' | 'alert';
+  } | null>(null);
+  const oopsieCounterRef = useRef(0);
+  // Beaker breaks when overflowed or exothermic burst occurs.
+  // The shards + crack overlay are then shown until the user resets.
+  const [beakerBroken, setBeakerBroken] = useState(false);
+  // Bumped on every reagent add so bubble / gas particles restart their loops.
+  const [bubbleSeed, setBubbleSeed] = useState(0);
   
   const controls = useAnimation();
   const beakerRef = useRef<HTMLDivElement>(null);
@@ -82,13 +95,97 @@ const RealExperimentLab: React.FC = () => {
         return prev + (diff * 0.1); // Smooth transition
       });
 
+      // OOPSIE! Wrong-One detection — encourage students to try
+      // "wrong" combos and see safe visual feedback (no explosions).
+      const distinctIds = new Set(contents.map((c) => c.id));
+      const distinctReagents = contents
+        .map((c) => REAGENTS.find((r) => r.id === c.id))
+        .filter((r): r is Reagent => Boolean(r));
+      const acidCount = distinctReagents.filter((r) => r.type === 'acid').length;
+      const baseCount = distinctReagents.filter((r) => r.type === 'base').length;
+      const hasWater = distinctReagents.some((r) => r.id === 'h2o');
+
+      // Every fresh add re-seeds the bubble / gas particle loops so they
+      // visibly surge instead of looping in place.
+      setBubbleSeed((s) => s + 1);
+
+      // Only fire OOPSIE on the *latest* add (contents changed), and
+      // when there's at least 2 distinct reagents (a real "combination").
+      const triggerOopsie = (
+        title: string,
+        body: string,
+        severity: 'info' | 'warning' | 'danger',
+        icon: 'skull' | 'sparkles' | 'alert'
+      ) => {
+        oopsieCounterRef.current += 1;
+        setOopsie({
+          id: oopsieCounterRef.current,
+          title,
+          body,
+          severity,
+          icon,
+        });
+      };
+
+      if (distinctIds.size >= 2) {
+        if (newVolume >= 500) {
+          triggerOopsie(
+            'OOPSIE! Beaker overflow',
+            'The beaker cannot safely hold more than 500ml of reagent. In a real lab this is a serious spill hazard — always add in small, measured amounts.',
+            'warning',
+            'alert'
+          );
+        } else if (reactivityFactor >= 40) {
+          triggerOopsie(
+            'OOPSIE! Exothermic burst',
+            'Concentrated acid + concentrated base in one beaker releases a LOT of heat. In a real lab this can crack glassware and splash — always add acid to water slowly, never the other way around.',
+            'warning',
+            'alert'
+          );
+        } else if (acidCount >= 2 && baseCount === 0) {
+          triggerOopsie(
+            'OOPSIE! Two acids',
+            'You just added an acid to an acid — they do not react! In a real lab, this would just make a stronger acid solution. Try pairing an acid with a base to see neutralization.',
+            'info',
+            'sparkles'
+          );
+        } else if (baseCount >= 2 && acidCount === 0) {
+          triggerOopsie(
+            'OOPSIE! Two bases',
+            'Bases do not react with other bases — there is nothing to neutralize here. Add a strong acid like HCl or H₂SO₄ to trigger a real reaction.',
+            'info',
+            'sparkles'
+          );
+        } else if (hasWater && distinctReagents.length === 1) {
+          triggerOopsie(
+            'OOPSIE! Just water',
+            'Distilled water does not react on its own — it only dilutes. Mix water with an acid or base if you want to see a change in pH.',
+            'info',
+            'sparkles'
+          );
+        }
+      }
+
+      // Beaker-break visuals: triggered on overflow OR exothermic burst.
+      // Lowered to 40 so it can be reached in a few pours during testing
+      // (H2SO4 + NaOH + KOH = ~40 reactivity, 3 pours).
+      if (newVolume >= 500 || reactivityFactor >= 40) {
+        setBeakerBroken(true);
+      }
+
       return () => clearTimeout(timer);
     }
   }, [contents]);
 
+  useEffect(() => {
+    if (!oopsie) return;
+    const id = window.setTimeout(() => setOopsie(null), 5_000);
+    return () => window.clearTimeout(id);
+  }, [oopsie]);
+
   const addReagent = (id: string) => {
   
-    if (pouring || totalVolume >= 500) return;
+    if (pouring || totalVolume >= 500 || beakerBroken) return;
     setPouring(id);
     
     // Pouring duration
@@ -101,7 +198,7 @@ const RealExperimentLab: React.FC = () => {
         return [...prev, { id, amount: 20 }];
       });
       setPouring(null);
-      // Shake effect on beaker
+      // Shake effect on beaker — more violent if already stressed
       controls.start({
         x: [0, -2, 2, -2, 2, 0],
         transition: { duration: 0.4 }
@@ -114,6 +211,8 @@ const RealExperimentLab: React.FC = () => {
     setTemperature(25);
     setPh(7);
     setTotalVolume(0);
+    setBeakerBroken(false);
+    setBubbleSeed((s) => s + 1);
   };
 
   const getLiquidColor = () => {
@@ -126,6 +225,20 @@ const RealExperimentLab: React.FC = () => {
     if (ph < 3) return 'rgba(255, 255, 200, 0.15)';
     return 'rgba(255, 255, 255, 0.1)';
   };
+
+  // Derived flags for the OOPSIE visual feedback layers.
+  const hasAcidBaseMix = contents.some((c) => {
+    const r = REAGENTS.find((x) => x.id === c.id);
+    return r?.type === 'acid';
+  }) && contents.some((c) => {
+    const r = REAGENTS.find((x) => x.id === c.id);
+    return r?.type === 'base';
+  });
+  // Gas wisps appear whenever the reaction is vigorous: an acid+base mix
+  // or a high temperature reading from prior neutralization heat.
+  const isGassing = hasAcidBaseMix || temperature > 50;
+  // Bubbles inside the liquid: only when there's actually a mix to bubble.
+  const shouldBubble = hasAcidBaseMix && totalVolume > 0;
 
   return (
     <div className="min-h-full flex flex-col items-center justify-start p-4 md:p-10 space-y-12 max-w-[1600px] mx-auto overflow-y-auto scrollbar-hide">
@@ -173,7 +286,9 @@ const RealExperimentLab: React.FC = () => {
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
                 <Zap size={14} className="text-amber-400" />{t('Chemical Reagents')}</h3>
-              <span className="text-[10px] font-mono text-slate-600">Capacity: {totalVolume}/500ml</span>
+              <span className={`text-[10px] font-mono ${beakerBroken ? 'text-rose-500' : 'text-slate-600'}`}>
+                {beakerBroken ? '⚠ BEAKER CRACKED — Reset to continue' : `Capacity: ${totalVolume}/500ml`}
+              </span>
             </div>
 
             <div className="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-hide">
@@ -183,16 +298,20 @@ const RealExperimentLab: React.FC = () => {
                   reagent={reagent}
                   onAdd={() => addReagent(reagent.id)}
                   isPouring={pouring === reagent.id}
-                  disabled={pouring !== null || totalVolume >= 500}
+                  disabled={pouring !== null || totalVolume >= 500 || beakerBroken}
                 />
               ))}
             </div>
 
             <button
               onClick={resetExperiment}
-              className="w-full py-5 rounded-[2rem] bg-rose-500/5 border border-rose-500/10 hover:bg-rose-500/20 hover:border-rose-500/40 text-rose-400 transition-all duration-500 flex items-center justify-center gap-3 font-mono text-[10px] font-black uppercase tracking-[0.3em]"
+              className={`w-full py-5 rounded-[2rem] border transition-all duration-500 flex items-center justify-center gap-3 font-mono text-[10px] font-black uppercase tracking-[0.3em] ${
+                beakerBroken
+                  ? 'bg-rose-500/20 border-rose-500/60 text-rose-300 hover:bg-rose-500/30 animate-pulse shadow-[0_0_30px_rgba(244,63,94,0.35)]'
+                  : 'bg-rose-500/5 border-rose-500/10 hover:bg-rose-500/20 hover:border-rose-500/40 text-rose-400'
+              }`}
             >
-              <RefreshCw size={14} className={isReacting ? 'animate-spin' : ''} />{t('Reset Lab Environment')}</button>
+              <RefreshCw size={14} className={isReacting ? 'animate-spin' : ''} />{t(beakerBroken ? 'Repair Beaker' : 'Reset Lab Environment')}</button>
           </div>
         </div>
 
@@ -240,7 +359,9 @@ const RealExperimentLab: React.FC = () => {
               {/* Liquid System */}
               <motion.div
                 animate={{ 
-                  height: `${Math.min(96, (totalVolume / 5.2) + 4)}%`,
+                  height: beakerBroken
+                    ? '0%'
+                    : `${Math.min(96, (totalVolume / 5.2) + 4)}%`,
                   backgroundColor: getLiquidColor(),
                 }}
                 className="absolute bottom-0 w-full transition-all duration-[1500ms] cubic-bezier(0.4, 0, 0.2, 1)"
@@ -254,6 +375,43 @@ const RealExperimentLab: React.FC = () => {
                   transition={{ repeat: Infinity, duration: 2 }}
                   className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-white/40 via-white/10 to-transparent blur-[2px]"
                 />
+
+                {/* Acid + Base Bubbles: continuous CO2-like bubbles rising
+                    from the bottom of the liquid, popping at the surface. */}
+                <AnimatePresence>
+                  {shouldBubble && !beakerBroken && (
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                      {Array.from({ length: 14 }).map((_, i) => {
+                        const left = 8 + ((i * 37) % 84);
+                        const size = 4 + ((i * 7) % 10);
+                        return (
+                          <motion.div
+                            key={`bubble-${bubbleSeed}-${i}`}
+                            initial={{ y: 0, opacity: 0, scale: 0.4 }}
+                            animate={{
+                              y: -380,
+                              x: [0, (i % 2 === 0 ? 12 : -12), 0],
+                              opacity: [0, 0.85, 0.85, 0],
+                              scale: [0.4, 1, 1.1, 0.6],
+                            }}
+                            transition={{
+                              duration: 1.6 + (i % 5) * 0.25,
+                              repeat: Infinity,
+                              delay: (i * 0.18) % 1.6,
+                              ease: 'easeOut',
+                            }}
+                            className="absolute bottom-0 rounded-full bg-white/70 border border-white/80 shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                            style={{
+                              left: `${left}%`,
+                              width: `${size}px`,
+                              height: `${size}px`,
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </AnimatePresence>
 
                 {/* Reaction Particles (High Res) */}
                 <AnimatePresence>
@@ -288,6 +446,43 @@ const RealExperimentLab: React.FC = () => {
                 </AnimatePresence>
               </motion.div>
 
+              {/* Gas Wisps: vapor rising above the liquid surface when the
+                  reaction is exothermic or acid+base are mixing. */}
+              <AnimatePresence>
+                {isGassing && !beakerBroken && totalVolume > 0 && (
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    {Array.from({ length: 6 }).map((_, i) => {
+                      const left = 12 + ((i * 53) % 76);
+                      return (
+                        <motion.div
+                          key={`gas-${bubbleSeed}-${i}`}
+                          initial={{ y: 0, opacity: 0, scale: 0.5 }}
+                          animate={{
+                            y: -260,
+                            x: [(i % 2 === 0 ? 18 : -18), (i % 2 === 0 ? -12 : 12)],
+                            opacity: [0, 0.55, 0],
+                            scale: [0.5, 1.6, 2.4],
+                          }}
+                          transition={{
+                            duration: 2.4 + (i % 4) * 0.3,
+                            repeat: Infinity,
+                            delay: (i * 0.32) % 1.8,
+                            ease: 'easeOut',
+                          }}
+                          className="absolute bottom-0 rounded-full bg-white/30 backdrop-blur-md"
+                          style={{
+                            left: `${left}%`,
+                            width: '32px',
+                            height: '32px',
+                            filter: 'blur(6px)',
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </AnimatePresence>
+
               {/* Beaker Markings */}
               <div className="absolute right-8 h-full flex flex-col justify-between py-16 opacity-30 pointer-events-none">
                 {[500, 400, 300, 200, 100].map(val => (
@@ -299,8 +494,100 @@ const RealExperimentLab: React.FC = () => {
               </div>
             </div>
             
+            {/* Beaker Break Overlay — crack pattern + falling glass shards.
+                Triggered on overflow or exothermic burst; cleared by reset. */}
+            <AnimatePresence>
+              {beakerBroken && (
+                <>
+                  {/* Static crack pattern across the glass body */}
+                  <motion.svg
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    viewBox="0 0 320 450"
+                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    preserveAspectRatio="none"
+                  >
+                    <g
+                      stroke="white"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      fill="none"
+                      style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.7))' }}
+                    >
+                      <path d="M160 30 L120 110 L165 175 L100 250 L150 340" opacity="0.95" />
+                      <path d="M160 30 L210 95 L175 160 L230 235 L195 320" opacity="0.9" />
+                      <path d="M120 110 L80 160" opacity="0.7" />
+                      <path d="M210 95 L255 145" opacity="0.7" />
+                      <path d="M165 175 L195 200" opacity="0.7" />
+                      <path d="M100 250 L70 295" opacity="0.6" />
+                      <path d="M230 235 L270 285" opacity="0.6" />
+                    </g>
+                  </motion.svg>
+
+                  {/* Falling glass shards — scatter outward, rotate, fade */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {Array.from({ length: 14 }).map((_, i) => {
+                      const startX = 140 + (i % 5) * 12;
+                      const startY = 200 + Math.floor(i / 5) * 40;
+                      const dx = (Math.random() - 0.5) * 420;
+                      const dy = 360 + Math.random() * 180;
+                      const rot = (Math.random() - 0.5) * 900;
+                      return (
+                        <motion.div
+                          key={`shard-${i}`}
+                          initial={{ x: startX, y: startY, rotate: 0, opacity: 1 }}
+                          animate={{
+                            x: startX + dx,
+                            y: startY + dy,
+                            rotate: rot,
+                            opacity: 0,
+                          }}
+                          transition={{
+                            duration: 1.1 + Math.random() * 0.7,
+                            ease: 'easeIn',
+                            delay: i * 0.04,
+                          }}
+                          className="absolute w-3 h-5 bg-white/35 border border-white/70"
+                          style={{
+                            clipPath:
+                              i % 4 === 0
+                                ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
+                                : i % 4 === 1
+                                ? 'polygon(0% 0%, 100% 30%, 70% 100%)'
+                                : i % 4 === 2
+                                ? 'polygon(20% 0%, 100% 0%, 80% 100%, 0% 80%)'
+                                : 'polygon(0% 20%, 60% 0%, 100% 100%, 30% 100%)',
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </AnimatePresence>
+
             {/* Floor Reflection */}
             <div className="absolute -bottom-16 w-[400px] h-20 bg-indigo-500/10 blur-[60px] rounded-full -z-10" />
+
+            {/* Spill on the floor — appears when the beaker breaks */}
+            <AnimatePresence>
+              {beakerBroken && (
+                <motion.div
+                  initial={{ opacity: 0, scaleX: 0.4, scaleY: 0.2 }}
+                  animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                  className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-[520px] h-10 rounded-full pointer-events-none"
+                  style={{
+                    background:
+                      'radial-gradient(ellipse at center, rgba(219,39,119,0.55) 0%, rgba(99,102,241,0.45) 40%, transparent 75%)',
+                    filter: 'blur(8px)',
+                  }}
+                />
+              )}
+            </AnimatePresence>
           </motion.div>
 
           {/* Danger Heat Waves */}
@@ -345,6 +632,57 @@ const RealExperimentLab: React.FC = () => {
             <div className="space-y-1">
               <h4 className="text-xl font-display font-black text-white uppercase tracking-tighter">{t('Thermal Breach')}</h4>
               <p className="text-xs text-red-400/80 font-mono uppercase tracking-widest font-bold">{t('Critical Reaction Temperature Detected')}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* OOPSIE! Wrong-One Toast — encourages safe experimentation */}
+      <AnimatePresence>
+        {oopsie && (
+          <motion.div
+            key={oopsie.id}
+            initial={{ opacity: 0, y: 40, scale: 0.92, rotate: -2 }}
+            animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.25 } }}
+            transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+            className="fixed top-8 left-1/2 -translate-x-1/2 z-[110] max-w-xl w-[92vw] md:w-auto"
+          >
+            <div
+              className={`flex items-start gap-4 px-5 py-4 rounded-2xl backdrop-blur-2xl border-2 shadow-2xl ${
+                oopsie.severity === 'danger'
+                  ? 'bg-rose-950/85 border-rose-500/60 shadow-rose-500/30'
+                  : oopsie.severity === 'warning'
+                  ? 'bg-amber-950/85 border-amber-500/60 shadow-amber-500/30'
+                  : 'bg-indigo-950/85 border-indigo-500/60 shadow-indigo-500/30'
+              }`}
+            >
+              <div
+                className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                  oopsie.severity === 'danger'
+                    ? 'bg-rose-600 text-white'
+                    : oopsie.severity === 'warning'
+                    ? 'bg-amber-500 text-black'
+                    : 'bg-indigo-500 text-white'
+                }`}
+              >
+                {oopsie.icon === 'skull' ? <Skull size={22} /> : oopsie.icon === 'sparkles' ? <Sparkles size={22} /> : <AlertCircle size={22} />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-display font-black uppercase tracking-tighter text-white">
+                  {oopsie.title}
+                </h4>
+                <p className="text-xs text-slate-200/90 mt-1 leading-relaxed">
+                  {oopsie.body}
+                </p>
+              </div>
+              <button
+                onClick={() => setOopsie(null)}
+                className="shrink-0 p-1 rounded-md text-white/60 hover:text-white hover:bg-white/10"
+                aria-label="Dismiss"
+              >
+                <X size={16} />
+              </button>
             </div>
           </motion.div>
         )}

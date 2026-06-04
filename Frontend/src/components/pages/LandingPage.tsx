@@ -1,11 +1,16 @@
 import React from 'react';
-import { Subject } from '../../types/types';
+import { Subject, Topic } from '../../types/types';
 import { safeLocalStorage } from '../../utils/safeStorage';
-import { Beaker, Zap, Calculator, Dna, ArrowRight, Play, Maximize2, Move3d, RotateCcw, Rotate3d, Layout, Layers, Users, Star, Globe } from 'lucide-react';
+import { Beaker, Zap, Calculator, Dna, ArrowRight, Play, Maximize2, Move3d, RotateCcw, Rotate3d, Layout, Layers, Users, Star, Globe, History, ChevronRight, Award, Clock, X } from 'lucide-react';
 import { Language, translations } from '../../services/translations';
 import { useLanguage } from '../../context/LanguageContext';
 import { Logo } from '../common/Logo';
 import Footer from '../common/Footer';
+import LoadingTriviaCard from '../common/LoadingTriviaCard';
+import { useAwards } from '../../store/awardsStore';
+import { motion, AnimatePresence } from 'motion/react';
+import { SUBJECTS } from '../../utils/constants';
+import { TopicId } from '../../types/types';
 // Inline skeleton components (replaces missing '../common/Skeleton')
 const Hero3DModelFallback = ({ theme }: { theme: 'dark' | 'light' }) => {
  
@@ -184,13 +189,16 @@ const Hero3DModelFallback = ({ theme }: { theme: 'dark' | 'light' }) => {
       </div>
       
       {/* Subtle loading hint text */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none z-20">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none z-20 w-[min(92vw,420px)]">
         <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-200/40 dark:bg-slate-950/45 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-lg">
           <div className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
           </div>
           <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-slate-600 dark:text-sky-300 font-semibold">{t('Loading Interactive 3D...')}</span>
+        </div>
+        <div className="pointer-events-auto w-full">
+          <LoadingTriviaCard theme={theme} />
         </div>
       </div>
     </div>
@@ -260,9 +268,12 @@ const ElectricFieldSimulationFallback = () => {
  
   const { t } = useLanguage();
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent min-h-[300px] select-none">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent min-h-[300px] select-none gap-4 p-4">
       <div className="w-8 h-8 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
-      <div className="mt-4 text-[10px] font-mono tracking-widest text-teal-500/50 uppercase">{t('Loading field grid...')}</div>
+      <div className="text-[10px] font-mono tracking-widest text-teal-500/50 uppercase">{t('Loading field grid...')}</div>
+      <div className="w-full max-w-[280px]">
+        <LoadingTriviaCard theme="dark" />
+      </div>
     </div>
   );
 };
@@ -330,6 +341,120 @@ const useDeferredHeroWidgets = () => {
   return shouldLoad;
 };
 
+const RESUME_DISMISS_KEY = 'labzero_resume_dismissed_v1';
+
+const formatRelativeTime = (ts: number): string => {
+  const diff = Date.now() - ts;
+  const min = Math.floor(diff / 60_000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const days = Math.floor(hr / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
+
+interface ResumeCardProps {
+  onSelectSubject: (subject: Subject) => void;
+  onDismiss: () => void;
+}
+
+const ResumeCard: React.FC<ResumeCardProps> = ({ onSelectSubject, onDismiss }) => {
+  const { getAllProgress, getEarnedTier } = useAwards();
+  const progress = getAllProgress();
+
+  const recent = React.useMemo(() => {
+    const entries = Object.entries(progress)
+      .filter(([, p]) => p.lastVisitAt)
+      .sort(([, a], [, b]) => (b.lastVisitAt ?? 0) - (a.lastVisitAt ?? 0));
+    if (entries.length === 0) return null;
+    const [topicId, p] = entries[0];
+    const parent = SUBJECTS.find((s) => s.topics?.some((t) => String(t.id) === String(topicId)));
+    const topic = parent?.topics?.find((t) => String(t.id) === String(topicId));
+    if (!parent || !topic) return null;
+    return { topicId, topic, parent, lastVisitAt: p.lastVisitAt as number, progress: p };
+  }, [progress]);
+
+  if (!recent) return null;
+  const earnedTier = getEarnedTier(String(recent.topicId));
+
+  const handleResume = () => {
+    onSelectSubject(recent.parent);
+  };
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 16, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+      className="mb-8 sm:mb-10"
+      aria-label="Resume your last lab"
+    >
+      <button
+        onClick={handleResume}
+        className="group relative w-full overflow-hidden rounded-[28px] sm:rounded-[36px] border border-[var(--border-glass)] bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-amber-500/10 hover:from-indigo-500/20 hover:via-purple-500/10 hover:to-amber-500/20 transition-all duration-500 text-left"
+      >
+        <div className="absolute inset-0 opacity-30 pointer-events-none" style={{
+          background: 'radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.18), transparent 50%), radial-gradient(circle at 10% 90%, rgba(245, 158, 11, 0.15), transparent 45%)',
+        }} />
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 p-5 sm:p-7">
+          <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform duration-500">
+            <History size={26} strokeWidth={2.2} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.3em] text-indigo-400 mb-1.5">
+              <Clock size={11} />
+              <span>{formatRelativeTime(recent.lastVisitAt)}</span>
+              <span className="text-slate-600">·</span>
+              <span className="text-slate-500">Continue where you left off</span>
+            </div>
+            <h3 className="text-lg sm:text-2xl font-display font-black tracking-tight text-[var(--text-primary)] truncate">
+              {recent.topic.name}
+            </h3>
+            <div className="flex items-center gap-3 mt-1.5 text-xs text-[var(--text-muted)]">
+              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 font-mono uppercase tracking-wider text-[10px]">
+                {recent.parent.name}
+              </span>
+              {earnedTier !== 'none' && (
+                <span className="flex items-center gap-1 text-amber-400">
+                  <Award size={12} />
+                  <span className="font-mono uppercase tracking-wider text-[10px]">Tier {earnedTier === 'tier1' ? 1 : earnedTier === 'tier2' ? 2 : earnedTier === 'tier3' ? 3 : 4}</span>
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex w-11 h-11 rounded-full bg-white/5 border border-white/10 items-center justify-center text-[var(--text-primary)] group-hover:bg-indigo-500 group-hover:border-indigo-400 group-hover:text-white transition-all duration-300">
+              <ChevronRight size={18} />
+            </div>
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDismiss();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDismiss();
+                }
+              }}
+              className="shrink-0 p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 cursor-pointer"
+              aria-label="Dismiss"
+            >
+              <X size={16} />
+            </div>
+          </div>
+        </div>
+      </button>
+    </motion.section>
+  );
+};
+
 interface LandingPageProps {
   onSelectSubject: (subject: Subject) => void;
   language: Language;
@@ -366,10 +491,71 @@ const LandingPage: React.FC<LandingPageProps> = ({
   onLaunchSimulation,
   stats = { subjects: 0, topics: 0, students: 0, average_rating: 0.0, feedback_count: 0 },
 }) => {
- 
+
   const { t } = useLanguage();
   const shouldLoadHeroWidgets = useDeferredHeroWidgets();
-  
+  const { getAllProgress } = useAwards();
+
+  // "Continue where you left off" — visible if there is at least one
+  // topic with a recent visit AND the user hasn't dismissed the card in
+  // the last 24 hours. Reappears automatically when a new topic is visited
+  // and also when the user comes back to the tab.
+  const recheckResume = React.useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const dismissedAt = Number(safeLocalStorage.getItem(RESUME_DISMISS_KEY) ?? 0);
+    if (dismissedAt && Date.now() - dismissedAt < 24 * 60 * 60 * 1000) {
+      setShowResume(false);
+      return;
+    }
+    // Prefer the live awards store state (in-memory) — it has the freshest
+    // lastVisitAt values even before the next localStorage write.
+    const all = getAllProgress();
+    const hasAny = Object.values(all).some((p) => typeof p.lastVisitAt === 'number');
+    if (hasAny) {
+      setShowResume(true);
+      return;
+    }
+    // Fallback: read directly from localStorage (covers the case where the
+    // awards store has not yet been hydrated on first mount).
+    try {
+      const raw = safeLocalStorage.getItem('labzero_awards_v1');
+      if (!raw) {
+        setShowResume(false);
+        return;
+      }
+      const parsed = JSON.parse(raw) as { progress?: Record<string, { lastVisitAt?: number | null }> };
+      setShowResume(
+        Boolean(
+          parsed.progress &&
+            Object.values(parsed.progress).some((p) => typeof p.lastVisitAt === 'number')
+        )
+      );
+    } catch {
+      setShowResume(false);
+    }
+  }, [getAllProgress]);
+
+  const [showResume, setShowResume] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    recheckResume();
+  }, [recheckResume]);
+
+  React.useEffect(() => {
+    const onFocus = () => recheckResume();
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') recheckResume();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pageshow', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pageshow', onFocus);
+    };
+  }, [recheckResume]);
+
   const feedbackCount = Math.max(0, Number(stats.feedback_count ?? 0));
   const averageRating = Math.max(0, Math.min(5, Number(stats.average_rating ?? 0)));
   const formattedRating = averageRating.toFixed(averageRating % 1 === 0 ? 0 : 1);
@@ -554,6 +740,18 @@ const LandingPage: React.FC<LandingPageProps> = ({
         {displayedSubjects.length === 0 ? (
           <CardGridSkeleton count={Number(safeLocalStorage.getItem('labzero_last_subject_count')) || 4} theme={theme} />
         ) : (
+          <>
+            <AnimatePresence>
+              {showResume && (
+                <ResumeCard
+                  onSelectSubject={onSelectSubject}
+                  onDismiss={() => {
+                    setShowResume(false);
+                    safeLocalStorage.setItem(RESUME_DISMISS_KEY, String(Date.now()));
+                  }}
+                />
+              )}
+            </AnimatePresence>
           <section id="explore" className="min-h-[440px] scroll-mt-24">
             {/* CLASS SELECTION DROPDOWN BAR */}
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -645,6 +843,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               )}
             </div>
           </section>
+          </>
         )}
 
         {/* Theory to Visual */}

@@ -1,8 +1,10 @@
 import { useLanguage } from '../../context/LanguageContext';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Topic, TopicView, Resource } from '../../types/types';
-import { ArrowLeft, BookOpen, Play, Sparkles, FileText, Trash2, Download, Presentation, GraduationCap, Volume2, VolumeX, Zap } from 'lucide-react';
+import { ArrowLeft, BookOpen, Play, FileText, Trash2, Download, Presentation, GraduationCap, Volume2, VolumeX, Zap, Printer } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 import ResourceUpload from '../shared/ResourceUpload';
 import ResourceViewer from '../shared/ResourceViewer';
 import Classroom from '../shared/Classroom';
@@ -13,6 +15,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Language, translations } from '../../services/translations';
 import { useAuth } from '../../context/AuthContext';
 import { Skeleton } from '../common/Skeleton';
+import { useAwards } from '../../store/awardsStore';
+import AwardBadge from '../awards/AwardBadge';
+import CertificateModal from '../awards/CertificateModal';
+import { SUBJECTS } from '../../utils/constants';
 
 type TheoryMaterial = Resource & {
   assignmentId?: number | string;
@@ -28,18 +34,134 @@ interface TopicPageProps {
   onStartQuiz: () => void;
   onStartMeeting?: (topic: Topic) => void;
   skeletonDebug?: boolean;
+  mathMode?: boolean;
+  initialView?: TopicView;
 }
 
-const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, language, onStartQuiz, onStartMeeting }) => {
- 
+const isLikelyMath = (text: string): boolean => {
+  const t = text.trim();
+  if (!t) return false;
+  if (t.length > 200) return false;
+  if (/^[A-Za-z]{4,}/.test(t) && !/[=^_+\-/*\\]/.test(t)) return false;
+  const hasOperator = /[=^_+\-*/\\]/.test(t);
+  const hasGreek = /(?:\\?[a-zA-Z]|[α-ωΑ-Ω])/.test(t);
+  const hasDigits = /\d/.test(t);
+  const hasMathKeyword = /\\frac|\\sqrt|\\sum|\\int|\\pi|\\theta|\\lambda|\\alpha|\\beta|\\gamma|\\delta|\\varepsilon|\\varepsilon|\\omega|\\mu|\\sigma|\\phi|\\to|\\rightarrow|\\Rightarrow|\\infty|\\cdot|\\pm|\\times|\\div|\\leq|\\geq|\\neq|\\approx|\\sim|\\propto|\\sin|\\cos|\\tan|\\sec|\\csc|\\cot|\\log|\\ln|\\lim/.test(t);
+  if (hasMathKeyword) return true;
+  if (t.startsWith('\\(') || t.startsWith('\\[') || t.startsWith('$')) return true;
+  if (hasOperator && (hasGreek || hasDigits)) return true;
+  if (hasOperator && t.split(/[=^_+\-*/\\]/).length >= 3) return true;
+  return false;
+};
+
+const stripMathDelimiters = (text: string): string => {
+  let t = text.trim();
+  if (t.startsWith('\\(') && t.endsWith('\\)')) t = t.slice(2, -2).trim();
+  else if (t.startsWith('\\[') && t.endsWith('\\]')) t = t.slice(2, -2).trim();
+  else if (t.startsWith('$') && t.endsWith('$')) t = t.slice(1, -1).trim();
+  return t;
+};
+
+const STOPWORDS = ['and', 'or', 'of', 'to', 'in', 'on', 'at', 'by', 'is', 'it', 'as', 'the', 'a', 'an', 'with', 'for', 'from', 'that', 'this', 'we', 'you', 'they', 'he', 'she', 'be', 'are', 'was', 'were', 'has', 'have', 'had', 'do', 'does', 'did', 'can', 'could', 'will', 'would', 'should', 'may', 'might', 'must', 'shall', 'about', 'into', 'over', 'under', 'between', 'through', 'after', 'before', 'since', 'until', 'while', 'because', 'although', 'though', 'if', 'when', 'where', 'how', 'what', 'which', 'who', 'whom', 'whose', 'why'];
+
+const isWordFraction = (text: string): boolean => {
+  const t = text.trim();
+  if (!t || t.length > 120) return false;
+  if (/\d/.test(t)) return false;
+  if (/\\[a-zA-Z]/.test(t)) return false;
+  const word = String.raw`[A-Za-z][A-Za-z]*(?:[\s\-'][A-Za-z]+)*`;
+  const re = new RegExp(`^${word}\\s*\\/\\s*${word}\\.?$`);
+  if (!re.test(t)) return false;
+  const [num, den] = t.replace(/\.+$/, '').split('/').map(s => s.trim().toLowerCase().split(/[\s\-']+/));
+  if (num.some(w => STOPWORDS.includes(w)) || den.some(w => STOPWORDS.includes(w))) return false;
+  return true;
+};
+
+const wordFractionToLatex = (text: string): string => {
+  const t = text.trim().replace(/\.+$/, '');
+  const word = String.raw`[A-Za-z][A-Za-z]*(?:[\s\-'][A-Za-z]+)*`;
+  const re = new RegExp(`^(${word})\\s*\\/\\s*(${word})$`);
+  const m = t.match(re);
+  if (!m) return text;
+  const numWords = m[1].trim().toLowerCase().split(/[\s\-']+/);
+  const denWords = m[2].trim().toLowerCase().split(/[\s\-']+/);
+  if (numWords.some(w => STOPWORDS.includes(w)) || denWords.some(w => STOPWORDS.includes(w))) return text;
+  const num = m[1].trim();
+  const den = m[2].trim();
+  return `\\frac{\\text{${num}}}{\\text{${den}}}`;
+};
+
+const isWordEquation = (text: string): boolean => {
+  const t = text.trim();
+  if (!t || t.length > 120) return false;
+  if (/\d/.test(t)) return false;
+  if (/\\[a-zA-Z]/.test(t)) return false;
+  const word = String.raw`[A-Za-z][A-Za-z]*(?:[\s\-'][A-Za-z]+)*`;
+  const re = new RegExp(`^${word}\\s*=\\s*${word}\\.?$`);
+  if (!re.test(t)) return false;
+  const [lhs, rhs] = t.replace(/\.+$/, '').split('=').map(s => s.trim().toLowerCase().split(/[\s\-']+/));
+  if (lhs.some(w => STOPWORDS.includes(w)) || rhs.some(w => STOPWORDS.includes(w))) return false;
+  return true;
+};
+
+const wordEquationToLatex = (text: string): string => {
+  const t = text.trim().replace(/\.+$/, '');
+  const word = String.raw`[A-Za-z][A-Za-z]*(?:[\s\-'][A-Za-z]+)*`;
+  const re = new RegExp(`^(${word})\\s*=\\s*(${word})$`);
+  const m = t.match(re);
+  if (!m) return text;
+  return `\\text{${m[1].trim()}} = \\text{${m[2].trim()}}`;
+};
+
+const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, language, onStartQuiz, onStartMeeting, mathMode = false, initialView }) => {
+  
   const { t } = useLanguage();
   const { user } = useAuth();
-  const [activeView, setActiveView] = useState<TopicView>(TopicView.THEORY);
+  const [activeView, setActiveView] = useState<TopicView>(initialView ?? TopicView.THEORY);
   
   const [resources, setResources] = useState<Resource[]>([]);
   const [assignmentMaterials, setAssignmentMaterials] = useState<TheoryMaterial[]>([]);
   const [viewingResource, setViewingResource] = useState<Resource | null>(null);
   const [isReading, setIsReading] = useState(false);
+  const [certificateOpen, setCertificateOpen] = useState(false);
+  const theoryReadTimerRef = useRef<number | null>(null);
+
+  const {
+    startSession: startAwardSession,
+    markTheoryRead,
+    markSimulationRun,
+    markQuizCompleted,
+    getEarnedTier,
+    hasCertificate,
+  } = useAwards();
+  const earnedTier = getEarnedTier(String(topic.id));
+  const certificateIssued = hasCertificate(String(topic.id));
+
+  useEffect(() => {
+    const stop = startAwardSession(String(topic.id));
+    return stop;
+  }, [topic.id, startAwardSession]);
+
+  useEffect(() => {
+    if (activeView !== TopicView.THEORY) {
+      if (theoryReadTimerRef.current) {
+        window.clearTimeout(theoryReadTimerRef.current);
+        theoryReadTimerRef.current = null;
+      }
+      return;
+    }
+    if (theoryReadTimerRef.current) return;
+    theoryReadTimerRef.current = window.setTimeout(() => {
+      markTheoryRead(String(topic.id));
+      theoryReadTimerRef.current = null;
+    }, 8_000);
+    return () => {
+      if (theoryReadTimerRef.current) {
+        window.clearTimeout(theoryReadTimerRef.current);
+        theoryReadTimerRef.current = null;
+      }
+    };
+  }, [activeView, topic.id, markTheoryRead]);
 
   const inferResourceType = (url: string) => {
     const path = url.split('?')[0].toLowerCase();
@@ -149,7 +271,13 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
     setActiveView(view);
     if (view === TopicView.VISUALIZATION) {
       window.dispatchEvent(new CustomEvent('labzero:evaluation-task', { detail: 'simulationViewed' }));
+      markSimulationRun(String(topic.id));
     }
+  };
+
+  const handleStartQuizWithAward = () => {
+    markQuizCompleted(String(topic.id));
+    onStartQuiz();
   };
 
   const materials: TheoryMaterial[] = [
@@ -192,7 +320,7 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
 
             {/* Mobile-only quiz button if space allows, or handle in nav */}
             <button
-              onClick={onStartQuiz}
+              onClick={handleStartQuizWithAward}
               className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all shrink-0"
             >
               <Zap size={16} />
@@ -229,11 +357,25 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
             <div className="hidden sm:block w-px h-6 bg-[var(--border-glass)] mx-2" />
 
             <button
-              onClick={onStartQuiz}
+              onClick={handleStartQuizWithAward}
               className="hidden lg:flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300 shrink-0"
             >
               <Zap size={14} />
               <span>{t('Take Quiz')}</span>
+            </button>
+
+            <div className="hidden lg:block w-px h-6 bg-[var(--border-glass)] mx-2" />
+
+            <button
+              onClick={() => setCertificateOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] border border-[var(--border-glass)] hover:bg-white/5 transition-all duration-300 shrink-0 group"
+              title={certificateIssued ? 'View your certificate' : 'Earn your certificate'}
+            >
+              <AwardBadge tier={earnedTier} size="sm" />
+              <span className="text-[var(--text-primary)]">
+                {certificateIssued ? 'Certificate' : 'Earn Certificate'}
+              </span>
+              <Printer size={12} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" />
             </button>
           </nav>
         </div>
@@ -274,7 +416,47 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
                   <div className="relative pl-4 sm:pl-8">
                     <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/10 to-transparent" />
                     <div className="prose prose-sm sm:prose-invert max-w-none prose-headings:uppercase prose-headings:tracking-tighter prose-headings:font-display">
-                      <ReactMarkdown>{theoryContent}</ReactMarkdown>
+                      <ReactMarkdown
+                        components={{
+                          code({ inline, className, children, ...props }: any) {
+                            const text = String(children ?? '');
+                            if (mathMode) {
+                              if (isWordFraction(text)) {
+                                const expr = wordFractionToLatex(text);
+                                try {
+                                  if (inline) return <InlineMath math={expr} />;
+                                  return <BlockMath math={expr} />;
+                                } catch {
+                                  return <code className={className} {...props}>{children}</code>;
+                                }
+                              }
+                              if (isWordEquation(text)) {
+                                const expr = wordEquationToLatex(text);
+                                try {
+                                  if (inline) return <InlineMath math={expr} />;
+                                  return <BlockMath math={expr} />;
+                                } catch {
+                                  return <code className={className} {...props}>{children}</code>;
+                                }
+                              }
+                              if (isLikelyMath(text)) {
+                                const expr = stripMathDelimiters(text);
+                                try {
+                                  if (inline) {
+                                    return <InlineMath math={expr} />;
+                                  }
+                                  return <BlockMath math={expr} />;
+                                } catch {
+                                  return <code className={className} {...props}>{children}</code>;
+                                }
+                              }
+                            }
+                            return <code className={className} {...props}>{children}</code>;
+                          },
+                        }}
+                      >
+                        {theoryContent}
+                      </ReactMarkdown>
                     </div>
                     {whyItMattersItems && (
                       <div className="mt-8">
@@ -416,6 +598,18 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
           />
         )}
       </AnimatePresence>
+
+      <CertificateModal
+        open={certificateOpen}
+        onClose={() => setCertificateOpen(false)}
+        topicId={String(topic.id)}
+        topicName={t(topic.name)}
+        subjectName={(() => {
+          const parent = SUBJECTS.find((s) => s.topics?.some((tt) => String(tt.id) === String(topic.id)));
+          return parent ? t(parent.name) : 'Science';
+        })()}
+        studentName={user ? `${user.first_name} ${user.last_name}`.trim() || user.username : 'Student'}
+      />
     </div>
   );
 };
