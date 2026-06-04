@@ -270,8 +270,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
         endpoint = `${API_URL}/glossary/terms/${id}/`;
       } else if (activeTab === 'feedback') {
         const item = feedbacks.find(f => f.id === id);
-        const fullName = item ? (item.first_name || item.last_name ? `${item.first_name} ${item.last_name}` : item.username) : id;
-        name = `Feedback from ${fullName}`;
+        name = `Feedback #${id}`;
         endpoint = `${API_URL}/feedback/${id}/`;
       }
       
@@ -935,7 +934,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                     </td>
                     <td className="p-6">
                       <div className="font-bold text-lg text-[var(--text-primary)]">
-                        {item.first_name || item.last_name ? `${item.first_name} ${item.last_name}` : item.username}
+                        Anonymous
                       </div>
                       <div className="text-[10px] text-indigo-500 font-mono uppercase font-black opacity-70">{item.user_role}</div>
                       <div className="text-[10px] text-[var(--text-muted)] font-mono mt-1 italic">{new Date(item.created_at).toLocaleString()}</div>
@@ -954,8 +953,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onDataUpdate })
                     <td className="p-6">
                       <div className="flex gap-2">
                         <button onClick={() => {
-                          const fullName = item.first_name || item.last_name ? `${item.first_name} ${item.last_name}` : item.username;
-                          startDelete(item.id, `Feedback from ${fullName}`);
+                          startDelete(item.id, `Feedback #${item.id}`);
                         }} className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white transition-all border border-red-500/20 shadow-sm"><Trash2 size={16} /></button>
                       </div>
                     </td>

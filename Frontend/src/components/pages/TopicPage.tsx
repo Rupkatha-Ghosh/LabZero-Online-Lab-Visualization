@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import ResourceUpload from '../shared/ResourceUpload';
 import ResourceViewer from '../shared/ResourceViewer';
 import Classroom from '../shared/Classroom';
+import WhyItMatters from '../shared/WhyItMatters';
 import { getResourcesByTopic, deleteResource } from '../../services/resourceService';
 import { classroomsService } from '../../services/classroomsService';
 import { motion, AnimatePresence } from 'motion/react';
@@ -156,6 +157,9 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
     ...resources.map((resource) => ({ ...resource, canDelete: true })),
   ].sort((a, b) => b.timestamp - a.timestamp);
 
+  const translatedTheory = t(topic.theory.trim());
+  const { theoryContent, whyItMattersItems } = parseWhyItMattersItems(topic.theory, translatedTheory);
+
   return (
     <div className="flex flex-col h-full bg-[var(--bg-deep)] grainy">
       {/* Topic Header */}
@@ -270,8 +274,13 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
                   <div className="relative pl-4 sm:pl-8">
                     <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/10 to-transparent" />
                     <div className="prose prose-sm sm:prose-invert max-w-none prose-headings:uppercase prose-headings:tracking-tighter prose-headings:font-display">
-                      <ReactMarkdown>{t(topic.theory.trim())}</ReactMarkdown>
+                      <ReactMarkdown>{theoryContent}</ReactMarkdown>
                     </div>
+                    {whyItMattersItems && (
+                      <div className="mt-8">
+                        <WhyItMatters items={whyItMattersItems} theme="dark" />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -409,6 +418,119 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
       </AnimatePresence>
     </div>
   );
+};
+
+const getEmojiForEnglishTitle = (title: string): string => {
+  const t = title.toLowerCase();
+  if (t.includes('sport') || t.includes('athlete')) return '🏃';
+  if (t.includes('space') || t.includes('orbit') || t.includes('planet')) return '🚀';
+  if (t.includes('safety') || t.includes('crumple') || t.includes('collision')) return '🛡️';
+  if (t.includes('grid') || t.includes('power') || t.includes('electric')) return '⚡';
+  if (t.includes('imaging') || t.includes('mri') || t.includes('medical')) return '🏥';
+  if (t.includes('transport') || t.includes('vehicle') || t.includes('motor')) return '🚗';
+  if (t.includes('screen') || t.includes('glare') || t.includes('reflection')) return '📱';
+  if (t.includes('banknote') || t.includes('security') || t.includes('counterfeit')) return '🔒';
+  if (t.includes('cinema') || t.includes('3d') || t.includes('polarized')) return '🎬';
+  if (t.includes('weather') || t.includes('wind') || t.includes('ocean')) return '🌍';
+  if (t.includes('refriger') || t.includes('preserv') || t.includes('food')) return '❄️';
+  if (t.includes('conversion') || t.includes('cycle') || t.includes('power plant')) return '🔄';
+  if (t.includes('communication') || t.includes('fiber') || t.includes('network')) return '🌐';
+  if (t.includes('lenses') || t.includes('glasses') || t.includes('microscope')) return '👓';
+  if (t.includes('optics') || t.includes('rainbow') || t.includes('sunlight')) return '🌈';
+  if (t.includes('drug') || t.includes('insulin') || t.includes('medicine')) return '💊';
+  if (t.includes('food') || t.includes('ferment') || t.includes('yeast')) return '🍞';
+  if (t.includes('cleanup') || t.includes('microbe') || t.includes('oil')) return '🌱';
+  if (t.includes('therapeutic') || t.includes('cancer')) return '🎯';
+  if (t.includes('engineer') || t.includes('stem cell') || t.includes('cloning')) return '🧬';
+  if (t.includes('vaccine') || t.includes('mrna') || t.includes('membrane')) return '💉';
+  if (t.includes('agriculture') || t.includes('crop') || t.includes('drought')) return '🌾';
+  if (t.includes('hereditary') || t.includes('inherited') || t.includes('predict')) return '🩺';
+  if (t.includes('forensic') || t.includes('profile') || t.includes('dna')) return '🔍';
+  if (t.includes('humidify') || t.includes('transpiration') || t.includes('water')) return '🌧️';
+  if (t.includes('sequestration') || t.includes('absorb') || t.includes('carbon')) return '🌳';
+  if (t.includes('fertility') || t.includes('reproduct') || t.includes('baby')) return '👶';
+  if (t.includes('prenatal') || t.includes('fetal') || t.includes('embryo')) return '🤰';
+  if (t.includes('endocrine') || t.includes('hormone') || t.includes('thyroid')) return '🩸';
+  // Math-specific WIM keywords
+  if (t.includes('rocket') || t.includes('spacecraft') || t.includes('trajectory')) return '🚀';
+  if (t.includes('machine learning') || t.includes('neural') || t.includes('gradient')) return '🤖';
+  if (t.includes('financial') || t.includes('options') || t.includes('risk')) return '📈';
+  if (t.includes('gps') || t.includes('navigation') || t.includes('satellite')) return '🛰️';
+  if (t.includes('audio') || t.includes('signal') || t.includes('sound wave')) return '🎵';
+  if (t.includes('game') || t.includes('gaming') || t.includes('robotic')) return '🎮';
+  if (t.includes('computer vision') || t.includes('image recognition') || t.includes('vision')) return '👁️';
+  if (t.includes('search engine') || t.includes('pagerank') || t.includes('eigenvector')) return '🔎';
+  if (t.includes('quantum') || t.includes('hilbert') || t.includes('qubit')) return '⚛️';
+  if (t.includes('seismology') || t.includes('earthquake') || t.includes('seismic')) return '🌋';
+  if (t.includes('oceanography') || t.includes('tide') || t.includes('coastal')) return '🌊';
+  if (t.includes('construction') || t.includes('bridge') || t.includes('architecture')) return '🏗️';
+  if (t.includes('cosmology') || t.includes('universe') || t.includes('black hole')) return '🌌';
+  if (t.includes('data')) return '📊';
+  return '💡';
+};
+
+const parseWhyItMattersItems = (englishTheory: string, translatedTheory: string) => {
+  const englishWimRegex = /##\s*Why It Matters/i;
+  const englishMatch = englishTheory.match(englishWimRegex);
+  const englishEmojis: string[] = [];
+  
+  if (englishMatch) {
+    const englishIndex = englishMatch.index!;
+    const englishWimSection = englishTheory.substring(englishIndex + englishMatch[0].length).trim();
+    const englishLines = englishWimSection.split('\n');
+    for (let line of englishLines) {
+      line = line.trim();
+      if (line.startsWith('-') || line.startsWith('*')) {
+        const content = line.substring(1).trim();
+        const itemMatch = content.match(/\*\*(.*?)\*\*:(.*)/);
+        if (itemMatch) {
+          const title = itemMatch[1].trim();
+          englishEmojis.push(getEmojiForEnglishTitle(title));
+        }
+      }
+    }
+  }
+  
+  const wimHeaderRegex = /##\s*(Why It Matters|কেন এটি গুরুত্বপূর্ণ|यह क्यों महत्वपूर्ण है)/i;
+  const translatedMatch = translatedTheory.match(wimHeaderRegex);
+  
+  if (!translatedMatch) {
+    return {
+      theoryContent: translatedTheory,
+      whyItMattersItems: null
+    };
+  }
+  
+  const index = translatedMatch.index!;
+  const headerText = translatedMatch[0];
+  const theoryContent = translatedTheory.substring(0, index).trim();
+  const wimSection = translatedTheory.substring(index + headerText.length).trim();
+  
+  const items: { icon: string; title: string; description: string }[] = [];
+  const lines = wimSection.split('\n');
+  let itemIndex = 0;
+  for (let line of lines) {
+    line = line.trim();
+    if (line.startsWith('-') || line.startsWith('*')) {
+      const content = line.substring(1).trim();
+      const itemMatch = content.match(/\*\*(.*?)\*\*:(.*)/);
+      if (itemMatch) {
+        const title = itemMatch[1].trim();
+        const description = itemMatch[2].trim();
+        items.push({
+          icon: englishEmojis[itemIndex] || '💡',
+          title,
+          description
+        });
+        itemIndex++;
+      }
+    }
+  }
+  
+  return {
+    theoryContent,
+    whyItMattersItems: items.length > 0 ? items : null
+  };
 };
 
 export default TopicPage;

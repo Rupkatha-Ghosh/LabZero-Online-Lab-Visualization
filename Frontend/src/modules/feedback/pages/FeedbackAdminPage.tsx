@@ -1,4 +1,4 @@
-import { AlertCircle, ArrowLeft, BarChart3, FilePlus2, LayoutDashboard, Loader2, MessageSquareText, PieChart as PieChartIcon, RefreshCw, Star, Users } from 'lucide-react';
+import { AlertCircle, ArrowLeft, BarChart3, FileDown, FilePlus2, LayoutDashboard, LineChart, Loader2, MessageSquareText, PieChart as PieChartIcon, RefreshCw, ScanText, Star, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Bar,
@@ -14,6 +14,7 @@ import { useAuth } from '../../../context/AuthContext';
 import AdminFilterBar from '../components/admin/AdminFilterBar';
 import AdminFormsTable from '../components/admin/AdminFormsTable';
 import FeedbackFormBuilderModal from '../components/admin/FeedbackFormBuilderModal';
+import FeedbackFormPdfGenerator from '../components/FeedbackFormPdfGenerator';
 import PieDonutChart from '../components/analytics/PieDonutChart';
 import FeedbackPageShell from '../components/common/FeedbackPageShell';
 import FeedbackSkeleton from '../components/common/FeedbackSkeleton';
@@ -34,9 +35,11 @@ import {
 
 interface FeedbackAdminPageProps {
   onBack?: () => void;
+  onOpenAnalytics?: (formId: string) => void;
+  onOpenTextAnalysis?: (formId: string) => void;
 }
 
-const FeedbackAdminPage = ({ onBack }: FeedbackAdminPageProps) => {
+const FeedbackAdminPage = ({ onBack, onOpenAnalytics, onOpenTextAnalysis }: FeedbackAdminPageProps) => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [query, setQuery] = useState<FeedbackAdminListQuery>({
     page: 1,
@@ -145,6 +148,37 @@ const FeedbackAdminPage = ({ onBack }: FeedbackAdminPageProps) => {
                   Back
                 </button>
               )}
+              <FeedbackFormPdfGenerator />
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenAnalytics) {
+                    onOpenAnalytics('site-feedback');
+                  } else {
+                    window.location.href = '?analyticsFormId=site-feedback';
+                  }
+                }}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                title="View per-question analytics for site feedback (30 responses, 21 questions)"
+              >
+                <LineChart size={16} />
+                Per-Question Analytics
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenTextAnalysis) {
+                    onOpenTextAnalysis('site-feedback');
+                  } else {
+                    window.location.href = '?textAnalysisFormId=site-feedback';
+                  }
+                }}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                title="View text analysis (keywords, word cloud, sentiment) for site feedback"
+              >
+                <ScanText size={16} />
+                Text Analysis
+              </button>
               <button
                 type="button"
                 onClick={openCreate}
@@ -174,6 +208,7 @@ const FeedbackAdminPage = ({ onBack }: FeedbackAdminPageProps) => {
           isLoading={overviewLoading}
           error={overviewError}
           onRefresh={loadOverview}
+          onOpenAnalytics={onOpenAnalytics}
         />
 
         <section className="grid gap-4 md:grid-cols-3">
@@ -217,7 +252,11 @@ const FeedbackAdminPage = ({ onBack }: FeedbackAdminPageProps) => {
           }}
           onStatusChange={(form, status) => void admin.updateStatus(form, status).then(loadOverview)}
           onViewAnalytics={(form) => {
-            window.location.href = `?analyticsFormId=${form._id}`;
+            if (onOpenAnalytics) {
+              onOpenAnalytics(form._id);
+            } else {
+              window.location.href = `?analyticsFormId=${form._id}`;
+            }
           }}
         />
       </div>
@@ -329,16 +368,84 @@ const getChoiceCountsByType = (
   return countsByType;
 };
 
+const siteFeedbackFormMock: FeedbackForm = {
+  _id: 'site-feedback',
+  title: 'Site feedback',
+  description: 'Feedback submitted from the LabZero feedback page.',
+  anonymousAllowed: false,
+  status: 'published',
+  sections: [
+    {
+      title: 'Written Feedback',
+      questionIds: ['sf-text-1', 'sf-text-2', 'sf-text-3', 'sf-text-4', 'sf-text-5'],
+      order: 0,
+      questions: [
+        { _id: 'sf-text-1', prompt: 'Which laboratory simulation or interactive visualization helped you understand a concept best, and why?', type: 'text', required: true, order: 0, sectionTitle: 'Written Feedback' },
+        { _id: 'sf-text-2', prompt: 'What technical issues did you face while running or interacting with the 3D/graphical lab visualizations?', type: 'text', required: true, order: 1, sectionTitle: 'Written Feedback' },
+        { _id: 'sf-text-3', prompt: 'How interactive and collaborative was your experience during live virtual lab sessions?', type: 'text', required: true, order: 2, sectionTitle: 'Written Feedback' },
+        { _id: 'sf-text-4', prompt: 'What improvements would you suggest for better learning?', type: 'text', required: true, order: 3, sectionTitle: 'Written Feedback' },
+        { _id: 'sf-text-5', prompt: 'Any additional comments regarding student experience?', type: 'text', required: true, order: 4, sectionTitle: 'Written Feedback' },
+      ]
+    },
+    {
+      title: 'Ratings',
+      questionIds: ['sf-rating-1', 'sf-rating-2', 'sf-rating-3', 'sf-rating-4', 'sf-rating-5'],
+      order: 1,
+      questions: [
+        { _id: 'sf-rating-1', prompt: 'Rate the overall usability of LabZero.', type: 'rating', required: true, order: 0, sectionTitle: 'Ratings' },
+        { _id: 'sf-rating-2', prompt: 'Rate the quality of classroom interaction.', type: 'rating', required: true, order: 1, sectionTitle: 'Ratings' },
+        { _id: 'sf-rating-3', prompt: 'Rate the ease of accessing study resources and lecture notes.', type: 'rating', required: true, order: 2, sectionTitle: 'Ratings' },
+        { _id: 'sf-rating-4', prompt: 'Rate the responsiveness and interactive control smoothness of the lab simulations.', type: 'rating', required: true, order: 3, sectionTitle: 'Ratings' },
+        { _id: 'sf-rating-5', prompt: 'Rate how well the virtual lab simulation matched your real-world lab expectations.', type: 'rating', required: true, order: 4, sectionTitle: 'Ratings' },
+      ]
+    },
+    {
+      title: 'Feature Usage and Improvements',
+      questionIds: ['sf-checkbox-1', 'sf-checkbox-2', 'sf-checkbox-3'],
+      order: 2,
+      questions: [
+        { _id: 'sf-checkbox-1', prompt: 'Which features do you use regularly?', type: 'checkbox', required: true, order: 0, sectionTitle: 'Feature Usage and Improvements' },
+        { _id: 'sf-checkbox-2', prompt: 'What improvements would you like?', type: 'checkbox', required: true, order: 1, sectionTitle: 'Feature Usage and Improvements' },
+        { _id: 'sf-checkbox-3', prompt: 'Which devices do you use for LabZero?', type: 'checkbox', required: true, order: 2, sectionTitle: 'Feature Usage and Improvements' },
+      ]
+    },
+    {
+      title: 'Usage and Satisfaction',
+      questionIds: ['sf-radio-1', 'sf-radio-2', 'sf-radio-3'],
+      order: 3,
+      questions: [
+        { _id: 'sf-radio-1', prompt: 'What is your initial impression of the LabZero onboarding tour?', type: 'radio', required: true, order: 0, sectionTitle: 'Usage and Satisfaction' },
+        { _id: 'sf-radio-2', prompt: 'Overall satisfaction with the platform?', type: 'radio', required: true, order: 1, sectionTitle: 'Usage and Satisfaction' },
+        { _id: 'sf-radio-3', prompt: 'How easily can you follow laboratory procedures using the platform?', type: 'radio', required: true, order: 2, sectionTitle: 'Usage and Satisfaction' },
+      ]
+    },
+    {
+      title: 'Academic and Access Details',
+      questionIds: ['sf-dropdown-1', 'sf-dropdown-2', 'sf-dropdown-3', 'sf-dropdown-4', 'sf-dropdown-5'],
+      order: 4,
+      questions: [
+        { _id: 'sf-dropdown-1', prompt: 'Select your department.', type: 'dropdown', required: true, order: 0, sectionTitle: 'Academic and Access Details' },
+        { _id: 'sf-dropdown-2', prompt: 'Select your year/semester.', type: 'dropdown', required: true, order: 1, sectionTitle: 'Academic and Access Details' },
+        { _id: 'sf-dropdown-3', prompt: 'Select your student level / institution type.', type: 'dropdown', required: true, order: 2, sectionTitle: 'Academic and Access Details' },
+        { _id: 'sf-dropdown-4', prompt: 'Select your internet connectivity quality.', type: 'dropdown', required: true, order: 3, sectionTitle: 'Academic and Access Details' },
+        { _id: 'sf-dropdown-5', prompt: 'Select how easily you were able to navigate to the lab visualization page.', type: 'dropdown', required: true, order: 4, sectionTitle: 'Academic and Access Details' },
+      ]
+    }
+  ]
+};
+
 const FeedbackOverview = ({
   overview,
   isLoading,
   error,
   onRefresh,
+  onOpenAnalytics,
 }: {
   overview: FeedbackAdminOverview | null;
   isLoading: boolean;
   error: string | null;
   onRefresh: () => void;
+  onOpenAnalytics?: (formId: string) => void;
 }) => {
   const choiceCountsByType = overview
     ? getChoiceCountsByType(overview)
@@ -411,14 +518,7 @@ const FeedbackOverview = ({
             <div className="grid gap-4">
               {overview.overall.siteFeedback.analytics && (
                 <FormOverviewCard
-                  form={{
-                    _id: 'site-feedback',
-                    title: 'Site feedback',
-                    description: 'Feedback submitted from the LabZero feedback page.',
-                    anonymousAllowed: false,
-                    sections: [],
-                    status: 'published',
-                  }}
+                  form={siteFeedbackFormMock}
                   analytics={overview.overall.siteFeedback.analytics}
                   textAnalysis={
                     overview.overall.siteFeedback.textAnalysis ??
@@ -435,6 +535,13 @@ const FeedbackOverview = ({
                       },
                     }
                   }
+                  onViewAnalytics={(form) => {
+                    if (onOpenAnalytics) {
+                      onOpenAnalytics(form._id);
+                    } else {
+                      window.location.href = `?analyticsFormId=${form._id}`;
+                    }
+                  }}
                 />
               )}
               {overview.forms.map((item) => (
@@ -443,6 +550,13 @@ const FeedbackOverview = ({
                   form={item.form}
                   analytics={item.analytics}
                   textAnalysis={item.textAnalysis}
+                  onViewAnalytics={(form) => {
+                    if (onOpenAnalytics) {
+                      onOpenAnalytics(form._id);
+                    } else {
+                      window.location.href = `?analyticsFormId=${form._id}`;
+                    }
+                  }}
                 />
               ))}
             </div>
@@ -517,10 +631,12 @@ const FormOverviewCard = ({
   form,
   analytics,
   textAnalysis,
+  onViewAnalytics,
 }: {
   form: FeedbackForm;
   analytics: FeedbackAnalytics;
   textAnalysis: Omit<TextFeedbackAnalysis, 'formId' | 'questions' | 'generatedAt'>;
+  onViewAnalytics?: (form: FeedbackForm) => void;
 }) => {
   const ratingStats = analytics.questionStats.filter((question) => question.type === 'rating');
   const ratingDistribution = ratingStats.reduce<Record<string, number>>((distribution, question) => {
@@ -538,11 +654,23 @@ const FormOverviewCard = ({
 
   return (
     <article className="rounded-2xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur sm:p-6">
-      <div className="mb-4">
-        <h4 className="text-lg font-bold text-slate-950">{form.title}</h4>
-        <p className="mt-1 text-sm text-slate-500">
-          {analytics.totalResponses} responses · {analytics.questionStats.length} questions
-        </p>
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h4 className="text-lg font-bold text-slate-950">{form.title}</h4>
+          <p className="mt-1 text-sm text-slate-500">
+            {analytics.totalResponses} responses · {form.sections.reduce((acc, sec) => acc + sec.questions.length, 0) || analytics.questionStats.length} questions
+          </p>
+        </div>
+        {onViewAnalytics && (
+          <button
+            type="button"
+            onClick={() => onViewAnalytics(form)}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 text-xs font-semibold text-white transition hover:bg-slate-800"
+          >
+            <BarChart3 size={14} />
+            View Question Analytics
+          </button>
+        )}
       </div>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <MiniPanel title="Rating">
@@ -604,9 +732,7 @@ const ResponseAnalysisList = ({
                   ? new Date(response.submittedAt).toLocaleString()
                   : 'Submission time unavailable'}
                 {' · '}
-                {response.anonymous
-                  ? 'Anonymous'
-                  : response.userDetails?.name || response.userDetails?.email || 'Identified'}
+                {response.anonymous ? 'Anonymous' : 'Identified'}
               </span>
             </span>
             <span className="grid grid-cols-3 gap-2 text-center text-xs sm:min-w-72">

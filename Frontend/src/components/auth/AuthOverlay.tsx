@@ -14,6 +14,7 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [instituteName, setInstituteName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,16 +43,24 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
         await login(email, password);
         setSuccess("Success! Identity verified.");
       } else {
-        if (!firstName || !lastName || !username || !email || !password) {
-          setError('Please fill in every required field.');
-          return;
-        }
         if (!role) {
           setError('Please select an account type');
           setIsSubmitting(false);
           return;
         }
-        await signup(firstName, lastName, username, email, password, role);
+        if (role === 'institute') {
+          if (!instituteName || !username || !email || !password) {
+            setError('Please fill in every required field.');
+            return;
+          }
+          await signup(instituteName, '', username, email, password, 'institute');
+        } else {
+          if (!firstName || !lastName || !username || !email || !password) {
+            setError('Please fill in every required field.');
+            return;
+          }
+          await signup(firstName, lastName, username, email, password, role);
+        }
         setSuccess("Welcome! Account created.");
       }
     } catch (err: any) {
@@ -83,10 +92,6 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
             <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
               <X size={24} />
             </button>
-          </div>
-
-          <div className="mb-6 text-red-600 dark:text-red-400 text-xs font-mono uppercase tracking-wider text-center leading-normal font-semibold">
-            Account creation is being stopped for the time being until the feedback is being collected. Use college mail ID and sign in with Google to login.
           </div>
 
           {(error || authError) && (
@@ -218,7 +223,7 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
                         {[
                           { id: 'student', label: 'Student', desc: 'Interact w/ simulations & tutor', icon: GraduationCap, disabled: false },
                           { id: 'teacher', label: 'Teacher', desc: 'Access classroom & resources', icon: School, disabled: false },
-                          { id: 'institute', label: 'Institute', desc: 'Disabled for now. Accessed by admin for now.', icon: Building2, disabled: true },
+                          { id: 'institute', label: 'Institute', desc: 'Oversee multiple classes and faculty', icon: Building2, disabled: false },
                         ].map((r) => (
                           <button
                             key={r.id}
@@ -266,6 +271,121 @@ const AuthOverlay: React.FC<AuthOverlayProps> = ({ onClose }) => {
                         <p className="text-[9px] font-mono text-rose-400/80 uppercase tracking-widest text-center mt-2">↓ Select an access level above to continue</p>
                       )}
                     </div>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 h-px bg-white/10" />
+                      <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">or</span>
+                      <div className="flex-1 h-px bg-white/10" />
+                    </div>
+
+                    {/* Standard Signup Form Fields */}
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      {role === 'institute' ? (
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">
+                            Institute Name
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={instituteName}
+                            onChange={(e) => setInstituteName(e.target.value)}
+                            placeholder="Institute name..."
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light"
+                          />
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">
+                              First Name
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={firstName}
+                              onChange={(e) => setFirstName(e.target.value)}
+                              placeholder="First name..."
+                              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">
+                              Last Name
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={lastName}
+                              onChange={(e) => setLastName(e.target.value)}
+                              placeholder="Last name..."
+                              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">
+                          Username
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          placeholder="Choose a username..."
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="Enter your email..."
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest pl-2">
+                          Password
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Choose a password..."
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-primary/50 transition-all font-light"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || !role}
+                        className="w-full h-16 rounded-2xl bg-primary text-white font-mono uppercase tracking-[.2em] hover:bg-primary/80 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            <span>Creating Account...</span>
+                          </div>
+                        ) : (
+                          <>
+                            Sign Up
+                            <ArrowRight size={18} />
+                          </>
+                        )}
+                      </button>
+                    </form>
                   </div>
                 )}
               </motion.div>

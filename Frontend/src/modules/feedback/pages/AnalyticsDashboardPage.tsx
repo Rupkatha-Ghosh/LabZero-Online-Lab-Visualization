@@ -5,6 +5,7 @@ import {
   Loader2,
   Percent,
   RefreshCw,
+  ScanText,
   Star,
   Users,
 } from 'lucide-react';
@@ -13,6 +14,13 @@ import FeedbackPageShell from '../components/common/FeedbackPageShell';
 import FeedbackSkeleton from '../components/common/FeedbackSkeleton';
 import FilterPanel from '../components/analytics/FilterPanel';
 import StatisticsCard from '../components/analytics/StatisticsCard';
+import {
+  FeedbackAnalyticsPdfButton,
+  buildChoiceSection,
+  buildRatingSection,
+  buildSummaryMetrics,
+  type PdfSection,
+} from '../components/FeedbackAnalyticsPdfButton';
 import { useFeedbackAnalytics } from '../hooks/useFeedbackAnalytics';
 import {
   FeedbackAnalyticsFilters,
@@ -25,11 +33,16 @@ const AnalyticsCharts = lazy(
   () => import('../components/analytics/AnalyticsCharts')
 );
 
+const QuestionAnalyticsSection = lazy(
+  () => import('../components/admin/QuestionAnalyticsSection')
+);
+
 interface AnalyticsDashboardPageProps {
   formId?: string;
   classroomOptions?: FeedbackFilterOption[];
   teacherOptions?: FeedbackFilterOption[];
   departmentOptions?: FeedbackFilterOption[];
+  onOpenTextAnalysis?: (formId: string) => void;
 }
 
 const getFormIdFromUrl = () => {
@@ -44,6 +57,7 @@ const AnalyticsDashboardPage = ({
   classroomOptions,
   teacherOptions,
   departmentOptions,
+  onOpenTextAnalysis,
 }: AnalyticsDashboardPageProps) => {
   const resolvedFormId = formId || getFormIdFromUrl();
   const [filters, setFilters] =
@@ -64,6 +78,88 @@ const AnalyticsDashboardPage = ({
 
     return department ? [{ label: department, value: department }] : [];
   }, [departmentOptions, viewModel?.form]);
+
+  const pdfSections = useMemo<PdfSection[]>(() => {
+    if (!viewModel) return [];
+    const studentCount = viewModel.summary.studentResponses ?? 0;
+    const teacherCount = viewModel.summary.teacherResponses ?? 0;
+    const sections: PdfSection[] = [
+      {
+        title: 'Overview',
+        subtitle: viewModel.form?.title ?? 'Feedback analytics summary',
+        content: buildSummaryMetrics([
+          {
+            label: 'Total responses',
+            value: viewModel.summary.totalResponses,
+            detail: `${studentCount} student · ${teacherCount} teacher`,
+          },
+          {
+            label: 'Average rating',
+            value: viewModel.summary.averageRating.toFixed(2),
+            detail: 'Mean across rating questions',
+          },
+          {
+            label: 'Satisfaction',
+            value: `${viewModel.summary.satisfactionPercentage}%`,
+            detail: 'Based on five-point rating scale',
+          },
+          {
+            label: 'Questions',
+            value: viewModel.questionStats.length,
+            detail: 'Included in current analytics view',
+          },
+        ]),
+      },
+    ];
+
+    const orderedGroups = ['Student Feedback', 'Teacher Feedback'];
+    const groupsInData = new Set(
+      viewModel.questionStats
+        .map((q) => q.group)
+        .filter((g): g is string => Boolean(g)),
+    );
+    const groups = orderedGroups.filter((g) => groupsInData.has(g));
+    for (const g of groupsInData) {
+      if (!groups.includes(g)) groups.push(g);
+    }
+    const groupOrder = groups.length ? groups : [''];
+
+    for (const groupLabel of groupOrder) {
+      const groupQuestions = groupLabel
+        ? viewModel.questionStats.filter((q) => q.group === groupLabel)
+        : viewModel.questionStats;
+
+      const ratingQuestions = groupQuestions.filter((q) => q.type === 'rating');
+      ratingQuestions.forEach((q) => {
+        sections.push({
+          title: q.prompt ?? 'Rating question',
+          subtitle: groupLabel
+            ? `${groupLabel} · Rating question · 1 to 5 star distribution`
+            : 'Rating question · 1 to 5 star distribution',
+          content: buildRatingSection([q]),
+          chartId: `chart-rating-${q.questionId}`,
+          chartCaption: q.prompt ?? 'Rating chart',
+        });
+      });
+
+      const choiceQuestions = groupQuestions.filter(
+        (q) => q.type === 'checkbox' || q.type === 'radio' || q.type === 'dropdown',
+      );
+      choiceQuestions.forEach((q) => {
+        sections.push({
+          title: q.prompt ?? 'Choice question',
+          subtitle: groupLabel
+            ? `${groupLabel} · ${q.type} question · option distribution`
+            : `${q.type} question · option distribution`,
+          content: buildChoiceSection([q]),
+          chartId: `chart-choice-${q.questionId}`,
+          chartCaption: q.prompt ?? 'Choice chart',
+        });
+      });
+    }
+
+    return sections;
+  }, [viewModel]);
 
   return (
     <FeedbackPageShell tone="emerald">
@@ -96,6 +192,23 @@ const AnalyticsDashboardPage = ({
                 />
                 Refresh
               </button>
+              {resolvedFormId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onOpenTextAnalysis) {
+                      onOpenTextAnalysis(resolvedFormId);
+                    } else {
+                      window.location.href = `?textAnalysisFormId=${resolvedFormId}`;
+                    }
+                  }}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  title="View text analysis (keywords, word cloud, sentiment) for this form"
+                >
+                  <ScanText size={16} />
+                  Text Analysis
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => viewModel && exportAnalyticsCsv(viewModel)}
@@ -105,6 +218,13 @@ const AnalyticsDashboardPage = ({
                 <Download size={16} />
                 Export CSV
               </button>
+              {viewModel && (
+                <FeedbackAnalyticsPdfButton
+                  title={`LabZero - ${viewModel.form?.title ?? 'Feedback Analytics'}`}
+                  sections={pdfSections}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                />
+              )}
             </div>
           </div>
         </header>
@@ -142,7 +262,7 @@ const AnalyticsDashboardPage = ({
               <StatisticsCard
                 label="Responses"
                 value={viewModel.summary.totalResponses}
-                detail={`${viewModel.summary.anonymousResponses} anonymous responses`}
+                detail={`${viewModel.summary.studentResponses ?? 0} student · ${viewModel.summary.teacherResponses ?? 0} teacher`}
                 icon={Users}
                 tone="cyan"
               />
@@ -169,9 +289,18 @@ const AnalyticsDashboardPage = ({
               />
             </section>
 
-            <Suspense fallback={<ChartsLoading />}>
-              <AnalyticsCharts questionStats={viewModel.questionStats} />
-            </Suspense>
+            {viewModel.form ? (
+              <Suspense fallback={<ChartsLoading />}>
+                <QuestionAnalyticsSection
+                  form={viewModel.form}
+                  analytics={viewModel.analytics}
+                />
+              </Suspense>
+            ) : (
+              <Suspense fallback={<ChartsLoading />}>
+                <AnalyticsCharts questionStats={viewModel.questionStats} />
+              </Suspense>
+            )}
 
             <IndividualResponses responses={viewModel.analytics.responses ?? []} />
           </>
@@ -255,9 +384,7 @@ const IndividualResponses = ({
                     ? new Date(response.submittedAt).toLocaleString()
                     : 'Submission time unavailable'}
                   {' · '}
-                  {response.anonymous
-                    ? 'Anonymous'
-                    : response.userDetails?.name || response.userDetails?.email || 'Identified'}
+                  {response.anonymous ? 'Anonymous' : 'Identified'}
                 </span>
               </span>
               <span className="grid grid-cols-3 gap-2 text-center text-xs sm:min-w-72">

@@ -1,9 +1,19 @@
 import { AlertCircle, Loader2, MessageSquareText, RefreshCw } from 'lucide-react';
+import { useMemo } from 'react';
 import FeedbackPageShell from '../components/common/FeedbackPageShell';
 import KeywordFrequencyChart from '../components/text-analysis/KeywordFrequencyChart';
 import SentimentSummary from '../components/text-analysis/SentimentSummary';
 import WordCloud from '../components/text-analysis/WordCloud';
 import { useTextFeedbackAnalysis } from '../hooks/useTextFeedbackAnalysis';
+import {
+  FeedbackAnalyticsPdfButton,
+  buildKeywordsBlock,
+  buildSentimentBlock,
+  buildSummaryMetrics,
+  buildTextQuestionBlock,
+  buildWordCloudBlock,
+  type PdfSection,
+} from '../components/FeedbackAnalyticsPdfButton';
 
 interface TextFeedbackAnalysisPageProps {
   formId?: string;
@@ -18,6 +28,88 @@ const TextFeedbackAnalysisPage = ({ formId }: TextFeedbackAnalysisPageProps) => 
   const resolvedFormId = formId || getFormIdFromUrl();
   const { analysis, isLoading, error, reload } =
     useTextFeedbackAnalysis(resolvedFormId);
+
+  const pdfSections = useMemo<PdfSection[]>(() => {
+    if (!analysis) return [];
+    const studentCount = analysis.studentTextResponses ?? 0;
+    const teacherCount = analysis.teacherTextResponses ?? 0;
+    const sections: PdfSection[] = [
+      {
+        title: 'Overview',
+        subtitle: 'Summary of open-ended student and teacher feedback',
+        content: buildSummaryMetrics([
+          { label: 'Text responses', value: analysis.totalTextResponses, detail: `${studentCount} student · ${teacherCount} teacher` },
+          { label: 'Keywords', value: analysis.keywords.length, detail: 'Ranked by frequency score' },
+          { label: 'Avg sentiment', value: analysis.sentiment.averageScore.toFixed(2), detail: 'Positive minus negative signal' },
+        ]),
+      },
+      {
+        title: 'Sentiment Summary',
+        subtitle: `${analysis.totalTextResponses} text responses analyzed`,
+        content: buildSentimentBlock(analysis.sentiment, analysis.totalTextResponses),
+      },
+      {
+        title: 'Top Keywords',
+        subtitle: 'Most frequent terms across all text feedback',
+        content: buildKeywordsBlock(analysis.keywords),
+        chartId: 'chart-text-keywords',
+        chartCaption: 'Top keywords bar chart',
+      },
+      {
+        title: 'Frequently Used Words',
+        subtitle: 'Word cloud of the most common words',
+        content: buildWordCloudBlock(analysis.wordFrequencies),
+      },
+    ];
+    const orderedGroups = ['Student Feedback', 'Teacher Feedback'];
+    const seen = new Set<string>();
+    for (const q of analysis.questions) {
+      const g = q.group;
+      if (g && !seen.has(g)) seen.add(g);
+    }
+    const groups: string[] = [];
+    for (const g of orderedGroups) {
+      if (seen.has(g)) {
+        groups.push(g);
+        seen.delete(g);
+      }
+    }
+    for (const g of seen) groups.push(g);
+
+    if (groups.length) {
+      groups.forEach((groupLabel) => {
+        sections.push({
+          title: groupLabel,
+          subtitle: `${groupLabel} open-ended responses`,
+          content: buildSummaryMetrics([
+            { label: 'Questions', value: analysis.questions.filter((q) => q.group === groupLabel).length, detail: `From ${groupLabel.toLowerCase()}` },
+          ]),
+        });
+        analysis.questions
+          .filter((q) => q.group === groupLabel)
+          .forEach((question) => {
+            sections.push({
+              title: question.prompt,
+              subtitle: `${question.responseCount} text responses · ${question.sentiment.satisfactionPercentage}% positive`,
+              content: buildTextQuestionBlock(question),
+              chartId: `chart-text-keywords-${question.questionId}`,
+              chartCaption: 'Top keywords bar chart',
+            });
+          });
+      });
+    } else {
+      analysis.questions.forEach((question) => {
+        sections.push({
+          title: question.prompt,
+          subtitle: `${question.responseCount} text responses · ${question.sentiment.satisfactionPercentage}% positive`,
+          content: buildTextQuestionBlock(question),
+          chartId: `chart-text-keywords-${question.questionId}`,
+          chartCaption: 'Top keywords bar chart',
+        });
+      });
+    }
+    return sections;
+  }, [analysis]);
 
   return (
     <FeedbackPageShell tone="indigo">
@@ -36,18 +128,26 @@ const TextFeedbackAnalysisPage = ({ formId }: TextFeedbackAnalysisPageProps) => 
                 from open-ended classroom feedback.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={reload}
-              disabled={isLoading}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <RefreshCw
-                size={16}
-                className={isLoading ? 'animate-spin' : undefined}
-              />
-              Refresh
-            </button>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={reload}
+                disabled={isLoading}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <RefreshCw
+                  size={16}
+                  className={isLoading ? 'animate-spin' : undefined}
+                />
+                Refresh
+              </button>
+              {analysis && !isLoading && !error && (
+                <FeedbackAnalyticsPdfButton
+                  title="LabZero - Text Feedback Analysis"
+                  sections={pdfSections}
+                />
+              )}
+            </div>
           </div>
         </header>
 
@@ -75,7 +175,7 @@ const TextFeedbackAnalysisPage = ({ formId }: TextFeedbackAnalysisPageProps) => 
               <MetricCard
                 label="Text responses"
                 value={analysis.totalTextResponses}
-                detail="Open-ended answers analyzed"
+                detail={`${analysis.studentTextResponses ?? 0} student · ${analysis.teacherTextResponses ?? 0} teacher`}
               />
               <MetricCard
                 label="Keywords"
@@ -102,7 +202,10 @@ const TextFeedbackAnalysisPage = ({ formId }: TextFeedbackAnalysisPageProps) => 
                 title="Keyword Frequency"
                 subtitle="Top extracted terms"
               >
-                <KeywordFrequencyChart keywords={analysis.keywords} />
+                <KeywordFrequencyChart
+                  keywords={analysis.keywords}
+                  chartId="chart-text-keywords"
+                />
               </DashboardCard>
             </section>
 
@@ -111,11 +214,14 @@ const TextFeedbackAnalysisPage = ({ formId }: TextFeedbackAnalysisPageProps) => 
                 <DashboardCard
                   key={question.questionId}
                   title={question.prompt}
-                  subtitle={`${question.responseCount} text responses`}
+                  subtitle={`${question.group ? question.group + ' · ' : ''}${question.responseCount} text responses`}
                 >
                   <div className="grid gap-5 xl:grid-cols-2">
                     <WordCloud words={question.wordFrequencies.slice(0, 30)} />
-                    <KeywordFrequencyChart keywords={question.keywords} />
+                    <KeywordFrequencyChart
+                      keywords={question.keywords}
+                      chartId={`chart-text-keywords-${question.questionId}`}
+                    />
                   </div>
                 </DashboardCard>
               ))}

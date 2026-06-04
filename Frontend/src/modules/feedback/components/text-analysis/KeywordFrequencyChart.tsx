@@ -13,8 +13,16 @@ interface KeywordFrequencyChartProps {
   keywords: TextFeedbackKeyword[];
 }
 
-const KeywordFrequencyChart = ({ keywords }: KeywordFrequencyChartProps) => (
-  <div className="h-80 rounded-2xl border border-slate-200 bg-white/70 p-3">
+interface KeywordFrequencyChartProps {
+  keywords: TextFeedbackKeyword[];
+  chartId?: string;
+}
+
+const KeywordFrequencyChart = ({ keywords, chartId }: KeywordFrequencyChartProps) => (
+  <div
+    data-pdf-chart-id={chartId}
+    className="h-80 rounded-2xl border border-slate-200 bg-white/70 p-3"
+  >
     {keywords.length === 0 ? (
       <div className="flex h-full items-center justify-center text-sm text-slate-500">
         No keywords available yet.

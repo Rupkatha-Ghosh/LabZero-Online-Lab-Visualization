@@ -157,9 +157,7 @@ import { useEvaluationTaskTracking } from './hooks/useEvaluationTaskTracking';
 import { MeetingConfig } from './context/MeetingContext';
 import { getDefaultSignalingUrl } from './utils/urlUtils';
 import { EvaluationProvider } from './store/evaluationStore';
-import OnboardingTour from './components/onboarding/OnboardingTour';
 import EvaluationProgressWidget from './components/evaluation/EvaluationProgressWidget';
-import EvaluationToasts from './components/evaluation/EvaluationToasts';
 import {
   FeedbackModuleBoundary,
   LazyAnalyticsDashboardPage,
@@ -537,6 +535,20 @@ const AppContent: React.FC = () => {
     setViewState(ViewState.FEEDBACK_ADMIN);
   };
 
+  const handleOpenFeedbackAnalytics = (formId: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('analyticsFormId', formId);
+    window.history.pushState({}, '', url.toString());
+    setViewState(ViewState.FEEDBACK_ANALYTICS);
+  };
+
+  const handleOpenTextAnalysis = (formId: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('textAnalysisFormId', formId);
+    window.history.pushState({}, '', url.toString());
+    setViewState(ViewState.FEEDBACK_TEXT_ANALYSIS);
+  };
+
   const handleBackFromFeedbackAdmin = () => {
     setViewState(feedbackReturnView.current || ViewState.LANDING);
   };
@@ -876,7 +888,11 @@ const AppContent: React.FC = () => {
                 {viewState === ViewState.FEEDBACK_ADMIN && (
                   <div key="feedback-admin" className="h-full w-full overflow-y-auto">
                     <FeedbackModuleBoundary fallbackTitle="Feedback admin unavailable">
-                      <LazyFeedbackAdminPage onBack={handleBackFromFeedbackAdmin} />
+                      <LazyFeedbackAdminPage
+                        onBack={handleBackFromFeedbackAdmin}
+                        onOpenAnalytics={handleOpenFeedbackAnalytics}
+                        onOpenTextAnalysis={handleOpenTextAnalysis}
+                      />
                     </FeedbackModuleBoundary>
                   </div>
                 )}
@@ -893,7 +909,7 @@ const AppContent: React.FC = () => {
                 {viewState === ViewState.FEEDBACK_ANALYTICS && (
                   <div key="feedback-analytics" className="h-full w-full overflow-y-auto">
                     <FeedbackModuleBoundary fallbackTitle="Feedback analytics unavailable">
-                      <LazyAnalyticsDashboardPage />
+                      <LazyAnalyticsDashboardPage onOpenTextAnalysis={handleOpenTextAnalysis} />
                     </FeedbackModuleBoundary>
                   </div>
                 )}
@@ -1018,14 +1034,10 @@ const AppContent: React.FC = () => {
           )}
 
           {!isFeedbackView && (
-            <>
-              <OnboardingTour />
-              <EvaluationProgressWidget
-                theme={theme}
-                onOpenFeedback={handleOpenSiteFeedback}
-              />
-              <EvaluationToasts />
-            </>
+            <EvaluationProgressWidget
+              theme={theme}
+              onOpenFeedback={handleOpenSiteFeedback}
+            />
           )}
         </>
       )}

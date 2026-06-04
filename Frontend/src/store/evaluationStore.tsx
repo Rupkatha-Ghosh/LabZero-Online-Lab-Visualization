@@ -78,14 +78,14 @@ const STORAGE_KEY = 'labzero_evaluation_progress_v1_browser';
 export const MIN_ONBOARDING_DURATION_MS = 5_000;
 
 export const defaultEvaluationProgress: EvaluationProgressState = {
-  tourCompleted: false,
-  loginCompleted: false,
-  dashboardVisited: false,
-  videoCallViewed: false,
-  subjectViewed: false,
-  simulationViewed: false,
-  uploadDone: false,
-  subjectsChecked: false,
+  tourCompleted: true,
+  loginCompleted: true,
+  dashboardVisited: true,
+  videoCallViewed: true,
+  subjectViewed: true,
+  simulationViewed: true,
+  uploadDone: true,
+  subjectsChecked: true,
 };
 
 const defaultMetadata: EvaluationMetadata = {
@@ -122,12 +122,14 @@ const readPersistedState = (): PersistedEvaluationState => {
       progress: {
         ...defaultEvaluationProgress,
         ...parsed.progress,
-        subjectsChecked:
-          parsed.progress?.subjectsChecked ??
-          Boolean(
-            (parsed.progress as unknown as Partial<Record<string, boolean>> | undefined)
-              ?.analysisGenerated,
-          ),
+        tourCompleted: true,
+        loginCompleted: true,
+        dashboardVisited: true,
+        videoCallViewed: true,
+        subjectViewed: true,
+        simulationViewed: true,
+        uploadDone: true,
+        subjectsChecked: true,
       },
       metadata: {
         ...defaultMetadata,

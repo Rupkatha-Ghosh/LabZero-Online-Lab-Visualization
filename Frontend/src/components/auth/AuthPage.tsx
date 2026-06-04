@@ -296,6 +296,103 @@ const AuthPage: React.FC = () => {
                   <p className="text-[9px] font-mono text-rose-400/80 uppercase tracking-widest text-center mb-2">↓ Select an account type above to continue</p>
                 )}
               </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest">or</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+
+              {/* Standard Signup Form Fields */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {selectedRole === 'institute' ? (
+                  <div className="relative group">
+                    <input
+                      type="text"
+                      required
+                      value={instituteName}
+                      onChange={(e) => setInstituteName(e.target.value)}
+                      placeholder="Institute Name"
+                      className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-cyan-400/50 transition-all font-sans placeholder:text-white/30 shadow-inner"
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative group">
+                      <input
+                        type="text"
+                        required
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="First Name"
+                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-cyan-400/50 transition-all font-sans placeholder:text-white/30 shadow-inner"
+                      />
+                    </div>
+                    <div className="relative group">
+                      <input
+                        type="text"
+                        required
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Last Name"
+                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-cyan-400/50 transition-all font-sans placeholder:text-white/30 shadow-inner"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="relative group">
+                  <input
+                    type="text"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Username"
+                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-cyan-400/50 transition-all font-sans placeholder:text-white/30 shadow-inner"
+                  />
+                </div>
+
+                <div className="relative group">
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email Address"
+                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-cyan-400/50 transition-all font-sans placeholder:text-white/30 shadow-inner"
+                  />
+                </div>
+
+                <div className="relative group">
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-cyan-400/50 transition-all font-sans placeholder:text-white/30 shadow-inner"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !selectedRole}
+                  className="w-full h-14 mt-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-600 text-white font-mono uppercase tracking-[.2em] hover:from-cyan-400 hover:to-violet-500 transition-all flex items-center justify-center gap-3 shadow-[0_4px_20px_rgba(34,211,238,0.3)] group disabled:opacity-50 disabled:cursor-not-allowed border border-white/20"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      <span className="drop-shadow-sm">Creating...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="drop-shadow-sm">Sign Up</span>
+                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform drop-shadow-sm" />
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
           )}
         </div>

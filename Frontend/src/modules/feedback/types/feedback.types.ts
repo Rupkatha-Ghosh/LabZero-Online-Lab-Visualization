@@ -167,6 +167,7 @@ export interface FeedbackQuestionAnalytics {
   ratingDistribution?: Record<string, number>;
   optionCounts?: Record<string, number>;
   textAnswerCount?: number;
+  group?: string;
   heatmap?: Array<{
     label: string;
     rating: number;
@@ -212,6 +213,8 @@ export interface FeedbackAnalyticsSummary {
   identifiedResponses: number;
   averageRating: number;
   satisfactionPercentage: number;
+  studentResponses?: number;
+  teacherResponses?: number;
 }
 
 export interface FeedbackAnalytics {
@@ -219,6 +222,8 @@ export interface FeedbackAnalytics {
   totalResponses: number;
   anonymousResponses: number;
   identifiedResponses: number;
+  studentResponses?: number;
+  teacherResponses?: number;
   questionStats: FeedbackQuestionAnalytics[];
   responses?: FeedbackSubmittedResponse[];
   lastCalculatedAt?: string;
@@ -258,16 +263,19 @@ export interface TextFeedbackQuestionAnalysis {
   keywords: TextFeedbackKeyword[];
   wordFrequencies: TextFeedbackWordFrequency[];
   sentiment: TextFeedbackSentimentSummary;
+  group?: string;
 }
 
 export interface TextFeedbackAnalysis {
   formId: string;
   totalTextResponses: number;
+  studentTextResponses?: number;
+  teacherTextResponses?: number;
   keywords: TextFeedbackKeyword[];
   wordFrequencies: TextFeedbackWordFrequency[];
   sentiment: TextFeedbackSentimentSummary;
   questions: TextFeedbackQuestionAnalysis[];
-  generatedAt: string;
+  generatedAt?: string;
 }
 
 export interface FeedbackAdminFormOverview {

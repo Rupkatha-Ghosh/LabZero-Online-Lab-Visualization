@@ -17,9 +17,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email', 'password', 'role', 'first_name', 'last_name')
 
-    def validate(self, attrs):
-        raise serializers.ValidationError("Account creation is being stopped for the time being until the feedback is being collected.")
-
     def validate_email(self, value):
         if value.lower().endswith('@heritageit.edu.in'):
             raise serializers.ValidationError("Emails with @heritageit.edu.in domain must register/login using Google OAuth.")

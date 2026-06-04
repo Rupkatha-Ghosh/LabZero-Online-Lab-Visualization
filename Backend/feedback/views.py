@@ -503,73 +503,579 @@ def site_feedback_as_response(feedback):
     }
 
 
+def parse_site_feedback_questions(comment):
+    answers = {}
+    current_section = None
+    for raw_line in (comment or '').splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith('Student Text Feedback:'):
+            current_section = 'text'
+            continue
+        elif line.startswith('Student Ratings:'):
+            current_section = 'rating'
+            continue
+        elif line.startswith('Student Multiple Choice:'):
+            current_section = 'checkbox'
+            continue
+        elif line.startswith('Student Single Choice:'):
+            current_section = 'radio'
+            continue
+        elif line.startswith('Student Dropdown Details:'):
+            current_section = 'dropdown'
+            continue
+        elif line.endswith(':'):
+            continue
+        
+        if current_section and line.startswith('- ') and ':' in line:
+            parts = line[2:].split(':', 1)
+            if len(parts) == 2:
+                prompt = parts[0].strip()
+                val_str = parts[1].strip()
+                if current_section == 'rating':
+                    if '/' in val_str:
+                        try:
+                            answers[prompt] = int(val_str.split('/')[0])
+                        except ValueError:
+                            pass
+                elif current_section == 'checkbox':
+                    if val_str == 'Not selected':
+                        answers[prompt] = []
+                    else:
+                        answers[prompt] = [item.strip() for item in val_str.split(',') if item.strip()]
+                elif current_section == 'text':
+                    if val_str != 'Not provided':
+                        answers[prompt] = val_str
+                else:
+                    if val_str != 'Not selected':
+                        answers[prompt] = val_str
+    return answers
+
+
+STUDENT_FEEDBACK_QUESTIONS = [
+    {
+        'id': 'sf-text-1',
+        'prompt': 'Which laboratory simulation or interactive visualization helped you understand a concept best, and why?',
+        'type': 'text',
+    },
+    {
+        'id': 'sf-text-2',
+        'prompt': 'What technical issues did you face while running or interacting with the 3D/graphical lab visualizations?',
+        'type': 'text',
+    },
+    {
+        'id': 'sf-text-3',
+        'prompt': 'How interactive and collaborative was your experience during live virtual lab sessions?',
+        'type': 'text',
+    },
+    {
+        'id': 'sf-text-4',
+        'prompt': 'What improvements would you suggest for better learning?',
+        'type': 'text',
+    },
+    {
+        'id': 'sf-text-5',
+        'prompt': 'Any additional comments regarding student experience?',
+        'type': 'text',
+    },
+    {
+        'id': 'sf-rating-1',
+        'prompt': 'Rate the overall usability of LabZero.',
+        'type': 'rating',
+    },
+    {
+        'id': 'sf-rating-2',
+        'prompt': 'Rate the quality of classroom interaction.',
+        'type': 'rating',
+    },
+    {
+        'id': 'sf-rating-3',
+        'prompt': 'Rate the ease of accessing study resources and lecture notes.',
+        'type': 'rating',
+    },
+    {
+        'id': 'sf-rating-4',
+        'prompt': 'Rate the responsiveness and interactive control smoothness of the lab simulations.',
+        'type': 'rating',
+    },
+    {
+        'id': 'sf-rating-5',
+        'prompt': 'Rate how well the virtual lab simulation matched your real-world lab expectations.',
+        'type': 'rating',
+    },
+    {
+        'id': 'sf-checkbox-1',
+        'prompt': 'Which features do you use regularly?',
+        'type': 'checkbox',
+    },
+    {
+        'id': 'sf-checkbox-2',
+        'prompt': 'What improvements would you like?',
+        'type': 'checkbox',
+    },
+    {
+        'id': 'sf-checkbox-3',
+        'prompt': 'Which devices do you use for LabZero?',
+        'type': 'checkbox',
+    },
+    {
+        'id': 'sf-radio-1',
+        'prompt': 'What is your initial impression of the LabZero onboarding tour?',
+        'type': 'radio',
+    },
+    {
+        'id': 'sf-radio-2',
+        'prompt': 'Overall satisfaction with the platform?',
+        'type': 'radio',
+    },
+    {
+        'id': 'sf-radio-3',
+        'prompt': 'How easily can you follow laboratory procedures using the platform?',
+        'type': 'radio',
+    },
+    {
+        'id': 'sf-dropdown-1',
+        'prompt': 'Select your department.',
+        'type': 'dropdown',
+    },
+    {
+        'id': 'sf-dropdown-2',
+        'prompt': 'Select your year/semester.',
+        'type': 'dropdown',
+    },
+    {
+        'id': 'sf-dropdown-3',
+        'prompt': 'Select your student level / institution type.',
+        'type': 'dropdown',
+    },
+    {
+        'id': 'sf-dropdown-4',
+        'prompt': 'Select your internet connectivity quality.',
+        'type': 'dropdown',
+    },
+    {
+        'id': 'sf-dropdown-5',
+        'prompt': 'Select how easily you were able to navigate to the lab visualization page.',
+        'type': 'dropdown',
+    },
+]
+
+
+SITE_FEEDBACK_SECTIONS = [
+    {
+        'title': 'Written Feedback',
+        'description': 'Share specific details so teachers and administrators can understand the student experience clearly.',
+        'order': 0,
+        'questionIds': ['sf-text-1', 'sf-text-2', 'sf-text-3', 'sf-text-4', 'sf-text-5'],
+        'questions': [
+            {**q, 'sectionTitle': 'Written Feedback'} for q in STUDENT_FEEDBACK_QUESTIONS if q['type'] == 'text'
+        ],
+    },
+    {
+        'title': 'Ratings',
+        'description': 'Use 1 for very poor and 5 for excellent.',
+        'order': 1,
+        'questionIds': ['sf-rating-1', 'sf-rating-2', 'sf-rating-3', 'sf-rating-4', 'sf-rating-5'],
+        'questions': [
+            {**q, 'sectionTitle': 'Ratings'} for q in STUDENT_FEEDBACK_QUESTIONS if q['type'] == 'rating'
+        ],
+    },
+    {
+        'title': 'Feature Usage and Improvements',
+        'description': 'Select every option that applies.',
+        'order': 2,
+        'questionIds': ['sf-checkbox-1', 'sf-checkbox-2', 'sf-checkbox-3'],
+        'questions': [
+            {**q, 'sectionTitle': 'Feature Usage and Improvements'} for q in STUDENT_FEEDBACK_QUESTIONS if q['type'] == 'checkbox'
+        ],
+    },
+    {
+        'title': 'Usage and Satisfaction',
+        'order': 3,
+        'questionIds': ['sf-radio-1', 'sf-radio-2', 'sf-radio-3'],
+        'questions': [
+            {**q, 'sectionTitle': 'Usage and Satisfaction'} for q in STUDENT_FEEDBACK_QUESTIONS if q['type'] == 'radio'
+        ],
+    },
+    {
+        'title': 'Academic and Access Details',
+        'order': 4,
+        'questionIds': ['sf-dropdown-1', 'sf-dropdown-2', 'sf-dropdown-3', 'sf-dropdown-4', 'sf-dropdown-5'],
+        'questions': [
+            {**q, 'sectionTitle': 'Academic and Access Details'} for q in STUDENT_FEEDBACK_QUESTIONS if q['type'] == 'dropdown'
+        ],
+    },
+]
+
+
+TEACHER_FEEDBACK_QUESTIONS = [
+    {
+        'id': 'tf-text-1',
+        'prompt': 'How effective is LabZero for conducting classes?',
+        'type': 'text',
+    },
+    {
+        'id': 'tf-text-2',
+        'prompt': 'What challenges did you face while managing students?',
+        'type': 'text',
+    },
+    {
+        'id': 'tf-text-3',
+        'prompt': 'Which teaching feature did you find most useful?',
+        'type': 'text',
+    },
+    {
+        'id': 'tf-text-4',
+        'prompt': 'What additional tools would improve teaching experience?',
+        'type': 'text',
+    },
+    {
+        'id': 'tf-text-5',
+        'prompt': 'Any suggestions for improving classroom management?',
+        'type': 'text',
+    },
+    {
+        'id': 'tf-rating-1',
+        'prompt': 'Rate the ease of classroom management.',
+        'type': 'rating',
+    },
+    {
+        'id': 'tf-rating-2',
+        'prompt': 'Rate the efficiency of resource sharing.',
+        'type': 'rating',
+    },
+    {
+        'id': 'tf-rating-3',
+        'prompt': 'Rate the student engagement level.',
+        'type': 'rating',
+    },
+    {
+        'id': 'tf-rating-4',
+        'prompt': 'Rate the performance of live class features.',
+        'type': 'rating',
+    },
+    {
+        'id': 'tf-rating-5',
+        'prompt': 'Rate your overall teaching experience on LabZero.',
+        'type': 'rating',
+    },
+    {
+        'id': 'tf-checkbox-1',
+        'prompt': 'Which features do you use frequently?',
+        'type': 'checkbox',
+    },
+    {
+        'id': 'tf-checkbox-2',
+        'prompt': 'Which improvements are needed?',
+        'type': 'checkbox',
+    },
+    {
+        'id': 'tf-checkbox-3',
+        'prompt': 'What teaching materials do you upload?',
+        'type': 'checkbox',
+    },
+    {
+        'id': 'tf-radio-1',
+        'prompt': 'How comfortable are you using LabZero?',
+        'type': 'radio',
+    },
+    {
+        'id': 'tf-radio-2',
+        'prompt': 'Does LabZero improve classroom productivity?',
+        'type': 'radio',
+    },
+    {
+        'id': 'tf-radio-3',
+        'prompt': 'Would you continue using LabZero?',
+        'type': 'radio',
+    },
+    {
+        'id': 'tf-dropdown-1',
+        'prompt': 'Select your department.',
+        'type': 'dropdown',
+    },
+    {
+        'id': 'tf-dropdown-2',
+        'prompt': 'Select your teaching experience range.',
+        'type': 'dropdown',
+    },
+    {
+        'id': 'tf-dropdown-3',
+        'prompt': 'Select average class size.',
+        'type': 'dropdown',
+    },
+    {
+        'id': 'tf-dropdown-4',
+        'prompt': 'Select preferred teaching mode.',
+        'type': 'dropdown',
+    },
+    {
+        'id': 'tf-dropdown-5',
+        'prompt': 'Select frequency of platform usage.',
+        'type': 'dropdown',
+    },
+]
+
+
+TEACHER_FEEDBACK_SECTIONS = [
+    {
+        'title': 'Teaching Feedback',
+        'description': 'Share classroom, student management, and teaching workflow details for academic planning.',
+        'order': 0,
+        'questionIds': [q['id'] for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'text'],
+        'questions': [
+            {**q, 'sectionTitle': 'Teaching Feedback'} for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'text'
+        ],
+    },
+    {
+        'title': 'Teaching Ratings',
+        'description': 'Use 1 for very poor and 5 for excellent.',
+        'order': 1,
+        'questionIds': [q['id'] for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'rating'],
+        'questions': [
+            {**q, 'sectionTitle': 'Teaching Ratings'} for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'rating'
+        ],
+    },
+    {
+        'title': 'Feature Usage and Materials',
+        'description': 'Select every option that applies to your teaching workflow.',
+        'order': 2,
+        'questionIds': [q['id'] for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'checkbox'],
+        'questions': [
+            {**q, 'sectionTitle': 'Feature Usage and Materials'} for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'checkbox'
+        ],
+    },
+    {
+        'title': 'Comfort and Continuity',
+        'order': 3,
+        'questionIds': [q['id'] for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'radio'],
+        'questions': [
+            {**q, 'sectionTitle': 'Comfort and Continuity'} for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'radio'
+        ],
+    },
+    {
+        'title': 'Teaching Profile and Usage',
+        'order': 4,
+        'questionIds': [q['id'] for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'dropdown'],
+        'questions': [
+            {**q, 'sectionTitle': 'Teaching Profile and Usage'} for q in TEACHER_FEEDBACK_QUESTIONS if q['type'] == 'dropdown'
+        ],
+    },
+]
+
+
+def parse_teacher_feedback_questions(comment):
+    answers = {}
+    current_section = None
+    for raw_line in (comment or '').splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith('Teacher Text Feedback:'):
+            current_section = 'text'
+            continue
+        elif line.startswith('Teacher Ratings:'):
+            current_section = 'rating'
+            continue
+        elif line.startswith('Teacher Multiple Choice:'):
+            current_section = 'checkbox'
+            continue
+        elif line.startswith('Teacher Single Choice:'):
+            current_section = 'radio'
+            continue
+        elif line.startswith('Teacher Dropdown Details:'):
+            current_section = 'dropdown'
+            continue
+        elif line.endswith(':'):
+            continue
+
+        if current_section and line.startswith('- ') and ':' in line:
+            parts = line[2:].split(':', 1)
+            if len(parts) == 2:
+                prompt = parts[0].strip()
+                val_str = parts[1].strip()
+                if current_section == 'rating':
+                    if '/' in val_str:
+                        try:
+                            answers[prompt] = int(val_str.split('/')[0])
+                        except ValueError:
+                            pass
+                elif current_section == 'checkbox':
+                    if val_str == 'Not selected':
+                        answers[prompt] = []
+                    else:
+                        answers[prompt] = [item.strip() for item in val_str.split(',') if item.strip()]
+                elif current_section == 'text':
+                    if val_str != 'Not provided':
+                        answers[prompt] = val_str
+                else:
+                    if val_str != 'Not selected':
+                        answers[prompt] = val_str
+    return answers
+
+
+def serialize_site_feedback_form():
+    return {
+        '_id': 'site-feedback',
+        'id': 'site-feedback',
+        'title': 'Site feedback',
+        'description': 'Feedback submitted from the LabZero feedback page.',
+        'createdBy': {},
+        'classroomCourseMetadata': {},
+        'anonymousAllowed': False,
+        'startsAt': None,
+        'endsAt': None,
+        'sections': SITE_FEEDBACK_SECTIONS,
+        'status': 'published',
+        'createdAt': None,
+        'updatedAt': None,
+    }
+
+
 def build_site_feedback_analytics():
     feedback_items = list(Feedback.objects.select_related('user').all())
     ratings = [item.rating for item in feedback_items if item.rating]
     comments = [item.comment for item in feedback_items if item.comment]
-    choice_counts_by_type = {
-        'checkbox': Counter(),
-        'radio': Counter(),
-        'dropdown': Counter(),
-    }
-    for comment in comments:
-        parsed_counts = site_feedback_choice_counts(comment)
-        for question_type, counts in parsed_counts.items():
-            choice_counts_by_type[question_type].update(counts)
+
+    student_parsed = []
+    teacher_parsed = []
+    student_feedback_items = []
+    teacher_feedback_items = []
+    for item in feedback_items:
+        if not item.comment:
+            continue
+        is_teacher = 'User Role: teacher' in item.comment
+        if is_teacher:
+            teacher_parsed.append(parse_teacher_feedback_questions(item.comment))
+            teacher_feedback_items.append(item)
+        else:
+            student_parsed.append(parse_site_feedback_questions(item.comment))
+            student_feedback_items.append(item)
+
+    question_stats = []
+    student_count = len(student_feedback_items)
+    teacher_count = len(teacher_feedback_items)
+
+    for group_label, group_questions, parsed_responses, role_count in (
+        ('Student Feedback', STUDENT_FEEDBACK_QUESTIONS, student_parsed, student_count),
+        ('Teacher Feedback', TEACHER_FEEDBACK_QUESTIONS, teacher_parsed, teacher_count),
+    ):
+        for question in group_questions:
+            prompt = question['prompt']
+            values = [resp[prompt] for resp in parsed_responses if prompt in resp]
+
+            stat = {
+                'questionId': question['id'],
+                'prompt': prompt,
+                'type': question['type'],
+                'totalAnswers': len(values),
+                'group': group_label,
+            }
+
+            if question['type'] == 'rating':
+                numeric_values = [float(v) for v in values]
+                distribution = Counter(str(int(v)) for v in numeric_values)
+                stat['ratingDistribution'] = dict(distribution)
+                stat['averageRating'] = round(sum(numeric_values) / len(numeric_values), 2) if numeric_values else 0
+                stat['ratingSum'] = sum(numeric_values)
+            elif question['type'] in ['checkbox', 'radio', 'dropdown']:
+                flattened = []
+                for v in values:
+                    flattened.extend(v if isinstance(v, list) else [v])
+                stat['optionCounts'] = dict(Counter(map(str, flattened)))
+            else:
+                stat['textAnswerCount'] = len(values)
+
+            question_stats.append(stat)
+
     average_rating = round(sum(ratings) / len(ratings), 2) if ratings else 0
     return {
         'formId': 'site-feedback',
         'totalResponses': len(feedback_items),
+        'studentResponses': student_count,
+        'teacherResponses': teacher_count,
         'anonymousResponses': 0,
         'identifiedResponses': len(feedback_items),
-        'questionStats': [
-            {
-                'questionId': 'site-rating',
-                'prompt': 'Overall rating',
-                'type': 'rating',
-                'totalAnswers': len(ratings),
-                'ratingDistribution': dict(Counter(map(str, ratings))),
-                'averageRating': average_rating,
-                'ratingSum': sum(ratings),
-            },
-            {
-                'questionId': 'site-comment',
-                'prompt': 'Feedback',
-                'type': 'text',
-                'totalAnswers': len(comments),
-                'textAnswerCount': len(comments),
-            },
-            {
-                'questionId': 'site-checkbox',
-                'prompt': 'Checkbox selections',
-                'type': 'checkbox',
-                'totalAnswers': sum(choice_counts_by_type['checkbox'].values()),
-                'optionCounts': dict(choice_counts_by_type['checkbox']),
-            },
-            {
-                'questionId': 'site-radio',
-                'prompt': 'Radio selections',
-                'type': 'radio',
-                'totalAnswers': sum(choice_counts_by_type['radio'].values()),
-                'optionCounts': dict(choice_counts_by_type['radio']),
-            },
-            {
-                'questionId': 'site-dropdown',
-                'prompt': 'Dropdown selections',
-                'type': 'dropdown',
-                'totalAnswers': sum(choice_counts_by_type['dropdown'].values()),
-                'optionCounts': dict(choice_counts_by_type['dropdown']),
-            },
-        ],
+        'questionStats': question_stats,
         'responses': [site_feedback_as_response(item) for item in feedback_items],
         'summary': {
             'totalResponses': len(feedback_items),
+            'studentResponses': student_count,
+            'teacherResponses': teacher_count,
             'anonymousResponses': 0,
             'identifiedResponses': len(feedback_items),
             'averageRating': average_rating,
             'satisfactionPercentage': round((average_rating / 5) * 100) if average_rating else 0,
         },
         'lastCalculatedAt': timezone.now().isoformat(),
+    }
+
+
+def build_site_feedback_text_analysis():
+    feedback_items = list(Feedback.objects.select_related('user').all())
+    student_parsed = []
+    teacher_parsed = []
+    student_question_text_values = {}
+    teacher_question_text_values = {}
+
+    for item in feedback_items:
+        if not item.comment:
+            continue
+        is_teacher = 'User Role: teacher' in item.comment
+        if is_teacher:
+            parsed = parse_teacher_feedback_questions(item.comment)
+            teacher_parsed.append(parsed)
+            for q in TEACHER_FEEDBACK_QUESTIONS:
+                if q['type'] != 'text':
+                    continue
+                val = parsed.get(q['prompt'])
+                if val:
+                    teacher_question_text_values.setdefault(q['prompt'], []).append(str(val))
+        else:
+            parsed = parse_site_feedback_questions(item.comment)
+            student_parsed.append(parsed)
+            for q in STUDENT_FEEDBACK_QUESTIONS:
+                if q['type'] != 'text':
+                    continue
+                val = parsed.get(q['prompt'])
+                if val:
+                    student_question_text_values.setdefault(q['prompt'], []).append(str(val))
+
+    all_student_text = [v for values in student_question_text_values.values() for v in values]
+    all_teacher_text = [v for values in teacher_question_text_values.values() for v in values]
+    combined = all_student_text + all_teacher_text
+
+    overview = {
+        'totalTextResponses': len(combined),
+        'studentTextResponses': len(all_student_text),
+        'teacherTextResponses': len(all_teacher_text),
+        **text_analysis_for_values(combined),
+    }
+
+    questions = []
+    for group_label, group_questions, q_text_values in (
+        ('Student Feedback', STUDENT_FEEDBACK_QUESTIONS, student_question_text_values),
+        ('Teacher Feedback', TEACHER_FEEDBACK_QUESTIONS, teacher_question_text_values),
+    ):
+        for q in group_questions:
+            if q['type'] != 'text':
+                continue
+            values = q_text_values.get(q['prompt'], [])
+            if not values:
+                continue
+            questions.append({
+                'questionId': q['id'],
+                'prompt': q['prompt'],
+                'group': group_label,
+                'responseCount': len(values),
+                **text_analysis_for_values(values),
+            })
+
+    return {
+        'formId': 'site-feedback',
+        'overview': overview,
+        'questions': questions,
     }
 
 
@@ -687,7 +1193,9 @@ def aggregate_feedback_overview(forms):
 
 
 class FeedbackFormDetailView(APIView):
-    def get(self, request, form_id):
+    def get(self, request, form_id=None):
+        if form_id is None or str(form_id) == 'site-feedback':
+            return api_success(serialize_site_feedback_form(), 'Site feedback form fetched.')
         try:
             form = FeedbackForm.objects.get(id=form_id)
         except FeedbackForm.DoesNotExist:
@@ -720,7 +1228,9 @@ class FeedbackResponseCreateView(APIView):
 class FeedbackAnalyticsView(APIView):
     permission_classes = [IsFeedbackAdmin]
 
-    def get(self, request, form_id):
+    def get(self, request, form_id=None):
+        if form_id is None or str(form_id) == 'site-feedback':
+            return api_success(build_site_feedback_analytics(), 'Site feedback analytics fetched.')
         try:
             form = FeedbackForm.objects.get(id=form_id)
         except FeedbackForm.DoesNotExist:
@@ -731,7 +1241,23 @@ class FeedbackAnalyticsView(APIView):
 class FeedbackTextAnalysisView(APIView):
     permission_classes = [IsFeedbackAdmin]
 
-    def get(self, request, form_id):
+    def get(self, request, form_id=None):
+        if form_id is None or str(form_id) == 'site-feedback':
+            text_analysis = build_site_feedback_text_analysis()
+            return api_success({
+                'formId': 'site-feedback',
+                'totalTextResponses': text_analysis['overview']['totalTextResponses'],
+                'studentTextResponses': text_analysis['overview']['studentTextResponses'],
+                'teacherTextResponses': text_analysis['overview']['teacherTextResponses'],
+                **{
+                    k: v
+                    for k, v in text_analysis['overview'].items()
+                    if k not in {'totalTextResponses', 'studentTextResponses', 'teacherTextResponses'}
+                },
+                'questions': text_analysis['questions'],
+                'generatedAt': timezone.now().isoformat(),
+            }, 'Site feedback text analysis fetched.')
+
         try:
             form = FeedbackForm.objects.get(id=form_id)
         except FeedbackForm.DoesNotExist:
