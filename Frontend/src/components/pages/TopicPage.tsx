@@ -58,6 +58,57 @@ const stripMathDelimiters = (text: string): string => {
   return t;
 };
 
+const STOPWORDS = ['and', 'or', 'of', 'to', 'in', 'on', 'at', 'by', 'is', 'it', 'as', 'the', 'a', 'an', 'with', 'for', 'from', 'that', 'this', 'we', 'you', 'they', 'he', 'she', 'be', 'are', 'was', 'were', 'has', 'have', 'had', 'do', 'does', 'did', 'can', 'could', 'will', 'would', 'should', 'may', 'might', 'must', 'shall', 'about', 'into', 'over', 'under', 'between', 'through', 'after', 'before', 'since', 'until', 'while', 'because', 'although', 'though', 'if', 'when', 'where', 'how', 'what', 'which', 'who', 'whom', 'whose', 'why'];
+
+const isWordFraction = (text: string): boolean => {
+  const t = text.trim();
+  if (!t || t.length > 120) return false;
+  if (/\d/.test(t)) return false;
+  if (/\\[a-zA-Z]/.test(t)) return false;
+  const word = String.raw`[A-Za-z][A-Za-z]*(?:[\s\-'][A-Za-z]+)*`;
+  const re = new RegExp(`^${word}\\s*\\/\\s*${word}\\.?$`);
+  if (!re.test(t)) return false;
+  const [num, den] = t.replace(/\.+$/, '').split('/').map(s => s.trim().toLowerCase().split(/[\s\-']+/));
+  if (num.some(w => STOPWORDS.includes(w)) || den.some(w => STOPWORDS.includes(w))) return false;
+  return true;
+};
+
+const wordFractionToLatex = (text: string): string => {
+  const t = text.trim().replace(/\.+$/, '');
+  const word = String.raw`[A-Za-z][A-Za-z]*(?:[\s\-'][A-Za-z]+)*`;
+  const re = new RegExp(`^(${word})\\s*\\/\\s*(${word})$`);
+  const m = t.match(re);
+  if (!m) return text;
+  const numWords = m[1].trim().toLowerCase().split(/[\s\-']+/);
+  const denWords = m[2].trim().toLowerCase().split(/[\s\-']+/);
+  if (numWords.some(w => STOPWORDS.includes(w)) || denWords.some(w => STOPWORDS.includes(w))) return text;
+  const num = m[1].trim();
+  const den = m[2].trim();
+  return `\\frac{\\text{${num}}}{\\text{${den}}}`;
+};
+
+const isWordEquation = (text: string): boolean => {
+  const t = text.trim();
+  if (!t || t.length > 120) return false;
+  if (/\d/.test(t)) return false;
+  if (/\\[a-zA-Z]/.test(t)) return false;
+  const word = String.raw`[A-Za-z][A-Za-z]*(?:[\s\-'][A-Za-z]+)*`;
+  const re = new RegExp(`^${word}\\s*=\\s*${word}\\.?$`);
+  if (!re.test(t)) return false;
+  const [lhs, rhs] = t.replace(/\.+$/, '').split('=').map(s => s.trim().toLowerCase().split(/[\s\-']+/));
+  if (lhs.some(w => STOPWORDS.includes(w)) || rhs.some(w => STOPWORDS.includes(w))) return false;
+  return true;
+};
+
+const wordEquationToLatex = (text: string): string => {
+  const t = text.trim().replace(/\.+$/, '');
+  const word = String.raw`[A-Za-z][A-Za-z]*(?:[\s\-'][A-Za-z]+)*`;
+  const re = new RegExp(`^(${word})\\s*=\\s*(${word})$`);
+  const m = t.match(re);
+  if (!m) return text;
+  return `\\text{${m[1].trim()}} = \\text{${m[2].trim()}}`;
+};
+
 const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, language, onStartQuiz, onStartMeeting, mathMode = false, initialView }) => {
  
   const { t } = useLanguage();
@@ -306,15 +357,35 @@ const TopicPage: React.FC<TopicPageProps> = ({ topic, onBack, visualization, lan
                         components={{
                           code({ inline, className, children, ...props }: any) {
                             const text = String(children ?? '');
-                            if (mathMode && isLikelyMath(text)) {
-                              const expr = stripMathDelimiters(text);
-                              try {
-                                if (inline) {
-                                  return <InlineMath math={expr} />;
+                            if (mathMode) {
+                              if (isWordFraction(text)) {
+                                const expr = wordFractionToLatex(text);
+                                try {
+                                  if (inline) return <InlineMath math={expr} />;
+                                  return <BlockMath math={expr} />;
+                                } catch {
+                                  return <code className={className} {...props}>{children}</code>;
                                 }
-                                return <BlockMath math={expr} />;
-                              } catch {
-                                return <code className={className} {...props}>{children}</code>;
+                              }
+                              if (isWordEquation(text)) {
+                                const expr = wordEquationToLatex(text);
+                                try {
+                                  if (inline) return <InlineMath math={expr} />;
+                                  return <BlockMath math={expr} />;
+                                } catch {
+                                  return <code className={className} {...props}>{children}</code>;
+                                }
+                              }
+                              if (isLikelyMath(text)) {
+                                const expr = stripMathDelimiters(text);
+                                try {
+                                  if (inline) {
+                                    return <InlineMath math={expr} />;
+                                  }
+                                  return <BlockMath math={expr} />;
+                                } catch {
+                                  return <code className={className} {...props}>{children}</code>;
+                                }
                               }
                             }
                             return <code className={className} {...props}>{children}</code>;

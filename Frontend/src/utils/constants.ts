@@ -339,7 +339,7 @@ The phenomenon of the change in the path of light as it passes obliquely from on
 
 ## Real and Apparent Depth
 An object placed in a denser medium (like water), when viewed from a rarer medium (like air), appears to be raised due to refraction.
-- **Formula**: n = Real Depth / Apparent Depth
+- **Formula**: \`n = Real Depth / Apparent Depth\`
 - **Apparent Shift**: The apparent rise of the object is given by:
   Shift = Real Depth * (1 - 1/n)
 
@@ -527,9 +527,9 @@ The branch of mathematics concerning numerical descriptions of how likely an eve
 Study of the relationships involving lengths and angles of triangles.
 
 ## Functions
-- **Sine (sin)**: Opposite / Hypotenuse.
-- **Cosine (cos)**: Adjacent / Hypotenuse.
-- **Tangent (tan)**: Opposite / Adjacent.
+- **Sine (sin)**: \`Opposite / Hypotenuse\`.
+- **Cosine (cos)**: \`Adjacent / Hypotenuse\`.
+- **Tangent (tan)**: \`Opposite / Adjacent\`.
 
 ## Identities
 - **Pythagorean**: sin²θ + cos²θ = 1.
